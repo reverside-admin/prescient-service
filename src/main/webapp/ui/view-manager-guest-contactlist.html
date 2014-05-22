@@ -1,0 +1,57 @@
+<div class="col-md-12">
+
+
+    <div class="col-md-12 text-right">
+        <div class="col-md-12 text-right">
+            <div class="btn-group btn-group-sm">
+                <a ng-href="#manager/guest/contact/{{contactlist.id}}/delete" class="btn btn-primary">Delete</a>
+                <a ng-href="#manager/guest/contact/{{contactlist.id}}/update" class="btn btn-primary">Update</a>
+                <a ng-href="#manager/guest/contacts" class="btn btn-primary">Back</a>
+            </div>
+        </div>
+
+        <div class="col-md-12 text-left">
+            <h4 class="text-primary"><b>Manager Contact List</b></h4>
+        </div>
+
+
+        <div style="width: 50%; margin-left: auto;margin-right: auto;">
+
+            <table class="table table-hover table-condensed table-bordered  table-responsive">
+                <tr>
+                    <td style="text-align: right"><b>ContactList Name</b></td>
+                    <td>{{contactlist.name}}</td>
+                </tr>
+
+                <tr>
+                    <td style="text-align: right"><b>Touch Points</b></td>
+                    <td style="text-align: right">
+                        <ul>
+                            <li ng-repeat="tp in  contactlist.contactListTouchPoints">
+                                {{tp.touchPoint.name}}
+
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+
+                <tr>
+                    <td style="text-align: right"><b>Guest List</b></td>
+                    <td>
+                        <ul>
+                            <li ng-repeat="gcl in  contactlist.contactListGuests">
+                                {{gcl.guest.firstName}}&nbsp; &nbsp; {{gcl.guest.surname}}
+
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+
+
+            </table>
+        </div>
+
+    </div>
+</div>

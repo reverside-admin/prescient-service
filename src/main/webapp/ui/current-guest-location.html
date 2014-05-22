@@ -1,0 +1,81 @@
+<div class="col-md-12">
+
+
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <a ng-href="#hotels/guests/checkedin" class="btn btn-primary">Back</a>
+        </div>
+    </div>
+
+    <div class="col-md-12 text-left" ng-if="guest_current_position">
+        <h4 class="text-primary"><b>Guest Current Location</b></h4>
+    </div>
+
+
+
+    <div style="width: 50%; margin-left: auto;margin-right: auto;">
+        <table class="table table-hover table-condensed table-bordered  table-responsive">
+
+            <tr>
+                <td><b>Title</b></td>
+                <td style="width: 50%">{{guest_detail.guest.title}}</td>
+            </tr>
+
+            <tr>
+                <td><b>First Name</b></td>
+                <td style="width: 50%">{{guest_detail.guest.firstName}}</td>
+            </tr>
+
+            <tr>
+                <td><b>Sur Name</b></td>
+                <td style="width: 50%">{{guest_detail.guest.surname}}</td>
+            </tr>
+
+            <tr>
+                <td><b>Preferred Name</b></td>
+                <td style="width: 50%">{{guest_detail.guest.preferredName}}</td>
+            </tr>
+            <tr>
+                <td><b>Room Number</b></td>
+                <td style="width: 50%">{{guest_detail.room.roomNumber}}</td>
+            </tr>
+
+
+
+        </table>
+
+    </div>
+
+
+    <div style="width: 50%; margin-left: auto;margin-right: auto;" ng-if="guest_current_position" >
+        <h4><b style="color: red"> {{guest_detail.guest.preferredName}} residing in room number {{guest_detail.room.roomNumber}} is currently in {{guest_current_position.zoneId}} </b></h4>
+
+    </div>
+
+    <div style="width: 50%; margin-left: auto;margin-right: auto;margin-top: 5%" ng-if="!guest_current_position">
+        <h4><b style="color: red">{{guest_detail.guest.preferredName}} can not be detected  in any of the Hotel area right now but was last seen in
+
+            <a ng-click="showHistory()">Guest History</a></b></h4>
+    </div>
+
+    <div class="col-md-12 text-right" ng-if="current_guest_location_history">
+
+
+        <div style="width: 50%; margin-left: auto;margin-right: auto;margin-top: 5%">
+            <table class="table table-hover table-condensed table-bordered table-responsive">
+                <tr>
+                    <th style="text-align: center">Zone</th>
+                    <th style="text-align: center">Date & Time</th>
+
+                </tr>
+                <tr ng-repeat="location in current_guest_location_history | filter:search">
+
+                    <td style="text-align: center">{{location.zoneId}}</td>
+                    <td style="text-align: center">{{location.tagReadDatetime | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+
+                </tr>
+            </table>
+        </div>
+
+    </div>
+</div>

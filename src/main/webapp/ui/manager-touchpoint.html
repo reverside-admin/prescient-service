@@ -1,0 +1,35 @@
+<div class="col-md-12">
+    <div class="col-md-12 text-left">
+        <h4 class="text-primary"><b>TouchPoint List </b></h4>
+    </div>
+
+    <div class="col-md-12 text-right">
+        <h5><input type="text" ng-model="search" placeholder="Search"/></h5>
+    </div>
+
+    <div class="col-md-12">
+        <table class="table table-hover table-condensed table-striped table-responsive">
+            <tr>
+                <th>TouchPoint Name</th>
+                <th></th>
+            </tr>
+
+            <tr ng-repeat="touchpoint in assigned_touch_point_list | filter:search">
+                <td>{{touchpoint.name}}</td>
+                <td>
+                    <a ng-href="#manager/touchpoint/{{touchpoint.id}}/setups">view</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+
+    <div>
+        <ul class="pager " style="margin: 0px;">
+
+        </ul>
+    </div>
+
+</div>
+
+

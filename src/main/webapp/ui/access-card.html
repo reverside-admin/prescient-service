@@ -1,0 +1,37 @@
+<div class="col-md-12">
+
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <a ng-href="#users/accesscard/import" class="btn btn-primary">Import</a>
+         <!--   <a ng-href="#users/accesscard/register" class="btn btn-primary">Register Cards</a> -->
+            <a ng-href="#" class="btn btn-primary">Back</a>
+        </div>
+    </div>
+
+    <div class="col-md-12 text-left">
+        <h4 class="text-primary"><b>AccessCard List </b></h4>
+    </div>
+
+    <div class="col-md-12 text-right">
+        <h5>  <input type="text" ng-model="search" placeholder="Search"/></h5>
+    </div>
+
+    <div class="col-md-12">
+        <table class="table table-hover table-condensed table-striped table-responsive">
+            <tr>
+                <th>AccessCardNo</th>
+                <th>RFIDTagNO</th>
+
+                <th></th>
+            </tr>
+
+            <tr ng-repeat="guestcard in guest_cards | filter:search">
+                <td> {{guestcard.magStripeNo}}</td>
+                <td ng-click="editable=false"><input type="text" value="{{guestcard.rfidTagNo}}" ng-model="guestcard.rfidTagNo" ng-disabled="editable"></td>
+                <td><input type="button" class="btn btn-primary" value="save" ng-click="save(guestcard.magStripeNo,guestcard.rfidTagNo)"></td>
+
+            </tr>
+        </table>
+    </div>
+
+</div>

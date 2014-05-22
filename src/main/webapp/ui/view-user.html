@@ -1,0 +1,67 @@
+<div class="col-md-12">
+
+
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <a ng-href="#users/reset/{{user_detail.id}}/password"  class="btn btn-primary" ng-disabled="can_reset_password">Password</a>
+            <a ng-href="#users/update/{{user_detail.id}}"  class="btn btn-primary" ng-disabled="can_edit">Edit</a>
+            <a ng-href="#users/{{user_detail.id}}/update/status/{{user_detail.userStatus.value}}"  class="btn btn-primary">Disable</a>
+            <a ng-href="#users/list"  class="btn btn-primary">Back</a>
+        </div>
+    </div>
+
+    <div class="col-md-12 text-left">
+        <h4 class="text-primary"><b>User Detail</b></h4>
+    </div>
+
+
+    <div style="width: 50%; margin-left: auto;margin-right: auto;">
+        <table class="table table-hover table-condensed table-bordered  table-responsive">
+            <tr>
+                <td style="text-align: right"><b>User Name</b></td>
+                <td style="width: 50%">{{user_detail.userName}}</td>
+            </tr>
+            <tr>
+                <td style="text-align: right"><b>First Name</b></td>
+                <td>{{user_detail.firstName}}</td>
+            </tr>
+            <tr>
+                <td style="text-align: right"><b>Last Name</b></td>
+                <td>{{user_detail.lastName}}</td>
+            </tr>
+            <tr>
+                <td style="text-align: right"><b>Status</b></td>
+                <td>{{user_detail.userStatus.value}}</td>
+            </tr>
+
+            <tr>
+                <td style="text-align: right"><b>Role</b></td>
+                <td>{{user_detail.userType.value}}</td>
+            </tr>
+
+            <tr>
+                <td style="text-align: right"><b>Hotel</b></td>
+                <td>{{user_detail.hotel.name}}</td>
+            </tr>
+
+            <tr>
+                <td style="text-align: right"><b>Department</b></td>
+                <td>
+                    <div ng-repeat="dept in user_detail.departments">
+                       {{dept.name}}
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="text-align: right"><b>Touch Point</b></td>
+                <td>
+                    <div ng-repeat="touchpoint in user_detail.touchPoints">
+                        {{touchpoint.name}}
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</div>

@@ -1,0 +1,38 @@
+<div class="col-md-12">
+
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <a ng-href="#hotels/guests/{{guest_id}}/position" class="btn btn-primary">Back</a>
+        </div>
+    </div>
+
+
+
+    <div class="col-md-12 text-left">
+        <h4 class="text-primary"><b>Guest Location History </b> </h4>
+    </div>
+
+    <div class="col-md-12 text-right">
+        <h5>  <input type="text" ng-model="search" placeholder="Search"/></h5>
+    </div>
+
+
+    <div class="col-md-12">
+        <table class="table table-hover table-condensed table-striped table-responsive">
+            <tr>
+                <th style="text-align: center">Zone</th>
+                <th style="text-align: center">Date & Time</th>
+                <th style="text-align: center">X-Coordinate</th>
+                <th style="text-align: center">Y-Coordinate</th>
+             </tr>
+            <tr ng-repeat="location in current_guest_location_history | filter:search">
+                <td style="text-align: center">{{location.zoneId}}</td>
+                <td style="text-align: center">{{location.tagReadDatetime | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+                <td style="text-align: center">{{location.xcoordRead}}</td>
+                <td style="text-align: center">{{location.ycoordRead}}</td>
+
+            </tr>
+        </table>
+    </div>
+
+</div>

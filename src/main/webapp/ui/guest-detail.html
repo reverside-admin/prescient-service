@@ -1,0 +1,69 @@
+<div class="col-md-12">
+
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <a href="#touchpoint/{{}}/guests" class="btn btn-primary">Back</a>
+        </div>
+    </div>
+
+    <div class="col-md-12 text-left">
+        <h4 class="text-primary"><b>Guest Detail</b></h4>
+    </div>
+
+    <div style="width: 50%; margin-left: auto;margin-right: auto;">
+        <table class="table table-hover table-condensed table-bordered  table-responsive">
+
+            <tr>
+                <td><b>Title</b></td>
+                <td style="width: 50%">{{guest_detail.guest.title}}</td>
+            </tr>
+
+            <tr>
+                <td><b>First Name</b></td>
+                <td style="width: 50%">{{guest_detail.guest.firstName}}</td>
+            </tr>
+
+            <tr>
+                <td><b>Sur Name</b></td>
+                <td style="width: 50%">{{guest_detail.guest.surname}}</td>
+            </tr>
+
+            <tr>
+                <td><b>Preferred Name</b></td>
+                <td style="width: 50%">{{guest_detail.guest.preferredName}}</td>
+            </tr>
+
+            <tr>
+                <td><b>Gender</b></td>
+                <td style="width: 50%">{{guest_detail.guest.gender}}</td>
+            </tr>
+
+            <tr>
+                <td><b>Nationality</b></td>
+                <td style="width: 50%">{{guest_detail.guest.nationalityId}}</td>
+            </tr>
+
+            <tr>
+                <td><b>Date Of Birth</b></td>
+                <td style="width: 50%">{{guest_detail.guest.dob | date:'medium'}}</td>
+            </tr>
+
+            <tr>
+                <td><b>Room Number</b></td>
+                <td style="width: 50%">{{guest_detail.room.roomNumber}}</td>
+            </tr>
+
+            <tr>
+                <td><b>Arrival Time</b></td>
+                <td>{{guest_detail.arrivalTime | date:'medium'}}</td>
+            </tr>
+
+            <tr>
+                <td><b>Departure Time</b></td>
+                <td>{{guest_detail.departureTime | date:'medium'}}</td>
+            </tr>
+
+        </table>
+    </div>
+
+</div>

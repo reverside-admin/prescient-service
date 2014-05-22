@@ -1,0 +1,39 @@
+<div class="col-md-12">
+
+
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <a ng-href="#users/accesscard/import" class="btn btn-primary">Import Cards</a>
+            <a ng-href="#users/accesscard" class="btn btn-primary">Back</a>
+        </div>
+    </div>
+
+    <div class="col-md-12 text-left">
+        <h4 class="text-primary"><b>Register Room Key Cards </b></h4>
+    </div>
+
+
+    <div style="width: 40%; margin-left: auto;margin-right: auto;margin-top: 10%;">
+        <table class="table">
+            <tr>
+                <td><label>Room Key Card</label></td>
+                <td><input type="text" class="form-control" ng-Change="reset()" placeholder="Room Key Card No"
+                           ng-model="access_card_detail.magStripeNo" required></td>
+                <td><input type="button" class="btn btn-primary" value="Check" ng-click="checkCard()"/>
+                </td>
+            </tr>
+            <tr ng-if="magStripeNo">
+                <td><label>RFID Tag No</label></td>
+                <td><input type="text" class="form-control" placeholder="RFID Tag No"
+                           ng-model="access_card_detail.rfidTagNo"
+                           required>
+                <td><input type="button" class="btn btn-primary" value="Save" ng-if="magStripeNo"
+                           ng-click="saveCard()"/>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="col-md-12 text-center">
+        <b style="color: RED;">{{message}} </b>
+    </div>
+</div>

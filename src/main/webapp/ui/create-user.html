@@ -1,0 +1,110 @@
+<form name="app_form">
+
+    <div class="col-md-12">
+
+        <div class="col-md-12 text-right">
+            <div class="btn-group btn-group-sm">
+                <a ng-href="#users/list" class="btn btn-primary">Back</a>
+            </div>
+        </div>
+
+        <div class="col-md-12 text-left">
+            <h4 class="text-primary"><b>User Registration</b></h4>
+        </div>
+
+
+        <div style="width: 50%; margin-left: auto;margin-right: auto;">
+
+            <table class=" table table-responsive">
+                <tr>
+                    <td> User Name</td>
+                    <td><input type="text" name="username" ng-model="user.userName" placeholder="username"
+                               style="width: 100%" required></td>
+                </tr>
+
+                <tr>
+                    <td> First Name</td>
+                    <td><input type="text" id="userfname" ng-model="user.firstName" placeholder="firstname"
+                               style="width: 100%" required></td>
+                </tr>
+                <tr>
+                    <td> Last Name</td>
+                    <td><input type="text" id="userlname" ng-model="user.lastName" placeholder="lastname"
+                               style="width: 100%" required></td>
+                </tr>
+                <tr>
+                    <td>Status</td>
+                    <td>
+                        <select ng-model="user.userStatus.id"
+                                ng-options="obj.id as obj.value for obj in user_status_list" required>
+                            <option value="">Select Status</option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Role</td>
+                    <td>
+                        <select ng-model="user.userType.id"
+                                ng-options="obj.id as obj.value for obj in user_type_list" required>
+                            <option value="">Select Role</option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Hotel</td>
+                    <td>
+                        <select ng-model="user.hotel.id" ng-change="getDepartmentByHotelId()"
+                                ng-options="obj.id as obj.name for obj in hotel_list" required>
+                            <option value="">Select Hotel</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Department</td>
+                    <td>
+                        <!--<select size="4" style="width: 200px;" ng-model="user.departments" multiple-->
+                        <!--ng-options="department as department.name for department in hotel_department_list">-->
+                        <!--<option value=""><b>Departments To Assign</b></option>-->
+                        <!--</select>-->
+                        <ul>
+                            <li ng-repeat="department in hotel_department_list">
+                                <input type="checkbox" ng-click="onDepartmentSelection(department)"/>
+                                {{department.name}}
+                            </li>
+                        </ul>
+                    </td>
+
+                </tr>
+
+                <tr>
+                    <td>TouchPoint</td>
+                    <td>
+                        <!--<select size="3" style="width: 200px;" ng-model="user.touchPoints" multiple-->
+                        <!--ng-options="touchPoint as touchPoint.name for touchPoint in touch_point_list">-->
+                        <!--<option value=""><b>TouchPoint  To Assign</b></option>-->
+                        <!--</select>-->
+                        <ul>
+                            <li ng-repeat="touchPoint in touch_point_list">
+                                <input type="checkbox" ng-click="onTouchPointSelection(touchPoint)"/>
+                                {{touchPoint.name}}
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+
+
+        <div class="col-md-12 text-right">
+            <div class="btn-group btn-group-sm">
+                <input type="submit" value="Create" ng-click="create(app_form)" class="btn btn-primary"/>
+            </div>
+        </div>
+
+    </div>
+
+</form>
+

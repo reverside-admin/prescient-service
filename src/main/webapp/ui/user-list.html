@@ -1,0 +1,53 @@
+<div class="col-md-12">
+
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <a ng-href="#users/create"  class="btn btn-primary">Create</a>
+            <a ng-href="#"  class="btn btn-primary">Back</a>
+
+        </div>
+    </div>
+
+    <div class="col-md-12 text-left">
+        <h4 class="text-primary"><b>User List </b> </h4>
+    </div>
+
+
+    <div class="col-md-12 text-right">
+       <h5>  <input type="text" ng-model="search" placeholder="Search"/></h5>
+    </div>
+
+
+    <div class="col-md-12">
+        <table class="table table-hover table-condensed table-striped table-responsive">
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Status</th>
+                <th>Role</th>
+                <th></th>
+            </tr>
+          <!--   <tr>
+                <td><input type="search" ng-model="search.firstName" placeholder="firstname"></td>
+                <td><input type="search" ng-model="search.lastName" placeholder="lastname"></td>
+                <td><input type="search" ng-model="search.userStatus" placeholder="status"></td>
+                <td><input type="search" ng-model="search.userType" placeholder="type"></td>
+                <td></td>
+            </tr>
+            -->
+
+            <tr ng-repeat="user in user_list | filter:search">
+                 <td>{{user.firstName}}</td>
+                <td>{{user.lastName}}</td>
+                <td>{{user.userStatus.value}}</td>
+                <td>{{user.userType.value}}</td>
+                <td>
+                    <a ng-href="#users/view/{{user.id}}">view</a>
+                  </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+
+

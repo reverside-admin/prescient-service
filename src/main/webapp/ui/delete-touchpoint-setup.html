@@ -1,0 +1,54 @@
+<div class="col-md-12">
+
+
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <a ng-href="#touchpoint/{{current_touch_point_id}}/setups/{{setup_detail.id}}" class="btn btn-primary">Back</a>
+        </div>
+    </div>
+
+    <div class="col-md-12 text-left">
+        <h4 class="text-primary"><b>Delete Setup</b></h4>
+    </div>
+
+
+    <div style="width: 50%; margin-left: auto;margin-right: auto;">
+        <table class="table table-hover table-condensed table-bordered  table-responsive">
+
+            <tr>
+                <td>SetUp Name</td>
+                <td>{{setup_detail.setupName}}</td>
+            </tr>
+            <tr>
+                <td>SetUp Description</td>
+                <td>{{setup_detail.description}}</td>
+            </tr>
+            <tr>
+                <td>Image Name</td>
+                <td>{{setup_detail.imageName}}</td>
+            </tr>
+
+            <tr>
+                <td>File Name</td>
+                <td>{{setup_detail.fileName}}</td>
+            </tr>
+
+            <tr>
+                <td>LengthX</td>
+                <td>{{setup_detail.lengthX}}</td>
+            </tr>
+            <tr>
+                <td>LengthY</td>
+                <td>{{setup_detail.lengthY}}</td>
+            </tr>
+            <tr>
+                <td>File Path</td>
+                <td>{{setup_detail.filePath}}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="col-md-12 text-right">
+        <button type="button" class="btn btn-primary" ng-click="delete()">Delete</button>
+    </div>
+</div>

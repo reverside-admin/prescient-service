@@ -1,0 +1,84 @@
+<div class="col-md-12">
+    <div class="col-md-12 text-left">
+        <a  ng-click="resetPassword()" style="float: right;margin-left: 10px;">ResetPassword</a>
+        <a ng-href="#users/delete/{{user.id}}" style="float: right;margin-left: 10px;">Delete</a>
+        <a ng-href="#users/create" style="float: right">New User</a>
+        <h4 class="text-primary">Update User Details</h4>
+    </div>
+
+    <div>
+        <div style="width: 50%; margin-left: auto;margin-right: auto;">
+            <table class="table table-responsive">
+                <tr>
+                    <td>User Name</td>
+                    <td><input name="input" ng-model="user.userName" style="width: 50%" disabled/></td>
+                </tr>
+                <tr>
+                    <td>First Name</td>
+                    <td><input name="fname" ng-model="user.firstName"style="width: 50%" required/></td>
+                </tr>
+
+                <tr>
+                    <td>Last Name</td>
+                    <td><input name="lname" ng-model="user.lastName" style="width: 50%" required/></td>
+                </tr>
+
+                <tr>
+                    <td>Status</td>
+                    <td><select ng-model="user.userStatus.id"
+                                ng-options="obj.id as obj.status for obj in user_status_list">
+                     </select></td>
+                </tr>
+
+                <tr>
+                    <td>Type</td>
+                    <td><select ng-model="user.userType.id"
+                                ng-options="obj.id as obj.type for obj in user_type_list">
+                    </select></td>
+                </tr>
+
+                <!--<tr>-->
+                    <!--<td>Hotel</td>-->
+                    <!--<td><select ng-model="user.hotel.id"-->
+                                <!--ng-options="obj.id as obj.name for obj in hotel_list">-->
+                    <!--</select></td>-->
+                <!--</tr>-->
+                <tr>
+                    <td>Departments</td>
+                    <td>
+                        <ul>
+                            <li ng-repeat="department in assigned_department_list">
+                                <input type="checkbox" ng-click="onDepartmentSelection(department)" ng-checked="true"/>
+                                {{department.name}}
+                            </li>
+                        </ul>
+                    </td>
+
+
+                    <td>
+                        <ul>
+                            <li ng-repeat="department in not_assigned_department_list">
+                                <input type="checkbox" ng-click="onDepartmentSelection(department)"/>
+                                {{department.name}}
+                            </li>
+                        </ul>
+                    </td>
+
+
+
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div>
+        <ul class="pager " style="margin: 0px;">
+            <li><a href="#users/list" style="float: left;">Back</a></li>
+            <button type="button" class="btn btn-primary" ng-click="update()" style="float: right;margin-left: 10px;">Update</button>
+            <button type="button" class="btn btn-primary" ng-click="cancel()" style="float: right;">Cancel</button>
+        </ul>
+    </div>
+
+</div>
+
+

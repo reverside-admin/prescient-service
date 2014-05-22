@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/security
+       http://www.springframework.org/schema/security/spring-security.xsd">
+
+    <security:http use-expressions="true" create-session="stateless">
+        <security:intercept-url pattern="/api/**" access="hasAnyRole('ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF')"/>
+        <security:http-basic/>
+    </security:http>
+
+    <security:authentication-manager>
+        <security:authentication-provider>
+            <security:jdbc-user-service
+                    data-source-ref="dataSource"
+                    users-by-username-query="select ud.user_name, ud.password, TRUE from user ud, user_status us where ud.user_name = ? and ud.user_status_id = us.id and us.id = 2"
+                    authorities-by-username-query="select ud.user_name, ut.value from user ud, user_type ut where ud.user_type_id = ut.id and ud.user_name = ?"
+                    />
+        </security:authentication-provider>
+    </security:authentication-manager>
+
+</beans>

@@ -1,0 +1,75 @@
+<form name="setup_form">
+
+    <div class="col-md-12">
+
+        <div class="col-md-12 text-right">
+            <div class="btn-group btn-group-sm">
+                <a ng-href="#touchpoint/{{current_touch_point_id}}/setups" class="btn btn-primary">Back</a>
+            </div>
+        </div>
+
+        <div class="col-md-12 text-left">
+            <h4 class="text-primary"><b>Touch Point Setup</b></h4>
+        </div>
+
+
+        <div style="width: 50%; margin-left: auto;margin-right: auto;">
+
+            <table class=" table table-responsive">
+                <tr>
+                    <td> Touch Point Name *</td>
+                    <td>
+                        <select ng-model="selectedtouchpoint"
+                                ng-options="obj as obj.name for obj in current_touch_point_list">
+                            <option value="">select touchpoint</option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td> Touch Point SetUp Name *</td>
+                    <td><input type="text"  ng-model="tpsetup.setupName"  style="width: 100%" required ></td>
+                </tr>
+
+
+                <tr>
+                    <td> Touch Point SetUp Description *</td>
+                    <td><input type="text" ng-model="tpsetup.description" style="width: 100%" required></td>
+                </tr>
+                <tr>
+                    <td>Image Name *</td>
+                    <td><input type="text" ng-model="tpsetup.imageName"  style="width: 100%" required></td>
+                </tr>
+
+                <tr>
+                    <td>File Name *</td>
+                    <td><input type="text"  ng-model="tpsetup.fileName"  style="width: 100%" required></td>
+                </tr>
+
+                <tr>
+                    <td>XLength *</td>
+                    <td><input type="text" ng-model="tpsetup.lengthX"  style="width: 100%" required></td>
+                </tr>
+
+                <tr>
+                    <td>YLength *</td>
+                    <td><input type="text" ng-model="tpsetup.lengthY" style="width: 100%" required></td>
+                </tr>
+                <tr>
+                    <td>File Path *</td>
+                    <td><input type="text" ng-model="tpsetup.filePath"  style="width: 100%" required></td>
+                </tr>
+            </table>
+        </div>
+
+
+        <div class="col-md-12 text-right">
+            <div class="btn-group btn-group-sm">
+                <input type="submit" value="Create" ng-click="setup(setup_form)" class="btn btn-primary"/>
+            </div>
+        </div>
+
+    </div>
+
+</form>
+
