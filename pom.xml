@@ -104,7 +104,7 @@
 
     <build>
         <!--jar file name-->
-        <!--<finalName>prescient</finalName>-->
+        <finalName>prescient</finalName>
 
         <plugins>
             <plugin>
