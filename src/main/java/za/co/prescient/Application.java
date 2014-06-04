@@ -29,6 +29,16 @@ public class Application extends WebMvcConfigurerAdapter {
         return driverManagerDataSource;
     }
 
+   /* @Bean(name = "dataSource")
+    public DriverManagerDataSource dataSource() {
+        DriverManagerDataSource driverManagerDataSource = new DriverManagerDataSource();
+        driverManagerDataSource.setDriverClassName("com.mysql.jdbc.Driver");
+        driverManagerDataSource.setUrl("jdbc:mysql://localhost:3306/prescientdemo");
+        driverManagerDataSource.setUsername("root");
+        driverManagerDataSource.setPassword("root");
+        return driverManagerDataSource;
+    }
+*/
 
     public static void main(String[] args) {
         new SpringApplicationBuilder(Application.class).run(args);

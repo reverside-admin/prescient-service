@@ -40,6 +40,9 @@ public class Guest {
     @Column(name = "guest_date_of_birth")
     Date dob;
 
+    @Column(name = "guest_photo_image_path")
+    String guestImagePath;
+
     @ManyToOne
     @JoinColumn(name = "hotel_id")
     Hotel hotel;

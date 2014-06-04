@@ -2,14 +2,14 @@
 
     <div class="col-md-12 text-right">
         <div class="btn-group btn-group-sm">
-             <a ng-href="#" class="btn btn-primary">Back</a>
+            <a ng-href="#" class="btn btn-primary">Back</a>
         </div>
     </div>
 
 
 
     <div class="col-md-12 text-left">
-        <h4 class="text-primary"><b>Checked-In Guest List </b> </h4>
+        <h4 class="text-primary"><b> Guest List </b> </h4>
     </div>
 
     <div class="col-md-12 text-right">
@@ -25,7 +25,6 @@
                 <th style="text-align: center">Sur Name</th>
                 <th style="text-align: center">Preferred Name</th>
                 <th style="text-align: center">Room No</th>
-                <th style="text-align: center">Arrival Time</th>
                 <th></th>
             </tr>
 
@@ -36,9 +35,11 @@
                 <td style="text-align: center">{{guest.guest.preferredName}}</td>
                 <td style="text-align: center">{{guest.room.roomNumber}}</td>
 
-                <td style="text-align: center">{{guest.arrivalTime |date:'yyyy-MM-dd HH:mm:ss'}}</td>
+                <td><a ng-href="#checked-in-guest/{{guest.id}}">Detail</a>
+<!--
+                <td><a ng-href="#test">test</a>
+-->
 
-                <td><a ng-href="#hotels/guests/{{guest.guest.id}}/position">Detail</a>
                 </td>
             </tr>
         </table>
