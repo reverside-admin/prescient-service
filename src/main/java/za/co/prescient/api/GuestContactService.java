@@ -4,13 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import za.co.prescient.model.ContactList;
-import za.co.prescient.model.ContactListGuest;
-import za.co.prescient.model.ContactListTouchPoint;
-import za.co.prescient.repository.local.ContactListGuestRepository;
-import za.co.prescient.repository.local.ContactListTouchPointRepository;
-import za.co.prescient.repository.local.ContactListRepository;
+import za.co.prescient.model.*;
+import za.co.prescient.repository.local.*;
 
+import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -25,6 +23,13 @@ public class GuestContactService {
 
     @Autowired
     ContactListGuestRepository contactListGuestRepository;
+
+    @Autowired
+    GuestRepository guestRepository;
+
+    @Autowired
+    UserRepository userRepository;
+
 
 
     @RequestMapping(value = "api/users/{userId}/guest/contacts")
@@ -69,6 +74,129 @@ public class GuestContactService {
         ContactList contactList=contactListRepository.findOne(id);
         contactListRepository.delete(id);
 
+    }
+
+
+
+    //guests in contacts
+
+    @RequestMapping(value = "api/guest/contactguests/{id}")
+    public List<Guest> getContactGuests(@PathVariable("id") Long id){
+        List<Guest> allGuests = guestRepository.findAll();
+
+        ContactList contactList = contactListRepository.getGuestContactDetails(id);
+
+        List<Guest> guestsInContact=new ArrayList<Guest>();
+
+
+        List<ContactListGuest> contactListGuests=contactList.getContactListGuests();
+
+
+        for(ContactListGuest contact:contactListGuests)
+        {
+            guestsInContact.add(contact.getGuest());
+        }
+
+        log.info("No of Guests in this list is::"+guestsInContact.size());
+        //allGuests.removeAll(guestsInContact);
+        log.info("No of Guests  not in this list is::"+allGuests.size());
+
+
+        return guestsInContact;
+    }
+
+
+
+//guests not in contacts
+
+    @RequestMapping(value = "api/guest/notincontacts/{id}")
+    public List<Guest> getAllContacts(@PathVariable("id") Long id){
+        List<Guest> allGuests = guestRepository.findAll();
+
+        ContactList contactList = contactListRepository.getGuestContactDetails(id);
+
+        List<Guest> guestsInContact=new ArrayList<Guest>();
+
+
+        List<ContactListGuest> contactListGuests=contactList.getContactListGuests();
+
+
+        for(ContactListGuest contact:contactListGuests)
+        {
+            guestsInContact.add(contact.getGuest());
+        }
+
+        log.info("No of Guests in this list is::"+guestsInContact.size());
+        allGuests.removeAll(guestsInContact);
+        log.info("No of Guests  not in this list is::"+allGuests.size());
+
+
+        return allGuests;
+    }
+
+//touch points in contacts
+
+    @RequestMapping(value = "api/guest/contacttp/{id}")
+    public List<TouchPoint> getContactTP(@PathVariable("id") Long id,Principal principal) {
+        List<TouchPoint> touchPoints = userRepository.findByUserName(principal.getName()).getTouchPoints();
+
+        ContactList contactList = contactListRepository.getGuestContactDetails(id);
+
+        List<TouchPoint> touchPointsInContacts = new ArrayList<TouchPoint>();
+
+        List<ContactListTouchPoint> contactListTouchPoints = contactList.getContactListTouchPoints();
+
+        for (ContactListTouchPoint contact:contactListTouchPoints){
+
+            touchPointsInContacts.add(contact.getTouchPoint());
+        }
+
+        log.info("No of TouchPoints in this list is::"+touchPointsInContacts.size());
+        //touchPoints.removeAll(touchPointsInContacts);
+        log.info("No of TouchPoints  not in this list is::"+touchPoints.size());
+
+        return touchPointsInContacts;
+    }
+
+
+
+//touch points not in contacts
+
+    @RequestMapping(value = "api/guest/notselecttp/{id}")
+    public List<TouchPoint> getTouchPointsAssignedToLoggedInUser(@PathVariable("id") Long id,Principal principal) {
+        List<TouchPoint> touchPoints = userRepository.findByUserName(principal.getName()).getTouchPoints();
+
+        ContactList contactList = contactListRepository.getGuestContactDetails(id);
+
+        List<TouchPoint> touchPointsInContacts = new ArrayList<TouchPoint>();
+
+        List<ContactListTouchPoint> contactListTouchPoints = contactList.getContactListTouchPoints();
+
+        for (ContactListTouchPoint contact:contactListTouchPoints){
+
+            touchPointsInContacts.add(contact.getTouchPoint());
+        }
+
+        log.info("No of TouchPoints in this list is::"+touchPointsInContacts.size());
+        touchPoints.removeAll(touchPointsInContacts);
+        log.info("No of TouchPoints  not in this list is::"+touchPoints.size());
+
+        return touchPoints;
+    }
+
+
+//update
+
+    @RequestMapping(value = "api/guest/contact/{id}/update", method = RequestMethod.POST, consumes = "application/json")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void updateContact(@RequestBody ContactList contactList,@PathVariable("id") Long id) {
+        log.info("update guest contact List service");
+
+        ContactList contactList1= contactListRepository.findOne(id);
+        contactList1.setName(contactList.getName());
+        contactList1.setContactListTouchPoints(contactList.getContactListTouchPoints());
+        contactList1.setContactListGuests(contactList.getContactListGuests());
+        contactListRepository.save(contactList1);
     }
 
 

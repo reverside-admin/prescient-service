@@ -68,6 +68,10 @@ manager_app.config(['$routeProvider',
                 'templateUrl': 'ui/checked-in-guest-detail.html',
                 'controller': 'checked-in-guest-detail'
             })
+            .when('/manager/guest/contact/:contactId/update', {
+                'templateUrl': 'ui/update-guest-contact-list.html',
+                'controller': 'update_guest_contact_list_controller'
+            })
             .when('/welcome', {
                 'templateUrl': '/ui/welcome-page.html'
             })
@@ -822,6 +826,256 @@ manager_app.controller('checked-in-guest-detail', function ($scope, $http, $rout
             .error(function (error) {
                 console.log(error);
             });
+    }
+});
+
+
+
+
+
+manager_app.controller('update_guest_contact_list_controller', function ($scope, $cookieStore, $routeParams, $http,$location) {
+    $scope.selected_TouchPoints;//model
+    $scope.selected_Guest;//model
+    $scope.name;//model
+
+    $scope.touch_point = {};
+    $scope.contactlist = {};
+    $scope.touchPointsInContacts = {};
+    $scope.touchPointsNotInContact = {};
+    $scope.guestsInContact = {};
+    $scope.guestNotInContact = {};
+    $scope.current_touch_points = [];
+    $scope.guest_contact = {};
+    $scope.guest = {};
+    $scope.current_guests = [];
+
+
+    <!--view contact details-->
+    $http({
+        url: 'http://localhost:8080/api/guest/contacts/' + $routeParams.contactId,
+        method: 'get',
+        headers: {
+            'Authorization': $cookieStore.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            if (status == 200) {
+                $scope.contactlist = data;
+                $scope.name = $scope.contactlist.name;
+                console.log('contact details ::' + $scope.contactlist);
+            } else {
+                console.log('status:' + status);
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+
+
+    <!-- get all aguestlist  in contactlist -->
+    $http({
+        url: 'http://localhost:8080/api/guest/contactguests/' + $routeParams.contactId,
+        method: 'get',
+        headers: {
+            'Authorization': $cookieStore.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            if (status == 200) {
+                $scope.guestsInContact = data;
+                console.log('contact details not in contacts ::' + $scope.guestsInContact);
+            } else {
+                console.log('status:' + status);
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+
+    <!-- get all touchpoints  in contactlist -->
+    $http({
+        url: 'http://localhost:8080/api/guest/contacttp/' + $routeParams.contactId,
+        method: 'get',
+        headers: {
+            'Authorization': $cookieStore.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            if (status == 200) {
+                $scope.touchPointsInContacts = data;
+                console.log('contact details not in contacts ::' + $scope.touchPointsInContacts);
+            } else {
+                console.log('status:' + status);
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+
+
+    <!-- get all guestlist not in contactlist -->
+    $http({
+        url: 'http://localhost:8080/api/guest/notincontacts/' + $routeParams.contactId,
+        method: 'get',
+        headers: {
+            'Authorization': $cookieStore.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            if (status == 200) {
+                $scope.guestNotInContact = data;
+                console.log('contact details not in contacts ::' + $scope.guestNotInContact);
+            } else {
+                console.log('status:' + status);
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+
+
+    <!-- get all touchpoints not in contactlist -->
+    $http({
+        url: 'http://localhost:8080/api/guest/notselecttp/' + $routeParams.contactId,
+        method: 'get',
+        headers: {
+            'Authorization': $cookieStore.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            if (status == 200) {
+                $scope.touchPointsNotInContact = data;
+                console.log('contact details not in contacts ::' + $scope.touchPoints);
+            } else {
+                console.log('status:' + status);
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+
+
+    <!--TODO: Handle Proper add and remove from the element for touchpoints -->
+    $scope.pushDataToRight = function () {
+        console.log('selected touchpoint::' + $scope.selected_TouchPoints.name);
+        if ($scope.selected_TouchPoints != null) {
+
+            for (var i = 0; i < $scope.touchPointsInContacts.length; i++) {
+
+                if ($scope.touchPointsInContacts[i].id == $scope.selected_TouchPoints.id) {
+                    $scope.touchPointsInContacts.splice(i, 1);
+                    $scope.touchPointsNotInContact.push($scope.selected_TouchPoints);
+                    return;
+                }
+            }
+        }
+
+    }
+
+    $scope.pushDataToLeft = function () {
+        console.log($scope.selected_TouchPoints);
+        if ($scope.selected_TouchPoints != null) {
+            for (var i = 0; i < $scope.touchPointsNotInContact.length; i++) {
+
+                if ($scope.touchPointsNotInContact[i].id == $scope.selected_TouchPoints.id) {
+                    $scope.touchPointsNotInContact.splice(i, 1);
+                    $scope.touchPointsInContacts.push($scope.selected_TouchPoints);
+                    console.log($scope.touchPointsInContacts);
+                    return;
+                }
+            }
+            console.log($scope.touchPointsInContacts);
+        }
+    }
+
+
+    <!--TODO: Handle Proper add and remove from the element for guestlist -->
+    $scope.pushDataToRight1 = function () {
+        // console.log('selected guest::' + $scope.selected_TouchPoints.name);
+        if ($scope.selected_Guest != null) {
+
+            for (var i = 0; i < $scope.guestsInContact.length; i++) {
+
+                if ($scope.guestsInContact[i].id == $scope.selected_Guest.id) {
+                    $scope.guestsInContact.splice(i, 1);
+                    $scope.guestNotInContact.push($scope.selected_Guest);
+                    return;
+                }
+            }
+        }
+
+    }
+
+    $scope.pushDataToLeft1 = function () {
+        //console.log($scope.selected_TouchPoints);
+        if ($scope.selected_Guest != null) {
+            for (var i = 0; i < $scope.guestNotInContact.length; i++) {
+
+                if ($scope.guestNotInContact[i].id == $scope.selected_Guest.id) {
+                    $scope.guestNotInContact.splice(i, 1);
+                    $scope.guestsInContact.push($scope.selected_Guest);
+                    return;
+                }
+            }
+
+        }
+    }
+
+
+    //creating and formating  the object before update
+    $scope.preUpdate = function () {
+        for (var i = 0; i < $scope.touchPointsInContacts.length; i++) {
+            $scope.touch_point.id = $scope.touchPointsInContacts[i].id;
+            $scope.current_touch_points.push({"touchPoint": $scope.touch_point});
+            $scope.touch_point = {};
+        }
+        console.log("current touchpoints list size", $scope.current_touch_points.length);
+
+
+        for (var i = 0; i < $scope.guestsInContact.length; i++) {
+            $scope.guest.id = $scope.guestsInContact[i].id;
+            $scope.current_guests.push({"guest": $scope.guest});
+            $scope.guest = {};
+        }
+    }
+
+
+    $scope.update = function () {
+        //get the formatted data
+        $scope.preUpdate();
+
+        //bind the formatted object
+        $scope.guest_contact.name = $scope.name;
+        $scope.guest_contact.contactListTouchPoints = $scope.current_touch_points;
+        $scope.guest_contact.contactListGuests = $scope.current_guests;
+        $scope.guest_contact.owner = $cookieStore.get('user');
+
+
+        $http({
+            // url: 'http://localhost:8080/api/guest/contact/create',
+            url:'http://localhost:8080/api/guest/contact/' + $routeParams.contactId + '/update',
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': $cookieStore.get("auth")
+            },
+            data: $scope.guest_contact
+        }).
+            success(function (data, status) {
+                if (status == 201) {
+                    console.log('Guest contact created successfully');
+                    //console.log($scope.guest_contact.name);
+                    $location.url('/manager/guest/contacts');
+
+
+                } else {
+                    console.log('status:' + status);
+                }
+            })
+            .error(function (error) {
+                console.log(error);
+            });
+
     }
 });
 

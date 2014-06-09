@@ -1,0 +1,101 @@
+<form name="app_form">
+
+    <div class="col-md-12">
+
+        <div class="col-md-12 text-right">
+            <div class="btn-group btn-group-sm">
+                <a ng-href="#manager/guest/contact/view/{{contactlist.id}}" class="btn btn-primary">Back</a>
+            </div>
+        </div>
+
+        <div class="col-md-12 text-left">
+            <h4 class="text-primary"><b>Update Contact</b></h4>
+        </div>
+
+
+        <div style="width: 50%; margin-left: auto;margin-right: auto;">
+
+
+            <table class=" table table-responsive">
+
+                <tr>
+                    <td>Guest Contact List Name</td>
+                    <td><input type="text" ng-model="name" style="width: 100%"></td>
+                </tr>
+
+            </table>
+        </div>
+
+
+
+        <div class="panel-body" style="margin-left: 30%">
+            <div style="float: left;margin-left: 30px;">
+                <select size="10" style="width: 200px; "
+                        ng-model="selected_TouchPoints"
+                        ng-options="obj as obj.name for obj  in touchPointsInContacts">
+                    <option value=""><b>Selected Touch Points</b></option>
+                </select>
+            </div>
+
+
+            <div style="float: left;margin-left: 30px;margin-top: 10%">
+                <input type="button" class="btn btn-primary" value="Add >>" ng-click="pushDataToRight()"/>
+                <br/>
+                <input type="button" class="btn btn-primary" value="<< Add" ng-click="pushDataToLeft()"
+                       style="margin-top: 10px;"/>
+            </div>
+
+            <div class="panel-body" style="margin-left: 30%">
+                <div style="float: left;margin-left: 30px;">
+                    <select size="10" style="width: 200px; "
+                            ng-model="selected_TouchPoints"
+                            ng-options="obj as obj.name for obj  in touchPointsNotInContact">
+                        <option value=""><b>Not Selected Touch Points</b></option>
+
+                    </select>
+                </div>
+            </div>
+        </div>
+
+
+
+
+        <div class="panel-body" onclick="" style="margin-left: 30%">
+            <div style="float: left;margin-left: 30px;">
+                <select ng-select size="10" style="width: 200px; "
+                        ng-model="selected_Guest"
+                        ng-options="obj as obj.firstName for obj in guestsInContact"
+                        ng-change="select()">
+                    <option value=""><b>Selected Guest List</b></option>
+
+                </select>
+            </div>
+
+            <div style="float: left;margin-left: 30px;margin-top: 10%">
+                <input type="button" class="btn btn-primary" value="Add >>" ng-click="pushDataToRight1()"/>
+                <br/>
+                <input type="button" class="btn btn-primary" value="<< Add" ng-click="pushDataToLeft1()"
+                       style="margin-top: 10px;"/>
+            </div>
+
+            <div class="panel-body" style="margin-left: 30%">
+                <div style="float: left;margin-left: 30px;">
+                    <select size="10" style="width: 200px; "
+                            ng-model="selected_Guest"
+                            ng-options="obj as obj.firstName for obj in guestNotInContact">
+                        <option value=""><b>Not Selected Guest List</b></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-12 text-right">
+            <div class="btn-group btn-group-sm">
+                <input type="button" value="update" ng-click="update()" class="btn btn-primary"/>
+            </div>
+        </div>
+
+
+    </div>
+
+</form>
