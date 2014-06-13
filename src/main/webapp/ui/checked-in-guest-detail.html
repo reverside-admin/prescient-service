@@ -4,6 +4,10 @@
         <div class="btn-group btn-group-sm">
             <a href="#checked-in-guest/list" class="btn btn-primary">Back</a>
         </div>
+
+        <div class="btn-group btn-group-sm">
+            <a ng-click="attach_image_flag=true" class="btn btn-primary">Attach Image</a>
+        </div>
     </div>
 
     <div class="col-md-12 text-left">
@@ -71,7 +75,7 @@
                 <td>{{checked_in_guest_detail.departureTime | date:'medium'}}</td>
             </tr>
 
-            <tr>
+            <tr ng-show="attach_image_flag">
                 <td><b>Image File</b></td>
                 <td>
                     <select ng-model="selected_guest_image"
@@ -83,7 +87,7 @@
         </table>
     </div>
 
-    <div class="col-md-12 text-right">
+    <div class="col-md-12 text-right" ng-show="attach_image_flag">
         <div class="btn-group btn-group-sm">
             <a ng-click="attachGuestImage()" class="btn btn-primary">save</a>
         </div>

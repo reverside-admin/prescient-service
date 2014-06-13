@@ -128,6 +128,7 @@ public class GuestContactService {
 
         log.info("No of Guests in this list is::"+guestsInContact.size());
         allGuests.removeAll(guestsInContact);
+
         log.info("No of Guests  not in this list is::"+allGuests.size());
 
 

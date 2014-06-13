@@ -64,6 +64,8 @@ staff_app.controller('staff_app_controller', function ($scope, $http, $location,
         $cookieStore.remove("user");
         $cookieStore.remove("auth");
         $window.location.replace("login-app.html");
+
+
     };
 });
 

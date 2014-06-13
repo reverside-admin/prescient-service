@@ -26,50 +26,84 @@
                 <tr>
                     <td>Status</td>
                     <td><select ng-model="user.userStatus.id"
-                                ng-options="obj.id as obj.status for obj in user_status_list">
+                                ng-options="obj.id as obj.value for obj in user_status_list">
                      </select></td>
                 </tr>
 
                 <tr>
                     <td>Type</td>
                     <td><select ng-model="user.userType.id"
-                                ng-options="obj.id as obj.type for obj in user_type_list">
+                                ng-options="obj.id as obj.value for obj in user_type_list">
                     </select></td>
-                </tr>
-
-                <!--<tr>-->
-                    <!--<td>Hotel</td>-->
-                    <!--<td><select ng-model="user.hotel.id"-->
-                                <!--ng-options="obj.id as obj.name for obj in hotel_list">-->
-                    <!--</select></td>-->
-                <!--</tr>-->
-                <tr>
-                    <td>Departments</td>
-                    <td>
-                        <ul>
-                            <li ng-repeat="department in assigned_department_list">
-                                <input type="checkbox" ng-click="onDepartmentSelection(department)" ng-checked="true"/>
-                                {{department.name}}
-                            </li>
-                        </ul>
-                    </td>
-
-
-                    <td>
-                        <ul>
-                            <li ng-repeat="department in not_assigned_department_list">
-                                <input type="checkbox" ng-click="onDepartmentSelection(department)"/>
-                                {{department.name}}
-                            </li>
-                        </ul>
-                    </td>
-
-
-
                 </tr>
             </table>
         </div>
     </div>
+
+
+    <!--department push and pop-->
+
+    <div class="panel-body" style="margin-left: 20%">
+        <div style="float: left;margin-left: 30px;">
+            <select size="10" style="width: 200px; "
+                    ng-model="selected_department"
+                    ng-options="obj as obj.name for obj  in assigned_department_list">
+                <option value=""><b>Assigned Departments</b></option>
+            </select>
+        </div>
+
+
+        <div style="float: left;margin-left: 30px;margin-top: 5%">
+            <input type="button" class="btn btn-primary" value="Add >>" ng-click="pushDepartmentToRight()"/>
+            <br/>
+            <input type="button" class="btn btn-primary" value="<< Add" ng-click="pushDepartmentToLeft()"
+                   style="margin-top: 10px;"/>
+        </div>
+
+        <div class="panel-body" style="margin-left: 30%">
+            <div style="float: left;margin-left: 30px;">
+                <select size="10" style="width: 200px;"
+                        ng-model="selected_department"
+                        ng-options="obj as obj.name for obj  in not_assigned_department_list">
+                    <option value=""><b>Not Assigned Departments</b></option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <!---->
+
+    <!--Touch Point push and pop-->
+    <div class="panel-body" style="margin-left: 20%">
+        <div style="float: left;margin-left: 30px;">
+            <select size="10" style="width: 200px; "
+                    ng-model="selected_touch_point"
+                    ng-options="obj as obj.name for obj  in assigned_touch_point_list">
+                <option value=""><b>Assigned TouchPoints</b></option>
+            </select>
+        </div>
+
+
+        <div style="float: left;margin-left: 30px;margin-top: 5%">
+            <input type="button" class="btn btn-primary" value="Add >>" ng-click="pushTouchPointToRight()"/>
+            <br/>
+            <input type="button" class="btn btn-primary" value="<< Add" ng-click="pushTouchPointToLeft()"
+                   style="margin-top: 10px;"/>
+        </div>
+
+        <div class="panel-body" style="margin-left: 30%">
+            <div style="float: left;margin-left: 30px;">
+                <select size="10" style="width: 200px;"
+                        ng-model="selected_touch_point"
+                        ng-options="obj as obj.name for obj  in not_assigned_touch_point_list">
+                    <option value=""><b>Not Assigned TouchPoints</b></option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <!---->
+
+
+
 
     <div>
         <ul class="pager " style="margin: 0px;">

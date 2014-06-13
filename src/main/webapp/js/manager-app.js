@@ -686,7 +686,7 @@ manager_app.controller('checked-in-guest-detail', function ($scope, $http, $rout
     $scope.filename;
     $scope.file_path;
     $scope.ext;
-    $scope.attach_image_flag;
+    $scope.attach_image_flag=false;
     $scope.guest_id = $routeParams.guestId;
 
     console.log('checked in guest list detail controller is loaded');

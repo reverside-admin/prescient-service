@@ -178,10 +178,20 @@ admin_app.controller('update_users_controller', function ($scope, $http, $routeP
     $scope.uId = $routeParams.userId;
     $scope.user_status_list = [];
     $scope.user_type_list = [];
-    $scope.hotel_list = [];
 
     $scope.assigned_department_list = [];
     $scope.not_assigned_department_list = [];
+
+    $scope.assigned_touch_point_list = [];
+    $scope.not_assigned_touch_point_list = [];
+
+
+    $scope.selected_department;
+    $scope.selected_touch_point;
+
+
+    $scope.touch_point_of_a_selected_department;
+
 
     $scope.user = {};
 
@@ -197,6 +207,7 @@ admin_app.controller('update_users_controller', function ($scope, $http, $routeP
         success(function (data, status) {
             if (status == 200) {
                 $scope.user = data;
+                $scope.assigned_touch_point_list = $scope.user.touchPoints;
             } else {
                 console.log('status:' + status);
             }
@@ -217,6 +228,7 @@ admin_app.controller('update_users_controller', function ($scope, $http, $routeP
         success(function (data, status) {
             if (status == 200) {
                 $scope.user_status_list = data;
+                console.log($scope.user_status_list);
             } else {
                 console.log('status:' + status);
             }
@@ -238,27 +250,6 @@ admin_app.controller('update_users_controller', function ($scope, $http, $routeP
         success(function (data, status) {
             if (status == 200) {
                 $scope.user_type_list = data;
-            } else {
-                console.log('status:' + status);
-            }
-        })
-        .error(function (error) {
-            console.log(error);
-        });
-
-    <!-- get hotel list -->
-
-    $http({
-        url: 'http://localhost:8080/api/hotels',
-        method: 'get',
-        headers: {
-            'Authorization': $cookieStore.get("auth")
-
-        }
-    }).
-        success(function (data, status) {
-            if (status == 200) {
-                $scope.hotel_list = data;
             } else {
                 console.log('status:' + status);
             }
@@ -310,9 +301,204 @@ admin_app.controller('update_users_controller', function ($scope, $http, $routeP
         });
 
 
+    <!-- get all not assigned TouchPoints -->
+    $http({
+        url: 'http://localhost:8080/api/users/' + $scope.uId + '/notAssignedTouchpoints',
+        method: 'get',
+        headers: {
+            'Authorization': $cookieStore.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            if (status == 200) {
+                console.log('All not assigned department are retrieved');
+                $scope.not_assigned_touch_point_list = data;
+            } else {
+                console.log('status:' + status);
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+
+
+    <!--Get all touch points of a selected department and push touch points to not assigned touch point -->
+    $scope.getTouchPointByDepartmentAndPush = function (departmentId) {
+        console.log('Start of getTouchPointByDepartmentAndPush is called.....................');
+        console.log('then call the service to get touch points of this department');
+
+        $http({
+            url: 'http://localhost:8080/api/departments/' + departmentId + '/touchpoints',
+            method: 'get',
+            headers: {
+                'Authorization': $cookieStore.get("auth")
+            }
+        }).
+            success(function (data, status) {
+                if (status == 200) {
+                    console.log('All not assigned department are retrieved');
+                    $scope.touch_point_of_a_selected_department = data;
+                    console.log('touch point of this department' + $scope.touch_point_of_a_selected_department.length);
+
+                    //push all the touch points to the all not assigned touch point list
+                    if ($scope.touch_point_of_a_selected_department != null) {
+                        for (var i = 0; i < $scope.touch_point_of_a_selected_department.length; i++) {
+                            //push new touch points to the existing not assigned touch points
+                            $scope.not_assigned_touch_point_list.push($scope.touch_point_of_a_selected_department[i]);
+                        }
+                    } else {
+                        console.log('could not find any touch point for this department');
+                    }
+                } else {
+                    console.log('status:' + status);
+                }
+            })
+            .error(function (error) {
+                console.log(error);
+            });
+
+        console.log('End of getTouchPointByDepartmentAndPush is called.....................');
+
+    }
+
+    <!-- get all touch points of a departments and remove the touch points from the assigned and not assigned touch points-->
+    $scope.getTouchPointByDepartmentAndRemove = function (departmentId) {
+        console.log('start of getTouchPointByDepartmentAndRemove is called.....................');
+
+        //assign $scope.touch_point_of_a_selected_department to nothing bcoz it may contain some data before.
+        $scope.touch_point_of_a_selected_department = [];
+
+        console.log('selected department id issssssss' + departmentId);
+        $http({
+            url: 'http://localhost:8080/api/departments/' + departmentId + '/touchpoints',
+            method: 'get',
+            headers: {
+                'Authorization': $cookieStore.get("auth")
+            }
+        }).
+            success(function (data, status) {
+                if (status == 200) {
+                    console.log('All not assigned department are retrieved');
+                    $scope.touch_point_of_a_selected_department = data;
+                    console.log('touch point of this department' + $scope.touch_point_of_a_selected_department.length);
+
+                    if ($scope.touch_point_of_a_selected_department != null) {
+                        //remove from the assigned touch point list
+                        for (var i = 0; i < $scope.touch_point_of_a_selected_department.length; i++) {
+                            for (var k = 0; k < $scope.assigned_touch_point_list.length; k++) {
+                                if ($scope.touch_point_of_a_selected_department[i].id == $scope.assigned_touch_point_list[k].id) {
+                                    $scope.assigned_touch_point_list.splice(k, 1);
+                                }
+
+                            }
+                        }
+
+
+                        //remove from the not assigned touch point
+                        for (var i = 0; i < $scope.touch_point_of_a_selected_department.length; i++) {
+                            for (var k = 0; k < $scope.not_assigned_touch_point_list.length; k++) {
+                                if ($scope.touch_point_of_a_selected_department[i].id == $scope.not_assigned_touch_point_list[k].id) {
+                                    $scope.not_assigned_touch_point_list.splice(k, 1);
+                                }
+
+                            }
+                        }
+
+                    } else {
+                        console.log('No Touch point is found for this department to remove');
+                    }
+
+                } else {
+                    console.log('status:' + status);
+                }
+            })
+            .error(function (error) {
+                console.log(error);
+            });
+        console.log('End of getTouchPointByDepartmentAndRemove is called.....................');
+
+    }
+
+
+    <!-- push  departments to left -->
+    $scope.pushDepartmentToLeft = function () {
+
+        //call a method which call a  service to fetch all the touch point of the selected departments and push the new touchpoints to the not assigned touch points
+        $scope.getTouchPointByDepartmentAndPush($scope.selected_department.id);
+
+        console.log('push data to left::' + $scope.selected_department.name)
+        if ($scope.selected_department != null) {
+            for (var i = 0; i < $scope.not_assigned_department_list.length; i++) {
+
+                if ($scope.not_assigned_department_list[i].id == $scope.selected_department.id) {
+                    $scope.not_assigned_department_list.splice(i, 1);
+                    $scope.assigned_department_list.push($scope.selected_department);
+                    return;
+                }
+            }
+        }
+    }
+
+    <!-- push department to right -->
+    $scope.pushDepartmentToRight = function () {
+        //call a method which call a  service to fetch all the touch point of the selected departments and remove the new touchpoints from the not assigned touch points and assigned touch points
+        $scope.getTouchPointByDepartmentAndRemove($scope.selected_department.id);
+
+        console.log('push data to right' + $scope.selected_department.name);
+        if ($scope.selected_department != null) {
+
+            for (var i = 0; i < $scope.assigned_department_list.length; i++) {
+
+                if ($scope.assigned_department_list[i].id == $scope.selected_department.id) {
+                    $scope.assigned_department_list.splice(i, 1);
+                    $scope.not_assigned_department_list.push($scope.selected_department);
+                    return;
+                }
+            }
+        }
+    }
+
+    <!-- push  touch point to left -->
+    $scope.pushTouchPointToLeft = function () {
+
+        console.log('push data to left::' + $scope.selected_touch_point.name)
+        if ($scope.selected_touch_point != null) {
+            for (var i = 0; i < $scope.not_assigned_touch_point_list.length; i++) {
+
+                if ($scope.not_assigned_touch_point_list[i].id == $scope.selected_touch_point.id) {
+                    $scope.not_assigned_touch_point_list.splice(i, 1);
+                    $scope.assigned_touch_point_list.push($scope.selected_touch_point);
+                    return;
+                }
+            }
+        }
+    }
+
+    <!-- push touch point to right -->
+    $scope.pushTouchPointToRight = function () {
+        //$scope.not_assigned_department_list.push($scope.selected_department);
+        console.log('push data to right' + $scope.selected_touch_point.name);
+        if ($scope.selected_touch_point != null) {
+
+            for (var i = 0; i < $scope.assigned_touch_point_list.length; i++) {
+
+                if ($scope.assigned_touch_point_list[i].id == $scope.selected_touch_point.id) {
+                    $scope.assigned_touch_point_list.splice(i, 1);
+                    $scope.not_assigned_touch_point_list.push($scope.selected_touch_point);
+                    return;
+                }
+            }
+        }
+    }
+
+
+    <!-- update user details -->
     $scope.update = function () {
         console.log('update');
-        console.log($scope.user);
+        $scope.user.departments = $scope.assigned_department_list;
+        $scope.user.touchPoints = $scope.assigned_touch_point_list;
+
+        console.log('user::' + $scope.user);
         $http({
             url: 'http://localhost:8080/api/users/update/' + $scope.uId,
             method: 'put',
@@ -320,11 +506,9 @@ admin_app.controller('update_users_controller', function ($scope, $http, $routeP
                 'Authorization': $cookieStore.get("auth")
             },
             data: $scope.user
-
-
         }).
             success(function (data, status) {
-                if (status == 201) {
+                if (status == 200) {
                     console.log('User updated successfully');
                     $location.url('/users/list');
                 } else {
@@ -640,7 +824,7 @@ admin_app.controller('delete_users_controller', function ($scope, $http, $routeP
     $scope.delete_button_status;
     $scope.delete_message;
     $scope.uId = $routeParams.userId;
-    $scope.userStatus=$routeParams.userStatus;
+    $scope.userStatus = $routeParams.userStatus;
     $scope.user_detail = {};
     $http({
         url: 'http://localhost:8080/api/users/' + $scope.uId,
@@ -675,17 +859,16 @@ admin_app.controller('delete_users_controller', function ($scope, $http, $routeP
 
     $scope.delete = function () {
 
-        if($routeParams.userStatus=='enable')
-        {
-            $scope.userStatus=1;
+        if ($routeParams.userStatus == 'enable') {
+            $scope.userStatus = 1;
         }
-        else{
-            $scope.userStatus=0;
+        else {
+            $scope.userStatus = 0;
         }
         console.log('delete');
 
-                $http({
-            url: 'http://localhost:8080/api/users/' + $scope.uId + '/update/status/'+$scope.userStatus,
+        $http({
+            url: 'http://localhost:8080/api/users/' + $scope.uId + '/update/status/' + $scope.userStatus,
             method: 'get',
             headers: { 'Content-Type': 'application/json',
                 'Authorization': $cookieStore.get("auth")
@@ -721,9 +904,9 @@ admin_app.controller('access_card_controller', function ($scope, $http, $routePa
     $scope.rfidTagNo;
     $scope.message;
     $scope.guest_cards;
-    $scope.editable=true;
+    $scope.editable = true;
     $scope.access_card_detail = {};
-    $scope.card_detail={};
+    $scope.card_detail = {};
 
     <!-- find all guest cards -->
 
@@ -821,11 +1004,10 @@ admin_app.controller('access_card_controller', function ($scope, $http, $routePa
         $scope.message = null;
     }
 
-    $scope.save=function(magstripeno,rfidtagno)
-    {
-        $scope.card_detail.magStripeNo=magstripeno;
-        $scope.card_detail.rfidTagNo=rfidtagno;
-        console.log('test method is called...'+$scope.card_detail.magStripeNo+'::'+$scope.card_detail.rfidTagNo);
+    $scope.save = function (magstripeno, rfidtagno) {
+        $scope.card_detail.magStripeNo = magstripeno;
+        $scope.card_detail.rfidTagNo = rfidtagno;
+        console.log('test method is called...' + $scope.card_detail.magStripeNo + '::' + $scope.card_detail.rfidTagNo);
 
         $http({
             url: 'http://localhost:8080/api/guestcards/' + $scope.card_detail.magStripeNo,
@@ -836,9 +1018,9 @@ admin_app.controller('access_card_controller', function ($scope, $http, $routePa
             data: $scope.card_detail
         }).
             success(function (data, status) {
-                    console.log('saved'+status);
-                $scope.editable=true;
-             })
+                console.log('saved' + status);
+                $scope.editable = true;
+            })
             .error(function (error) {
                 console.log(error);
             });
@@ -932,7 +1114,7 @@ admin_app.controller('touch_point_setup_controller', function ($scope, $http, $r
     $scope.current_user_id = $cookieStore.get("user").id;
     $scope.current_touch_point_list = [];
     $scope.tpsetup = {};
-    $scope.selectedtouchpoint={};
+    $scope.selectedtouchpoint = {};
 
     $scope.current_touch_point_id = $routeParams.setupId;
     console.log('current user id::' + $scope.current_user_id);
@@ -963,14 +1145,14 @@ admin_app.controller('touch_point_setup_controller', function ($scope, $http, $r
     $scope.setup = function (setup_form) {
 
         console.log('setup is clicked');
-        console.log('selected tp::'+$scope.selectedtouchpoint);
+        console.log('selected tp::' + $scope.selectedtouchpoint);
         //console.log('touch point setup object::' + $scope.setup);
 
         //console.log('create setup for TouchPoint::'+$scope.setup.touchPoint.id);
 
         <!-- setup the touch point -->
 
-        $scope.tpsetup.touchPoint=$scope.selectedtouchpoint;
+        $scope.tpsetup.touchPoint = $scope.selectedtouchpoint;
         $http({
             url: 'http://localhost:8080/api/tp/setup',
             method: 'post',

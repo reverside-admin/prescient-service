@@ -1,29 +1,24 @@
-describe('login app', function () {
+describe('Unit: Login app', function() {
 
+    // Load the module with MainController
     beforeEach(angular.mock.module('login_app'));
 
-    describe("login controller", function () {
-
-        var scope, controller;
-
-        beforeEach(inject(function ($rootScope, $controller) {
-            scope = $rootScope.$new();
-            controller = $controller;
-        }));
-
-
-        it("default message should be Hello World", function () {
-            controller("login_app_controller", {$scope: scope});
-            expect(scope.message).toBe("Hello World");
-            console.log('successfull');
+    var ctrl, scope;
+    // inject the $controller and $rootScope services
+    // in the beforeEach block
+    beforeEach(inject(function($controller, $rootScope) {
+        // Create a new scope that's a child of the $rootScope
+        scope = $rootScope.$new();
+        // Create the controller
+        ctrl = $controller('login_app_controller', {
+            $scope: scope
         });
+    }));
 
-        it("after login message should be I m called", function () {
-            controller("login_app_controller", {$scope: scope});
-            scope.login('Manmay', 'Mohanty');
-            expect(scope.message).toBe("I m called");
+    it('scope.error should be undefined',
+        function() {
+            var loginForm=['mrunmay','secret'];
+            expect(scope.error).toBeUndefined();
+
         });
-
-    });
-
 });

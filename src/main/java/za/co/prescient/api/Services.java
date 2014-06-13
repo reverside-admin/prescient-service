@@ -316,25 +316,5 @@ public class Services {
 
     //test
 
-    @RequestMapping(value = "users/{userId}/notAssignedTouchpoints")
-    public List<TouchPoint> getAllTps(@PathVariable("userId") Long userId) {
 
-        User user = userRepository.findOne(userId);
-        List<Department> depts = user.getDepartments();
-        log.info("TPss : "+depts.size());
-        List<TouchPoint> assignedDeptAllTps = new ArrayList<TouchPoint>();
-
-        for (Department dept : depts) {
-            List<TouchPoint> temp =touchPointRepository.findTouchPointByDepartmentId(dept.getId());
-            assignedDeptAllTps.addAll(temp);
-            log.info("All TP" + assignedDeptAllTps.size());
-        }
-        List<TouchPoint> assignedDeptassignedTouchPoints = user.getTouchPoints();
-
-        assignedDeptAllTps.removeAll(assignedDeptassignedTouchPoints);
-        log.info("after removal : "+ assignedDeptAllTps.size() );
-
-        return assignedDeptAllTps;
-
-    }
 }
