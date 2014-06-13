@@ -29,7 +29,7 @@
 
         <div class="panel-body" style="margin-left: 20%">
             <div style="float: left;margin-left: 30px;">
-                <select size="10" style="width: 200px; "
+                <select size="8" style="width: 200px; "
                         ng-model="selected_TouchPoints"
                         ng-options="obj as obj.name for obj  in touchPointsInContacts">
                     <option value=""><b>Selected Touch Points</b></option>
@@ -46,7 +46,7 @@
 
             <div class="panel-body" style="margin-left: 30%">
                 <div style="float: left;margin-left: 30px;">
-                    <select size="10" style="width: 200px; "
+                    <select size="8" style="width: 200px; "
                             ng-model="selected_TouchPoints"
                             ng-options="obj as obj.name for obj  in touchPointsNotInContact">
                         <option value=""><b>Not Selected Touch Points</b></option>
@@ -58,10 +58,9 @@
 
 
 
-
         <div class="panel-body" onclick="" style="margin-left: 20%">
             <div style="float: left;margin-left: 30px;">
-                <select ng-select size="10" style="width: 200px; "
+                <select ng-select size="8" style="width: 200px; "
                         ng-model="selected_Guest"
                         ng-options="obj as obj.firstName for obj in guestsInContact"
                         ng-change="select()">
@@ -79,7 +78,7 @@
 
             <div class="panel-body" style="margin-left: 30%">
                 <div style="float: left;margin-left: 30px;">
-                    <select size="10" style="width: 200px; "
+                    <select size="8" style="width: 200px; "
                             ng-model="selected_Guest"
                             ng-options="obj as obj.firstName for obj in guestNotInContact">
                         <option value=""><b>Not Selected Guest List</b></option>

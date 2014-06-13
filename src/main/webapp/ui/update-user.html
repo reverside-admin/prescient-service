@@ -1,21 +1,29 @@
 <div class="col-md-12">
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <a ng-href="#users/create" class="btn btn-primary">New User</a>
+            <a ng-href="#users/reset/{{user.id}}/password"  class="btn btn-primary">ResetPassword</a>
+            <a ng-href="#users/list" class="btn btn-primary">Back</a>
+        </div>
+    </div>
+
+
     <div class="col-md-12 text-left">
-        <a  ng-click="resetPassword()" style="float: right;margin-left: 10px;">ResetPassword</a>
-        <a ng-href="#users/delete/{{user.id}}" style="float: right;margin-left: 10px;">Delete</a>
-        <a ng-href="#users/create" style="float: right">New User</a>
-        <h4 class="text-primary">Update User Details</h4>
+        <div class="btn-group btn-group-sm">
+            <h4 class="text-primary">Update User Details</h4>
+        </div>
     </div>
 
     <div>
         <div style="width: 50%; margin-left: auto;margin-right: auto;">
-            <table class="table table-responsive">
+            <table class="table table-responsive table-bordered">
                 <tr>
                     <td>User Name</td>
                     <td><input name="input" ng-model="user.userName" style="width: 50%" disabled/></td>
                 </tr>
                 <tr>
                     <td>First Name</td>
-                    <td><input name="fname" ng-model="user.firstName"style="width: 50%" required/></td>
+                    <td><input name="fname" ng-model="user.firstName" style="width: 50%" required/></td>
                 </tr>
 
                 <tr>
@@ -27,7 +35,7 @@
                     <td>Status</td>
                     <td><select ng-model="user.userStatus.id"
                                 ng-options="obj.id as obj.value for obj in user_status_list">
-                     </select></td>
+                    </select></td>
                 </tr>
 
                 <tr>
@@ -45,7 +53,7 @@
 
     <div class="panel-body" style="margin-left: 20%">
         <div style="float: left;margin-left: 30px;">
-            <select size="10" style="width: 200px; "
+            <select size="8" style="width: 200px; "
                     ng-model="selected_department"
                     ng-options="obj as obj.name for obj  in assigned_department_list">
                 <option value=""><b>Assigned Departments</b></option>
@@ -54,7 +62,7 @@
 
 
         <div style="float: left;margin-left: 30px;margin-top: 5%">
-            <input type="button" class="btn btn-primary" value="Add >>" ng-click="pushDepartmentToRight()"/>
+            <input type="button" class="btn btn-primary" value="Remove >>" ng-click="pushDepartmentToRight()"/>
             <br/>
             <input type="button" class="btn btn-primary" value="<< Add" ng-click="pushDepartmentToLeft()"
                    style="margin-top: 10px;"/>
@@ -62,7 +70,7 @@
 
         <div class="panel-body" style="margin-left: 30%">
             <div style="float: left;margin-left: 30px;">
-                <select size="10" style="width: 200px;"
+                <select size="8" style="width: 200px;"
                         ng-model="selected_department"
                         ng-options="obj as obj.name for obj  in not_assigned_department_list">
                     <option value=""><b>Not Assigned Departments</b></option>
@@ -75,7 +83,7 @@
     <!--Touch Point push and pop-->
     <div class="panel-body" style="margin-left: 20%">
         <div style="float: left;margin-left: 30px;">
-            <select size="10" style="width: 200px; "
+            <select size="8" style="width: 200px; "
                     ng-model="selected_touch_point"
                     ng-options="obj as obj.name for obj  in assigned_touch_point_list">
                 <option value=""><b>Assigned TouchPoints</b></option>
@@ -84,7 +92,7 @@
 
 
         <div style="float: left;margin-left: 30px;margin-top: 5%">
-            <input type="button" class="btn btn-primary" value="Add >>" ng-click="pushTouchPointToRight()"/>
+            <input type="button" class="btn btn-primary" value="Remove >>" ng-click="pushTouchPointToRight()"/>
             <br/>
             <input type="button" class="btn btn-primary" value="<< Add" ng-click="pushTouchPointToLeft()"
                    style="margin-top: 10px;"/>
@@ -92,7 +100,7 @@
 
         <div class="panel-body" style="margin-left: 30%">
             <div style="float: left;margin-left: 30px;">
-                <select size="10" style="width: 200px;"
+                <select size="8" style="width: 200px;"
                         ng-model="selected_touch_point"
                         ng-options="obj as obj.name for obj  in not_assigned_touch_point_list">
                     <option value=""><b>Not Assigned TouchPoints</b></option>
@@ -102,16 +110,13 @@
     </div>
     <!---->
 
-
-
-
-    <div>
-        <ul class="pager " style="margin: 0px;">
-            <li><a href="#users/list" style="float: left;">Back</a></li>
-            <button type="button" class="btn btn-primary" ng-click="update()" style="float: right;margin-left: 10px;">Update</button>
-            <button type="button" class="btn btn-primary" ng-click="cancel()" style="float: right;">Cancel</button>
-        </ul>
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <a ng-click="update()" class="btn btn-primary">Update</a>
+            <a ng-click="cancel()" class="btn btn-primary" style="border-left: 10px">Cancel</a>
+        </div>
     </div>
+
 
 </div>
 
