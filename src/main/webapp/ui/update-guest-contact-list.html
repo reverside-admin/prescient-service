@@ -26,21 +26,22 @@
         </div>
 
 
+        <!--Touch Point push and pop-->
 
         <div class="panel-body" style="margin-left: 20%">
             <div style="float: left;margin-left: 30px;">
                 <select size="8" style="width: 200px; "
                         ng-model="selected_TouchPoints"
-                        ng-options="obj as obj.name for obj  in touchPointsInContacts">
-                    <option value=""><b>Selected Touch Points</b></option>
+                        ng-options="obj as obj.name for obj  in touchPointsNotInContact">
+                    <option value=""><b>Not Selected Touch Points</b></option>
                 </select>
             </div>
 
 
             <div style="float: left;margin-left: 30px;margin-top: 5%">
-                <input type="button" class="btn btn-primary" value="Add >>" ng-click="pushDataToRight()"/>
+                <input type="button" class="btn btn-primary" value="Add >>" ng-click="pushTouchPointToLeft()"/>
                 <br/>
-                <input type="button" class="btn btn-primary" value="<< Add" ng-click="pushDataToLeft()"
+                <input type="button" class="btn btn-primary" value="<< Remove" ng-click="pushTouchPointToRight()"
                        style="margin-top: 10px;"/>
             </div>
 
@@ -48,31 +49,33 @@
                 <div style="float: left;margin-left: 30px;">
                     <select size="8" style="width: 200px; "
                             ng-model="selected_TouchPoints"
-                            ng-options="obj as obj.name for obj  in touchPointsNotInContact">
-                        <option value=""><b>Not Selected Touch Points</b></option>
+                            ng-options="obj as obj.name for obj  in touchPointsInContacts">
+                        <option value=""><b>Selected Touch Points</b></option>
 
                     </select>
                 </div>
             </div>
         </div>
+        <!-- -->
 
 
+        <!--Guest push and pop-->
 
         <div class="panel-body" onclick="" style="margin-left: 20%">
             <div style="float: left;margin-left: 30px;">
                 <select ng-select size="8" style="width: 200px; "
                         ng-model="selected_Guest"
-                        ng-options="obj as obj.firstName for obj in guestsInContact"
+                        ng-options="obj as obj.firstName for obj in guestNotInContact"
                         ng-change="select()">
-                    <option value=""><b>Selected Guest List</b></option>
+                    <option value=""><b>Not Selected Guest List</b></option>
 
                 </select>
             </div>
 
             <div style="float: left;margin-left: 30px;margin-top: 5%">
-                <input type="button" class="btn btn-primary" value="Add >>" ng-click="pushDataToRight1()"/>
+                <input type="button" class="btn btn-primary" value="Add >>" ng-click="pushGuestToLeft()"/>
                 <br/>
-                <input type="button" class="btn btn-primary" value="<< Add" ng-click="pushDataToLeft1()"
+                <input type="button" class="btn btn-primary" value="<< Remove" ng-click="pushGuestToRight()"
                        style="margin-top: 10px;"/>
             </div>
 
@@ -80,12 +83,13 @@
                 <div style="float: left;margin-left: 30px;">
                     <select size="8" style="width: 200px; "
                             ng-model="selected_Guest"
-                            ng-options="obj as obj.firstName for obj in guestNotInContact">
-                        <option value=""><b>Not Selected Guest List</b></option>
+                            ng-options="obj as obj.firstName for obj in  guestsInContact">
+                        <option value=""><b>Selected Guest List</b></option>
                     </select>
                 </div>
             </div>
         </div>
+        <!-- -->
 
         <div class="col-md-12 text-right">
             <div class="btn-group btn-group-sm">

@@ -28,7 +28,7 @@
                 <th></th>
             </tr>
 
-            <tr ng-repeat="guest in checkedin_guest_list | filter:search">
+            <tr ng-repeat="guest in checked_in_guest_list1=(checkedin_guest_list | filter:search)">
                 <td style="text-align: center">{{guest.guest.title}}</td>
                 <td style="text-align: center">{{guest.guest.firstName}}</td>
                 <td style="text-align: center">{{guest.guest.surname}}</td>
@@ -36,13 +36,14 @@
                 <td style="text-align: center">{{guest.room.roomNumber}}</td>
 
                 <td><a ng-href="#checked-in-guest/{{guest.id}}">Detail</a>
-<!--
-                <td><a ng-href="#test">test</a>
--->
-
                 </td>
             </tr>
         </table>
+
+        <div class="col-md-12 text-center" ng-show="!checked_in_guest_list1.length">
+            <h4 class="text-primary"><b>No Guests Found </b></h4>
+        </div>
+
     </div>
 
 </div>

@@ -37,8 +37,8 @@ public class Application extends WebMvcConfigurerAdapter {
         driverManagerDataSource.setUsername("root");
         driverManagerDataSource.setPassword("root");
         return driverManagerDataSource;
-    }*/
-
+    }
+*/
     public static void main(String[] args) {
         new SpringApplicationBuilder(Application.class).run(args);
     }

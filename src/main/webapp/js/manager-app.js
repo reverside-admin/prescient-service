@@ -956,7 +956,7 @@ manager_app.controller('update_guest_contact_list_controller', function ($scope,
 
 
     <!--TODO: Handle Proper add and remove from the element for touchpoints -->
-    $scope.pushDataToRight = function () {
+    $scope.pushTouchPointToRight = function () {
         console.log('selected touchpoint::' + $scope.selected_TouchPoints.name);
         if ($scope.selected_TouchPoints != null) {
 
@@ -972,7 +972,7 @@ manager_app.controller('update_guest_contact_list_controller', function ($scope,
 
     }
 
-    $scope.pushDataToLeft = function () {
+    $scope.pushTouchPointToLeft = function () {
         console.log($scope.selected_TouchPoints);
         if ($scope.selected_TouchPoints != null) {
             for (var i = 0; i < $scope.touchPointsNotInContact.length; i++) {
@@ -990,7 +990,7 @@ manager_app.controller('update_guest_contact_list_controller', function ($scope,
 
 
     <!--TODO: Handle Proper add and remove from the element for guestlist -->
-    $scope.pushDataToRight1 = function () {
+    $scope.pushGuestToRight = function () {
         // console.log('selected guest::' + $scope.selected_TouchPoints.name);
         if ($scope.selected_Guest != null) {
 
@@ -1006,7 +1006,7 @@ manager_app.controller('update_guest_contact_list_controller', function ($scope,
 
     }
 
-    $scope.pushDataToLeft1 = function () {
+    $scope.pushGuestToLeft = function () {
         //console.log($scope.selected_TouchPoints);
         if ($scope.selected_Guest != null) {
             for (var i = 0; i < $scope.guestNotInContact.length; i++) {

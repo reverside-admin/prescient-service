@@ -55,16 +55,16 @@
         <div style="float: left;margin-left: 30px;">
             <select size="8" style="width: 200px; "
                     ng-model="selected_department"
-                    ng-options="obj as obj.name for obj  in assigned_department_list">
-                <option value=""><b>Assigned Departments</b></option>
+                    ng-options="obj as obj.name for obj  in not_assigned_department_list">
+                <option value=""><b>Not Assigned Departments</b></option>
             </select>
         </div>
 
 
         <div style="float: left;margin-left: 30px;margin-top: 5%">
-            <input type="button" class="btn btn-primary" value="Remove >>" ng-click="pushDepartmentToRight()"/>
+            <input type="button" class="btn btn-primary" value="Add >>" ng-click="pushDepartmentToLeft()"/>
             <br/>
-            <input type="button" class="btn btn-primary" value="<< Add" ng-click="pushDepartmentToLeft()"
+            <input type="button" class="btn btn-primary" value="<< Remove" ng-click="pushDepartmentToRight()"
                    style="margin-top: 10px;"/>
         </div>
 
@@ -72,8 +72,8 @@
             <div style="float: left;margin-left: 30px;">
                 <select size="8" style="width: 200px;"
                         ng-model="selected_department"
-                        ng-options="obj as obj.name for obj  in not_assigned_department_list">
-                    <option value=""><b>Not Assigned Departments</b></option>
+                        ng-options="obj as obj.name for obj  in assigned_department_list">
+                    <option value=""><b>Assigned Departments</b></option>
                 </select>
             </div>
         </div>
@@ -85,16 +85,16 @@
         <div style="float: left;margin-left: 30px;">
             <select size="8" style="width: 200px; "
                     ng-model="selected_touch_point"
-                    ng-options="obj as obj.name for obj  in assigned_touch_point_list">
-                <option value=""><b>Assigned TouchPoints</b></option>
+                    ng-options="obj as obj.name for obj  in not_assigned_touch_point_list">
+                <option value=""><b>Not Assigned TouchPoints</b></option>
             </select>
         </div>
 
 
         <div style="float: left;margin-left: 30px;margin-top: 5%">
-            <input type="button" class="btn btn-primary" value="Remove >>" ng-click="pushTouchPointToRight()"/>
+            <input type="button" class="btn btn-primary" value="Add >>" ng-click="pushTouchPointToLeft()"/>
             <br/>
-            <input type="button" class="btn btn-primary" value="<< Add" ng-click="pushTouchPointToLeft()"
+            <input type="button" class="btn btn-primary" value="<< Remove" ng-click="pushTouchPointToRight()"
                    style="margin-top: 10px;"/>
         </div>
 
@@ -102,8 +102,8 @@
             <div style="float: left;margin-left: 30px;">
                 <select size="8" style="width: 200px;"
                         ng-model="selected_touch_point"
-                        ng-options="obj as obj.name for obj  in not_assigned_touch_point_list">
-                    <option value=""><b>Not Assigned TouchPoints</b></option>
+                        ng-options="obj as obj.name for obj  in assigned_touch_point_list">
+                    <option value=""><b>Assigned TouchPoints</b></option>
                 </select>
             </div>
         </div>

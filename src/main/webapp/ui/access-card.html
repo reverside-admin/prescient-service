@@ -25,13 +25,16 @@
                 <th></th>
             </tr>
 
-            <tr ng-repeat="guestcard in guest_cards | filter:search">
+            <tr ng-repeat="guestcard in guest_card_list1=( guest_cards | filter:search)">
                 <td> {{guestcard.magStripeNo}}</td>
                 <td ng-click="editable=false"><input type="text" value="{{guestcard.rfidTagNo}}" ng-model="guestcard.rfidTagNo" ng-disabled="editable"></td>
                 <td><input type="button" class="btn btn-primary" value="save" ng-click="save(guestcard.magStripeNo,guestcard.rfidTagNo)"></td>
-
             </tr>
         </table>
+
+        <div class="col-md-12 text-center" ng-show="!guest_card_list1.length">
+            <h4 class="text-primary"><b>No Cards Found </b></h4>
+        </div>
     </div>
 
 </div>

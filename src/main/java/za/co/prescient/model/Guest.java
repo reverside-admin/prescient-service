@@ -1,9 +1,11 @@
 package za.co.prescient.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "hotel_guest_profile_detail")
@@ -46,4 +48,9 @@ public class Guest {
     @ManyToOne
     @JoinColumn(name = "hotel_id")
     Hotel hotel;
+
+
+     @JsonIgnore
+     @OneToMany(cascade = CascadeType.ALL, mappedBy = "guest")
+     List<GuestPreference> guestPreferences;
 }

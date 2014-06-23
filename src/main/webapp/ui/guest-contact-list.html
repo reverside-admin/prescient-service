@@ -27,13 +27,17 @@
                 <th></th>
             </tr>
 
-            <tr ng-repeat="contact in contact_list | filter:search">
+            <tr ng-repeat="contact in contact_list1=(contact_list | filter:search)">
                 <td>{{contact.name}}</td>
                 <td>
                     <a ng-href="#manager/guest/contact/view/{{contact.id}}">Detail</a>
                 </td>
             </tr>
         </table>
+
+        <div class="col-md-12 text-center" ng-show="!contact_list1.length">
+            <h4 class="text-primary"><b>No Contacts Found </b></h4>
+        </div>
     </div>
 
 

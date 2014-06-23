@@ -14,13 +14,17 @@
                 <th></th>
             </tr>
 
-            <tr ng-repeat="touchpoint in assigned_touch_point_list | filter:search">
+            <tr ng-repeat="touchpoint in assigned_touch_point_list1=(assigned_touch_point_list | filter:search)">
                 <td>{{touchpoint.name}}</td>
                 <td>
                     <a ng-href="#manager/touchpoint/{{touchpoint.id}}/setups">view</a>
                 </td>
             </tr>
         </table>
+
+        <div class="col-md-12 text-center" ng-show="!assigned_touch_point_list1.length">
+            <h4 class="text-primary"><b>No Touch Point Found </b></h4>
+        </div>
     </div>
 
 
