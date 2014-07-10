@@ -1,0 +1,131 @@
+<form name="app_form">
+
+    <div class="col-md-12">
+
+        <div class="col-md-12 text-right">
+            <div class="btn-group btn-group-sm">
+                <a ng-href="#/maintain/guest/guestlist" class="btn btn-primary">Back</a>
+            </div>
+        </div>
+
+        <div class="col-md-12 text-left">
+            <h4 class="text-primary"><b>Guest Registration</b></h4>
+        </div>
+
+
+        <div style="width: 50%; margin-left: auto;margin-right: auto;">
+
+            <table class=" table table-responsive">
+
+                <tr>
+                    <td>Title</td>
+                    <td><input type="text"
+                               name="title"
+                               ng-model="guest.title"
+                               placeholder="Title"
+                               style="width: 100%"
+                               required></td>
+                </tr>
+
+                <tr>
+                    <td>Surname</td>
+                    <td><input type="text"
+                               name="surname"
+                               ng-model="guest.surname"
+                               placeholder="Surname"
+                               style="width: 100%"
+                               required></td>
+                </tr>
+
+                <tr>
+                    <td>First Name</td>
+                    <td><input type="text"
+                               name="firstname"
+                               ng-model="guest.firstName"
+                               placeholder="First Name"
+                               style="width: 100%"
+                            required></td>
+                </tr>
+
+                <tr>
+                    <td>Preferred Name</td>
+                    <td><input type="text"
+                               name="preferredname"
+                               ng-model="guest.preferredName"
+                               placeholder="Preferred Name"
+                               style="width: 100%"
+                               required></td>
+                </tr>
+
+                <tr>
+                    <td>Identity No</td>
+                    <td><input type="text"
+                               name="identityno"
+                               ng-model="guest.idNumber"
+                               placeholder="Identity No"
+                               style="width: 100%"
+                               required
+                               unique-idnumber></td>
+                </tr>
+
+                <tr>
+                    <td>Passport No</td>
+                    <td><input type="text"
+                               name="passportno"
+                               ng-model="guest.passportNumber"
+                               placeholder="Passport No"
+                               style="width: 100%"
+                               required
+                               unique-passport></td>
+                </tr>
+
+                <tr>
+                    <td>Gender</td>
+                    <td>
+                        <select ng-model="guest.gender" required
+                                ng-options="obj for obj in gender">
+                            <option value="">Select Gender</option>
+                        </select>
+                    </td>
+                </tr>
+
+                 <tr>
+                    <td>DOB</td>
+
+                     <td>
+                         <select ng-model="day" required
+                                 ng-options="obj for obj in days">
+                             <option value="">day</option>
+                         </select>
+                          <select ng-model="month" required
+                                 ng-options="obj.id as obj.name  for obj in months">
+                             <option value="">month</option>
+                         </select>
+                     </td>
+                </tr>
+
+                <tr>
+                    <td>Nationality</td>
+                    <td><input type="text"
+                               name="nationality"
+                               ng-model="guest.nationalityId"
+                               placeholder="Nationality"
+                               style="width: 100%"
+                               required></td>
+                </tr>
+
+            </table>
+
+        </div>
+
+
+        <div class="col-md-12 text-right">
+            <div class="btn-group btn-group-sm">
+                <input type="submit" value="Create" ng-click="create(app_form)" class="btn btn-primary"/>
+            </div>
+        </div>
+
+    </div>
+
+</form>
+

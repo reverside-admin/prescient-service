@@ -1,0 +1,68 @@
+<div class="col-md-12">
+
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <a ng-href="#maintain/guest/{{guest_id}}/roomcarddetails" class="btn btn-primary">Back</a>
+        </div>
+    </div>
+
+    <div class="col-md-12 text-left">
+        <h4 class="text-primary"></h4>
+    </div>
+
+    <div class="col-md-12 text-left">
+        <h4 class="text-primary"><b>Room key Cards</b></h4>
+    </div>
+
+    <div style="width: 50%; margin-left: auto;margin-right: auto;">
+        <table class=" table table-responsive table-bordered">
+
+
+            <tr ng-show="flag">
+                <td>Room Key Card</td>
+                <td>
+                    <select ng-model="current_card"
+                            ng-options="obj.id as obj.magStripeNo for obj in current_key_card" required>
+                     </select>
+                </td>
+            </tr>
+            <tr ng-show="!flag">
+                <td>Room Key Cards</td>
+                <td>
+                    <select ng-model="card_id" ng-change="onSelectMSN()"
+                            ng-options="obj.id as obj.magStripeNo for obj in guest_room_key_cards" required>
+                        <option value="">select</option>
+                    </select>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Status</td>
+                <td>
+                    <select ng-model="room_card_status" disable="true"
+                            ng-options="obj.id as obj.name  for obj in guest_key_card_status">
+                        <option value="">STATUS</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+
+    </div>
+
+    <div class="col-md-12 text-center">
+        <b style="color: RED;">{{message}} </b>
+    </div>
+
+
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <button type="submit" ng-show="!flag"  class="btn btn-primary" ng-click="issueCard()">IssueCard</button>
+            <button type="submit" ng-show="flag"   class="btn btn-primary" ng-click="returnCard()">ReturnCard</button>
+            <!--<button type="submit" ng-show="flag"   class="btn btn-primary" ng-click="delete()">Delete</button>-->
+
+            <button type="submit" class="btn btn-primary" ng-click="cancel()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+

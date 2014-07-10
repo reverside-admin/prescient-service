@@ -1,0 +1,80 @@
+<div class="col-md-12">
+
+
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <a ng-href="#maintain/guest/{{guest_data.id}}/preferences/add"  class="btn btn-primary">Preference</a>
+            <a ng-href="#maintain/guest/{{guest_data.id}}/details"  class="btn btn-primary">Back</a>
+        </div>
+    </div>
+
+    <div class="col-md-12 text-left">
+        <h4 class="text-primary"><b>Hotel Stay Details</b></h4>
+    </div>
+
+
+    <div style="width: 50%; margin-left: auto;margin-right: auto;">
+        <table class="table table-hover table-condensed table-bordered  table-responsive">
+            <tr>
+                <td style="text-align: right"><b>Title</b></td>
+                <td style="width: 50%">{{guest_data.title}}</td>
+            </tr>
+            <tr>
+                <td style="text-align: right"><b>First Name</b></td>
+                <td>{{guest_data.firstName}}</td>
+            </tr>
+            <tr>
+                <td style="text-align: right"><b>Surname</b></td>
+                <td>{{guest_data.surname}}</td>
+            </tr>
+            <tr>
+                <td style="text-align: right"><b>Preferred Name</b></td>
+                <td>{{guest_data.preferredName}}</td>
+            </tr>
+
+            <tr>
+                <td style="text-align: right"><b>Passport No</b></td>
+                <td>{{guest_data.passportNumber}}</td>
+            </tr>
+
+            <tr>
+                <td style="text-align: right"><b>Identity No</b></td>
+                <td>{{guest_data.idNumber}}</td>
+            </tr>
+            <tr>
+                <td style="text-align: right"><b>Gender</b></td>
+                <td>{{guest_data.gender}}</td>
+            </tr>
+
+            <tr>
+                <td style="text-align: right"><b>DOB</b></td>
+                <td>{{guest_data.dob | date:' MMMM-dd'}}</td>
+            </tr>
+
+            <tr>
+                <td style="text-align: right"><b>Nationality</b></td>
+                <td>{{guest_data.nationalityId}}</td>
+            </tr>
+        </table>
+
+
+        <div style="width: 50%; margin-left: auto;margin-right: auto;">
+            <table class="table table-hover table-condensed table-bordered  table-responsive">
+                <tr>
+                    <td><b>Preference Type</b></td>
+                    <td><b>Description</b></td>
+                    <td><b>Updated Time</b></td>
+                </tr>
+                <tr ng-repeat="preference in guest_data.guestPreferences">
+                    <td>{{preference.guestPreferenceType.name}}</td>
+                    <td>{{preference.description}}</td>
+                    <td>{{preference.lastUpdateDate | date:'yyyy-MM-dd'}}</td>
+
+                </tr>
+                </table>
+
+
+    </div>
+
+</div>
+</div>

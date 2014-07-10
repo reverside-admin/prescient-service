@@ -16,6 +16,14 @@
     <script src="/lib/bootstrap.min.js"></script>
     <script src="/js/staff-app.js"></script>
 
+    <script type="text/javascript" src="/lib/ngDialog.js"></script>
+    <script type="text/javascript" src="/lib/ngDialog.min.js"></script>
+
+    <link rel="stylesheet" href="/css/ngDialog.css">
+
+    <link rel="stylesheet" href="/css/ngDialog-theme-default.css">
+
+    <link rel="stylesheet" href="/css/ngDialog-theme-plain.css">
 </head>
 
 <body ng-controller='staff_app_controller' ng-init="init()" onload="applyContainerHeight">
@@ -44,6 +52,10 @@
                             </li>
                             <li>
                                 <a href="#checked-in-guest/list">Maintain Guest Photograph</a>
+                            </li>
+
+                            <li>
+                                <a href="#maintain/guest/guestlist">Maintain Guest</a>
                             </li>
 
                         </ul>

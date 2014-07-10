@@ -1,0 +1,54 @@
+<div class="col-md-12">
+
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <a ng-href="#maintain/guest/{{guest_id}}/guestpreference" class="btn btn-primary">Back</a>
+        </div>
+    </div>
+
+    <div class="col-md-12 text-left">
+        <h4 class="text-primary"></h4>
+    </div>
+
+    <div class="col-md-12 text-left">
+        <h4 class="text-primary"><b>Preferences</b></h4>
+    </div>
+
+    <div style="width: 50%; margin-left: auto;margin-right: auto;">
+        <table class=" table table-responsive table-bordered">
+            <tr>
+                <td>Preference Type</td>
+                <td>
+                    <select ng-model="guest_preference_type" ng-change="onSelectType()"
+                            ng-options="obj as obj.name for obj in guest_preference_types" required>
+                        <option value="">select</option>
+                    </select>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Preference Description</td>
+                <td><input type="text" class="form-control" id="inputPassword" placeholder="preference"
+                           ng-model="guest_preference_description" ng-change="reset()"></td>
+        </table>
+
+    </div>
+
+    <div class="col-md-12 text-center">
+        <b style="color: RED;">{{message}} </b>
+    </div>
+
+
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <button type="submit" ng-show="!flag"  class="btn btn-primary" ng-click="add()">Add</button>
+            <button type="submit" ng-show="flag"   class="btn btn-primary" ng-click="update()">Update</button>
+            <button type="submit" ng-show="flag"   class="btn btn-primary" ng-click="delete()">Delete</button>
+
+
+            <button type="submit" class="btn btn-primary" ng-click="cancel()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+

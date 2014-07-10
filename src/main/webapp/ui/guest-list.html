@@ -1,0 +1,53 @@
+<div class="col-md-12">
+
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <a ng-href="#maintain/guest/createguest" class="btn btn-primary">Create</a>
+            <a ng-href="#" class="btn btn-primary">Back</a>
+        </div>
+    </div>
+
+    <div class="col-md-12 text-left">
+        <h4 class="text-primary"><b>Guest List </b></h4>
+    </div>
+
+
+    <div class="col-md-12 text-right">
+        <h5><input type="text" ng-model="search" placeholder="Search"/></h5>
+    </div>
+
+
+    <div class="col-md-12">
+        <table class="table table-hover table-condensed table-striped table-responsive">
+
+            <tr>
+                <th>Title</th>
+                <th>First Name</th>
+                <th>Surname</th>
+                <th>Preferred Name</th>
+                <th>Passport No</th>
+                <th>Identity No</th>
+                <th></th>
+            </tr>
+
+            <tr ng-repeat="guest in new_guests=(guests | filter:search)">
+                <td>{{guest.title}}</td>
+                <td>{{guest.firstName}}</td>
+                <td>{{guest.surname}}</td>
+                <td>{{guest.preferredName}}</td>
+                <td>{{guest.passportNumber}}</td>
+                <td>{{guest.idNumber}}</td>
+                <td><a ng-href="#maintain/guest/{{guest.id}}/details">view</a></td>
+            </tr>
+
+           </table>
+
+        <div class="col-md-12 text-center" ng-show="!new_guests.length">
+            <h4 class="text-primary"><b>No Guest Record Found </b></h4>
+        </div>
+
+    </div>
+</div>
+
+
+

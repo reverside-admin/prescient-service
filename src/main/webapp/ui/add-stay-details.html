@@ -1,0 +1,81 @@
+<form name="app_form">
+
+    <div class="col-md-12">
+
+        <div class="col-md-12 text-right">
+            <div class="btn-group btn-group-sm">
+             </div>
+        </div>
+
+        <div class="col-md-12 text-right">
+            <div class="btn-group btn-group-sm">
+                <a ng-href="#maintain/guest/{{current_guest_id}}/gueststaydetails" class="btn btn-primary">Back</a>
+            </div>
+        </div>
+
+        <div class="col-md-12 text-left">
+            <h4 class="text-primary"><b>Guest Registration</b></h4>
+        </div>
+
+
+
+
+        <div style="width: 50%; margin-left: auto;margin-right: auto;">
+
+            <table class=" table table-responsive">
+
+                <tr>
+                    <td>Arrival Date Time</td>
+                    <td><input type="date"
+                               name="arrivalTime"
+                               ng-model="arrival_time"
+                               placeholder="Arrival Date Time"
+                               style="width: 100%"
+                            ></td>
+                 </tr>
+
+                <tr>
+                    <td>Departure Date Time</td>
+                    <td><input type="date"
+                               name="departureTime"
+                               ng-model="departure_time"
+                               placeholder="Departure Date Time"
+                               style="width: 100%"
+                            ></td>
+                </tr>
+
+                <tr>
+                    <td>Room Numbers</td>
+                    <td>
+                    <select ng-model="selected_room"
+                            ng-options="obj.roomNumber as obj.roomNumber for obj in hotel_rooms">
+                        <option value="">select</option>
+                    </select>
+                    </td>
+                </tr>
+
+                <tr ng-if="flag">
+                    <td>Current Stay Indicator</td>
+
+                    <td>
+                        <select ng-model="current_stay_status"
+                                ng-options="obj.id as obj.name for obj in ind">
+                        </select>
+                    </td>
+                </tr>
+
+            </table>
+        </div>
+
+
+        <div class="col-md-12 text-right">
+            <div class="btn-group btn-group-sm">
+                <input type="submit" value="Add"    ng-if="!flag"   ng-click="add()" class="btn btn-primary"/>
+                <input type="submit" value="update"  ng-if="flag"  ng-click="update()" class="btn btn-primary"/>
+            </div>
+        </div>
+
+    </div>
+
+</form>
+

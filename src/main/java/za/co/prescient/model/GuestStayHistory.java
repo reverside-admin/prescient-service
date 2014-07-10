@@ -36,6 +36,9 @@ public class GuestStayHistory {
     @Column(name = "departure_time")
     Date departureTime;
 
+    @Column(name="no_of_previous_stays")
+    Long noOfPreviousStays;
+
     @Column(name = "current_stay_ind")
     Boolean currentStayIndicator;
 

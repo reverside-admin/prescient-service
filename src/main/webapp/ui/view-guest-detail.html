@@ -1,0 +1,65 @@
+<div class="col-md-12">
+
+
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <a ng-href="#maintain/guest/{{guest_detail.id}}/update"  class="btn btn-primary">Edit</a>
+            <a ng-href="#maintain/guest/{{guest_detail.id}}/gueststaydetails"  class="btn btn-primary">HotelStayDetails</a>
+            <a ng-href="#maintain/guest/{{guest_detail.id}}/guestpreference"  class="btn btn-primary">GuestPreference</a>
+            <a ng-href="#maintain/guest/{{guest_detail.id}}/roomcarddetails"  class="btn btn-primary">GuestRoomCard</a>
+            <a ng-href="#maintain/guest/guestlist"  class="btn btn-primary">Back</a>
+        </div>
+    </div>
+
+    <div class="col-md-12 text-left">
+        <h4 class="text-primary"><b>Guest Details</b></h4>
+    </div>
+
+
+    <div style="width: 50%; margin-left: auto;margin-right: auto;">
+        <table class="table table-hover table-condensed table-bordered  table-responsive">
+            <tr>
+                <td style="text-align: right"><b>Title</b></td>
+                <td style="width: 50%">{{guest_detail.title}}</td>
+            </tr>
+            <tr>
+                <td style="text-align: right"><b>First Name</b></td>
+                <td>{{guest_detail.firstName}}</td>
+            </tr>
+            <tr>
+                <td style="text-align: right"><b>Surname</b></td>
+                <td>{{guest_detail.surname}}</td>
+            </tr>
+            <tr>
+                <td style="text-align: right"><b>Preferred Name</b></td>
+                <td>{{guest_detail.preferredName}}</td>
+            </tr>
+
+            <tr>
+                <td style="text-align: right"><b>Passport No</b></td>
+                <td>{{guest_detail.passportNumber}}</td>
+            </tr>
+
+            <tr>
+                <td style="text-align: right"><b>Identity No</b></td>
+                <td>{{guest_detail.idNumber}}</td>
+            </tr>
+            <tr>
+                <td style="text-align: right"><b>Gender</b></td>
+                <td>{{guest_detail.gender}}</td>
+            </tr>
+
+            <tr>
+                <td style="text-align: right"><b>DOB</b></td>
+                <td>{{guest_detail.dob | date:'MMM-dd'}}</td>
+            </tr>
+
+            <tr>
+                <td style="text-align: right"><b>Nationality</b></td>
+                <td>{{guest_detail.nationalityId}}</td>
+            </tr>
+
+        </table>
+    </div>
+
+</div>

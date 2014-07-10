@@ -19,6 +19,10 @@ public class GuestCard {
     @JoinColumn(name = "guest_id")
     Guest guest;
 
+    @Column(name = "guest_card_returned_date")
+    Date returnDate;
+
+
     @ManyToOne
     @JoinColumn(name = "guest_card_id")
     Card card;

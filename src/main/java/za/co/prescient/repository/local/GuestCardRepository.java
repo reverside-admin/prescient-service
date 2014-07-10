@@ -20,5 +20,13 @@ public interface GuestCardRepository extends JpaRepository<GuestCard, Long> {
     @Query("select gca from GuestCard gca where gca.guest.id = ?1 and gca.status = true")
     public GuestCard findGuestCardByGuestId(Long guestId);
 
+    @Query("select gca from GuestCard gca where gca.card.id=?1 and gca.status=true")
+    public GuestCard findGuestCardByCardId(Long cardId);
+
+
+    @Query("select gca from GuestCard gca where gca.guest.id=?1")
+    public GuestCard findGuest(Long guestId);
+
+
 
 }

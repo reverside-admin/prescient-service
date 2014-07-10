@@ -7,17 +7,11 @@ import org.apache.commons.codec.binary.Hex;
 import javax.persistence.*;
 import java.util.Date;
 
-
-@Getter
-@Setter
 public class ItcsTagRead {
 
-    @Id
     @Getter
     @Setter
     private Long id;
-
-//    private String guestCard;
 
     @Getter
     @Setter

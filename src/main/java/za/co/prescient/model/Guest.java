@@ -2,6 +2,8 @@ package za.co.prescient.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -9,7 +11,8 @@ import java.util.List;
 
 @Entity
 @Table(name = "hotel_guest_profile_detail")
-@Data
+@Getter
+@Setter
 // TODO : Make it unique (add hotel id to constraint if necessary) (confirm from business)
 public class Guest {
 
@@ -45,12 +48,14 @@ public class Guest {
     @Column(name = "guest_photo_image_path")
     String guestImagePath;
 
+    @Column(name = "guest_id_number")
+    String idNumber;
+
     @ManyToOne
     @JoinColumn(name = "hotel_id")
     Hotel hotel;
 
 
-     @JsonIgnore
-     @OneToMany(cascade = CascadeType.ALL, mappedBy = "guest")
+      @OneToMany(cascade=CascadeType.ALL, mappedBy = "guest")
      List<GuestPreference> guestPreferences;
 }

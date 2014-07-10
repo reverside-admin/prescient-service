@@ -1,0 +1,91 @@
+<div class="col-md-12">
+
+
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <a ng-href="#maintain/guest/{{guest_stay_detail.guest.id}}/addstaydetails"  class="btn btn-primary">GuestHotelStayDetails</a>
+            <a ng-href="#maintain/guest/{{guest_stay_detail.guest.id}}/details"  class="btn btn-primary">Back</a>
+        </div>
+    </div>
+
+    <div class="col-md-12 text-left">
+        <h4 class="text-primary"><b>Hotel Stay Details</b></h4>
+    </div>
+
+
+    <div style="width: 50%; margin-left: auto;margin-right: auto;">
+        <table class="table table-hover table-condensed table-bordered  table-responsive">
+            <tr>
+                <td style="text-align: right"><b>Title</b></td>
+                <td style="width: 50%">{{guest_stay_detail.guest.title}}</td>
+            </tr>
+            <tr>
+                <td style="text-align: right"><b>First Name</b></td>
+                <td>{{guest_stay_detail.guest.firstName}}</td>
+            </tr>
+            <tr>
+                <td style="text-align: right"><b>Surname</b></td>
+                <td>{{guest_stay_detail.guest.surname}}</td>
+            </tr>
+            <tr>
+                <td style="text-align: right"><b>Preferred Name</b></td>
+                <td>{{guest_stay_detail.guest.preferredName}}</td>
+            </tr>
+
+            <tr>
+                <td style="text-align: right"><b>Passport No</b></td>
+                <td>{{guest_stay_detail.guest.passportNumber}}</td>
+            </tr>
+
+            <tr>
+                <td style="text-align: right"><b>Identity No</b></td>
+                <td>{{guest_stay_detail.guest.idNumber}}</td>
+            </tr>
+            <tr>
+                <td style="text-align: right"><b>Gender</b></td>
+                <td>{{guest_stay_detail.guest.gender}}</td>
+            </tr>
+
+            <tr>
+                <td style="text-align: right"><b>DOB</b></td>
+                <td>{{guest_stay_detail.guest.dob | date:' MMMM-dd'}}</td>
+            </tr>
+
+
+            <tr>
+                <td style="text-align: right"><b>Nationality</b></td>
+                <td>{{guest_stay_detail.guest.nationalityId}}</td>
+            </tr>
+
+        </table>
+
+
+        <div style="width: 50%; margin-left: auto;margin-right: auto;">
+            <table class="table table-hover table-condensed table-bordered  table-responsive">
+
+
+            <tr>
+                <td style="text-align: right"><b>Arrival Date Time</b></td>
+                <td>{{guest_stay_detail.arrivalTime | date:'medium'}}</td>
+            </tr>
+
+            <tr>
+                <td style="text-align: right"><b>Departure Date Time</b></td>
+                <td>{{guest_stay_detail.departureTime| date:'medium'}}</td>
+            </tr>
+
+            <tr>
+                <td style="text-align: right"><b>Room Numbers</b></td>
+                <td>{{guest_stay_detail.room.roomNumber}}</td>
+            </tr>
+
+            <tr>
+                <td style="text-align: right"><b>Current Stay Indicator </b></td>
+                <td>{{guest_stay_detail.currentStayIndicator}}</td>
+            </tr>
+
+        </table>
+            </div>
+    </div>
+
+</div>

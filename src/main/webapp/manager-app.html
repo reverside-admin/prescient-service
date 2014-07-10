@@ -16,12 +16,20 @@
     <script src="/lib/bootstrap.min.js"></script>
     <script src="/js/manager-app.js"></script>
 
+    <script type="text/javascript" src="/lib/ngDialog.js"></script>
+    <script type="text/javascript" src="/lib/ngDialog.min.js"></script>
+
+    <link rel="stylesheet" href="/css/ngDialog.css">
+
+    <link rel="stylesheet" href="/css/ngDialog-theme-default.css">
+
+    <link rel="stylesheet" href="/css/ngDialog-theme-plain.css">
 </head>
 
-<body ng-controller='manager_app_controller' ng-init="init()" onload="applyContainerHeight">
+<body ng-controller='manager_app_controller'>
 
 
-<div class="container">
+<div class="container-fluid" style="height: 100%;">
     <div class="row" >
         <div class="col-md-12">
             <div class="panel panel-primary">
@@ -33,7 +41,7 @@
                         <a class="btn btn-primary btn-xs" ng-click="logout()">Logout</a>
                     </div>
                 </div>
-                <div class="panel-body">
+                <div class="panel-body" style="height:800px;">
                     <div class="col-md-12">
                         <ul class="nav nav-pills ">
                             <li>
@@ -54,10 +62,15 @@
                                 <a href="#checked-in-guest/list">Maintain Guest Photograph</a>
                             </li>
 
+
+                            <li>
+                                <a href="#maintain/guest/guestlist">Maintain Guest</a>
+                            </li>
+
                         </ul>
                     </div>
                     <!-- NG ViEW Start -->
-                    <div class="row"  ng-view>
+                    <div class="row"   ng-view>
 
                     </div>
                     <!-- NG ViEW End -->

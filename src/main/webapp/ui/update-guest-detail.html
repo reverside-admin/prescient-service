@@ -1,0 +1,98 @@
+<form name="guest_update_form">
+
+<div class="col-md-12">
+
+
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <a ng-href="#maintain/guest/{{guest_detail.id}}/details" class="btn btn-primary">Back</a>
+        </div>
+    </div>
+
+    <div class="col-md-12 text-left">
+        <h4 class="text-primary"><b>Update Guest Details</b></h4>
+    </div>
+
+
+    <div style="width: 50%; margin-left: auto;margin-right: auto;">
+        <table class="table table-hover table-condensed table-bordered  table-responsive">
+            <tr>
+                <td style="text-align: left"><b>Title</b></td>
+                <td style="width: 50%"><input type="text" style="width: 100%" value="{{guest_detail.title}}"
+                                              ng-model="guest_detail.title" required>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left"><b>First Name</b></td>
+                <td><input type="text" style="width: 100%" value="{{guest_detail.firstName}}"
+                           ng-model="guest_detail.firstName" required></td>
+            </tr>
+            <tr>
+                <td style="text-align: left"><b>Surname</b></td>
+                <td><input type="text" style="width: 100%" value="{{guest_detail.surname}}"
+                           ng-model="guest_detail.surname" required></td>
+            </tr>
+            <tr>
+                <td style="text-align: left"><b>Preferred Name</b></td>
+                <td><input type="text" style="width: 100%" value="{{guest_detail.preferredName}}"
+                           ng-model="guest_detail.preferredName" required>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="text-align: left"><b>Passport No</b></td>
+                <td><input type="text" style="width: 100%" value="{{guest_detail.passportNumber}}" ng-change="checkPassport()"
+                           ng-model="guest_detail.passportNumber" required>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="text-align: left"><b>Identity No</b></td>
+                <td><input type="text" style="width: 100%" value="{{guest_detail.idNumber}}" ng-change="checkUniqueId()"
+                           ng-model="guest_detail.idNumber" required></td>
+            </tr>
+            <tr>
+                <td style="text-align: left"><b>Gender</b></td>
+                <td>
+
+                    <select ng-model="guest_detail.gender" style="width: 100%"
+                            ng-options="obj for obj in genders" required>
+                        <option value="">Select Gender</option>
+                    </select>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="text-align: left"><b>DOB</b></td>
+                <td>
+                <select ng-model="guest_birthday_day" style="width:40%"
+                        ng-options="obj for obj in days" required>
+                    <option value="">day</option>
+                </select>
+
+                <select ng-model="guest_birthday_month" style="width:40%"
+                        ng-options="obj.id as obj.name  for obj in months" required>
+                    <option value="">month</option>
+                </select>
+                </td>
+
+            </tr>
+
+            <tr>
+                <td style="text-align: left"><b>Nationality</b></td>
+                <td><input type="text" style="width: 100%" value="{{guest_detail.nationalityId}}"
+                           ng-model="guest_detail.nationalityId" required></td>
+            </tr>
+
+        </table>
+    </div>
+
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <a ng-click="update(guest_update_form)" class="btn btn-primary">Update</a>
+            <a ng-click="cancel()" class="btn btn-primary" style="border-left: 10px">Cancel</a>
+        </div>
+
+    </div>
+</div>
+    </form>

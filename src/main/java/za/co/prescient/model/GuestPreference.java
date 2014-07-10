@@ -1,5 +1,6 @@
 package za.co.prescient.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,15 +11,18 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Data
+@Getter
+@Setter
 public class GuestPreference {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     Long Id;
 
+
+    @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "guest_id")
+    @JoinColumn(name="guest_id")
     Guest guest;
 
     @Column(name = "guest_preference_description")
@@ -30,6 +34,4 @@ public class GuestPreference {
 
     @Column(name = "last_update_date")
     Date lastUpdateDate;
-
-
 }
