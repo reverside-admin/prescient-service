@@ -19,20 +19,32 @@
             <tr>
                 <td>Preference Type</td>
                 <td>
-                    <select ng-model="guest_preference_type" ng-change="onSelectType()"
+                    <select ng-model="guest_preference_type" ng-change="onSelectPreferenceType()"
                             ng-options="obj as obj.name for obj in guest_preference_types" required>
                         <option value="">select</option>
                     </select>
                 </td>
             </tr>
 
-            <tr>
+            <tr ng-show="!flag">
                 <td>Preference Description</td>
                 <td><input type="text" class="form-control" id="inputPassword" placeholder="preference"
-                           ng-model="guest_preference_description" ng-change="reset()"></td>
+                           ng-model="guest_preference_description" ng-focus="message=''"></td>
+            </tr>
+
+            <tr>
+                <td>{{guest_preference_type.name}} Preferences</td>
+                <td>
+                    <select ng-model="selected_preference" ng-change="onSelectPreference()" ng-focus="message=''"
+                            ng-options="obj as obj.description for obj in all_preferences_of_given_type" required>
+                        <option value="">select</option>
+                    </select>
+                </td>
+            </tr>
         </table>
 
     </div>
+
 
     <div class="col-md-12 text-center">
         <b style="color: RED;">{{message}} </b>
@@ -41,9 +53,9 @@
 
     <div class="col-md-12 text-right">
         <div class="btn-group btn-group-sm">
-            <button type="submit" ng-show="!flag"  class="btn btn-primary" ng-click="add()">Add</button>
-            <button type="submit" ng-show="flag"   class="btn btn-primary" ng-click="update()">Update</button>
-            <button type="submit" ng-show="flag"   class="btn btn-primary" ng-click="delete()">Delete</button>
+            <button type="submit"  ng-show="!flag" class="btn btn-primary" ng-click="addPreference()">Add</button>
+            <button type="submit" ng-show="flag"   class="btn btn-primary" ng-click="updatePreference()">Update</button>
+            <button type="submit" ng-show="flag"   class="btn btn-primary" ng-click="deletePreference()">Delete</button>
 
 
             <button type="submit" class="btn btn-primary" ng-click="cancel()">Cancel</button>

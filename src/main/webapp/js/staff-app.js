@@ -3,6 +3,19 @@
  */
 var staff_app = angular.module('staff_app', ['ngRoute', 'ngCookies', 'ngDialog']);
 
+staff_app.service('sharedProperties', function () {
+    var guest_property;
+
+    return {
+        getProperty: function () {
+            return guest_property;
+        },
+        setProperty: function (value) {
+            guest_property = value;
+        }
+    };
+});
+
 
 staff_app.config(['$routeProvider',
     function ($routeProvider) {
@@ -155,7 +168,7 @@ staff_app.controller('guest_details_controller', function ($scope, $http, $route
 
 
 <!--Create A Guest-->
-staff_app.controller('create_guest_controller', function ($scope, $http, $routeParams, $cookieStore, $location, ngDialog) {
+staff_app.controller('create_guest_controller', function ($scope, $http, $routeParams, $cookieStore, $location, ngDialog,sharedProperties) {
 
     $scope.guest = {};
     $scope.dob;
@@ -243,9 +256,18 @@ staff_app.controller('create_guest_controller', function ($scope, $http, $routeP
         ngDialog.open({
             template: '<body style="text-align:center;color: RED;"><h4>' +
                 'Duplicate Passport Number is Found !!</h4>' +
-
-                '</body>', plain: true,
-            className: 'ngdialog-theme-default'
+                '<a class="btn btn-primary" ng-click="getValue()" ng-show="flag">Detail</a>' +
+                '<div style="width: 100%; margin-left: auto;margin-right: auto;" ng-show="guest_profile_data"> <table class=" table table-responsive">'+
+                '<tr><td>Title</td><td><input type="text" name="title" ng-model="guest_profile_data.title"></td></tr>'+
+                '<tr><td>First Name</td><td><input type="text" name="title" ng-model="guest_profile_data.firstName"></td></tr>'+
+                '<tr><td>Sur Name</td><td><input type="text" name="title" ng-model="guest_profile_data.surname"></td></tr>'+
+                '<tr><td>Passport Number</td><td><input type="text" name="title" ng-model="guest_profile_data.passportNumber"></td></tr>'+
+                '<tr><td>Id</td><td><input type="text" name="title" ng-model="guest_profile_data.idNumber"></td></tr>'+
+                '</table></div>'+
+                '</body>',
+            plain:true,
+            className:'ngdialog-theme-default',
+            controller:'passport_popup_controller'
         });
     }
 
@@ -254,15 +276,25 @@ staff_app.controller('create_guest_controller', function ($scope, $http, $routeP
         console.log('open popup for this window');
         ngDialog.open({
             template: '<body style="text-align:center;color: RED;"><h4>' +
-                'Duplicate Id Number Found !!</h4>' +
-                '</body>', plain: true,
-            className: 'ngdialog-theme-default'
+                'Duplicate Id Number is Found !!</h4>' +
+                '<a class="btn btn-primary" ng-click="getValue()" ng-show="flag">Detail</a>' +
+                '<div style="width: 100%; margin-left: auto;margin-right: auto;" ng-show="guest_profile_data"> <table class=" table table-responsive">'+
+                '<tr><td>Title</td><td><input type="text" name="title" ng-model="guest_profile_data.title"></td></tr>'+
+                '<tr><td>First Name</td><td><input type="text" name="title" ng-model="guest_profile_data.firstName"></td></tr>'+
+                '<tr><td>Sur Name</td><td><input type="text" name="title" ng-model="guest_profile_data.surname"></td></tr>'+
+                '<tr><td>Passport Number</td><td><input type="text" name="title" ng-model="guest_profile_data.passportNumber"></td></tr>'+
+                '<tr><td>Id</td><td><input type="text" name="title" ng-model="guest_profile_data.idNumber"></td></tr>'+
+                '</table></div>'+
+                '</body>',
+            plain:true,
+            className:'ngdialog-theme-default',
+            controller:'id_popup_controller'
         });
     }
 
 
 })
-    .directive('uniquePassport', function ($http, $cookieStore) {
+    .directive('uniquePassport', function ($http, $cookieStore,sharedProperties) {
         return {
             restrict: 'A',
             require: 'ngModel',
@@ -290,6 +322,10 @@ staff_app.controller('create_guest_controller', function ($scope, $http, $routeP
                                     console.log('Data returned from server' + data.firstName);
                                     scope.passport_validator_flag = false;
                                     //scope.guest_detail=data;
+
+                                   //store the data in shared property
+                                    sharedProperties.setProperty(data);
+
                                     scope.open_passport_popup(data);
                                 }
                             })
@@ -303,7 +339,7 @@ staff_app.controller('create_guest_controller', function ($scope, $http, $routeP
         }
     })
 
-    .directive('uniqueIdnumber', function ($http, $cookieStore) {
+    .directive('uniqueIdnumber', function ($http, $cookieStore,sharedProperties) {
         return {
             restrict: 'A',
             require: 'ngModel',
@@ -330,6 +366,9 @@ staff_app.controller('create_guest_controller', function ($scope, $http, $routeP
                                 else {
                                     console.log('Data returned from server' + data.firstName);
                                     scope.id_validator_flag = false;
+                                   //store the data in shared property
+                                    sharedProperties.setProperty(data);
+
                                     scope.open_id_popup();
                                 }
                             })
@@ -342,6 +381,31 @@ staff_app.controller('create_guest_controller', function ($scope, $http, $routeP
             }
         }
     });
+
+
+staff_app.controller('passport_popup_controller', function ($scope, $http, $routeParams, $cookieStore, sharedProperties) {
+
+    $scope.guest_profile_data;
+    $scope.flag=true;
+    $scope.getValue = function () {
+        $scope.guest_profile_data = sharedProperties.getProperty();
+        $scope.flag=false;
+    }
+
+});
+
+
+staff_app.controller('id_popup_controller', function ($scope, $http, $routeParams, $cookieStore, sharedProperties) {
+
+    $scope.guest_profile_data;
+    $scope.flag=true;
+    $scope.getValue = function () {
+        $scope.guest_profile_data = sharedProperties.getProperty();
+        $scope.flag=false;
+    }
+
+});
+
 
 
 staff_app.controller('update_details_controller', function ($scope, $cookieStore, $routeParams, $http, $location, ngDialog) {

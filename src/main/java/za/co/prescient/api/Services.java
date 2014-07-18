@@ -356,11 +356,11 @@ public class Services {
     @ResponseStatus(HttpStatus.CREATED)
     public void create(@RequestBody Guest guest) {
         LOGGER.info("request received to create guest : " + guest);
-        GuestStayHistory guestStayHistory = new GuestStayHistory();
-        guestStayHistory.setGuest(guest);
-        guestStayHistory.setNoOfPreviousStays(0L);
+        //GuestStayHistory guestStayHistory = new GuestStayHistory();
+        //guestStayHistory.setGuest(guest);
+        //guestStayHistory.setNoOfPreviousStays(0L);
         guestRepository.save(guest);
-        guestStayHistoryRepository.save(guestStayHistory);
+        //guestStayHistoryRepository.save(guestStayHistory);
     }
 
     //before creating a new guest,check the passport number of the guest.if it is already there then it
@@ -370,11 +370,10 @@ public class Services {
     public Guest getGuestByPassportNo(@PathVariable("passportNumber") String passportNumber) {
         log.info("Get a single Guest Details by passport number service");
         Guest guest = guestRepository.getGuestByPassportNumber(passportNumber);
-        log.info("guest with passport no::"+passportNumber+"  "+guest);
+        log.info("guest with passport no::" + passportNumber + "  " + guest);
 
         return guest;
     }
-
 
 
     //before creating a guest ,check the guest unique id no,if it is already there then it wonot create a guest otherwise
@@ -384,7 +383,7 @@ public class Services {
     public Guest getGuestByIdNo(@PathVariable("idNumber") String idNumber) {
         log.info("Get a single Guest Details by passport number service");
         Guest guest = guestRepository.getGuestByIdNumber(idNumber);
-        log.info("guest with passport no::"+idNumber+"  "+guest);
+        log.info("guest with passport no::" + idNumber + "  " + guest);
 
         return guest;
     }
@@ -413,8 +412,8 @@ public class Services {
         guestRepository.save(currentGuest);
     }
 
-    //Guest Preference Details
-//added to get the guest preference type data
+    //GUEST PREFERENCE SERVICE STARTS HERE
+    //added to get the guest preference type data
     @RequestMapping(value = "guest/preference/types", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     public List<GuestPreferenceType> getPreferences() {
@@ -425,63 +424,84 @@ public class Services {
 
     //store the guest preference and description against a guest
     @RequestMapping(value = "guest/{guestId}/preference/add", method = RequestMethod.POST, consumes = "application/json")
-    public void addPreference(@RequestBody GuestPreference guestPreference, @PathVariable("guestId") Long guestId) {
+    public List<GuestPreference> addPreference(@RequestBody GuestPreference guestPreference, @PathVariable("guestId") Long guestId) {
         log.info("add guest preference service");
         Guest guest = guestRepository.findOne(guestId);
         guestPreference.setGuest(guest);
         guestPreference.setLastUpdateDate(new Date());
         guestPreferenceRepository.save(guestPreference);
-    }
 
-
-    @RequestMapping(value = "guest/{guestId}/preference/update", method = RequestMethod.POST, consumes = "application/json")
-    public void updatePreference(@RequestBody GuestPreference guestPreference, @PathVariable("guestId") Long guestId) {
-        log.info("add guest preference service");
-        //get guest
-        Guest guest = guestRepository.findOne(guestId);
+        //this method return the preferences of the current guest of a particular  preference type.
+        //get preference type id
         Long preferenceTypeId = guestPreference.getGuestPreferenceType().getId();
-        GuestPreference currentGuestPreference = guestPreferenceRepository.findGuestPreference(guestId, preferenceTypeId);
-
-        currentGuestPreference.setGuest(guest);
-        currentGuestPreference.setLastUpdateDate(new Date());
-        currentGuestPreference.setGuestPreferenceType(guestPreference.getGuestPreferenceType());
-        currentGuestPreference.setDescription(guestPreference.getDescription());
-        guestPreferenceRepository.save(currentGuestPreference);
+        //and we have the guest id passed from the client
+        //get the preference of the guest with id(guestid) and preferenceTypeId.
+        List<GuestPreference> guestPreferences = guestPreferenceRepository.findGuestPreference(guestId, preferenceTypeId);
+        return guestPreferences;
     }
 
-    @RequestMapping(value = "guest/{guestId}/preference/{preferenceTypeId}/delete")
-    public void deletePreference(@PathVariable("guestId") Long guestId, @PathVariable("preferenceTypeId") Long preferenceTypeId) {
-        log.info("delete guest preference service");
-        GuestPreference guestPreference = guestPreferenceRepository.findGuestPreference(guestId, preferenceTypeId);
-        Long id = guestPreference.getId();
-        guestPreferenceRepository.delete(id);
+    //update guest preference
+    @RequestMapping(value = "guest/preference/update", method = RequestMethod.POST, consumes = "application/json")
+    public void updatePreference(@RequestBody GuestPreference guestPreference) {
+        log.info("update guest preference service");
+        GuestPreference guestPreference1 = guestPreferenceRepository.findOne(guestPreference.getId());
+        guestPreference1.setDescription(guestPreference.getDescription());
+        guestPreferenceRepository.save(guestPreference1);
+
     }
 
+    //delete guest preference
+    @RequestMapping(value = "guest/preference/delete", method = RequestMethod.POST)
+    public List<GuestPreference> deletePreference(@RequestBody GuestPreference guestPreference) {
+        log.info("delete preference service is called" + guestPreference.getId());
 
+        //get guest id and preference type id then return all the rows having guestId=?1 and preferenceTypeId=?2;
+        //delete the current record and return tje remaining records.
+
+
+        GuestPreference guestPreference1 = guestPreferenceRepository.findOne(guestPreference.getId());
+        Long guestId = guestPreference1.getGuest().getId();
+        Long preferenceTypeId = guestPreference1.getGuestPreferenceType().getId();
+
+        guestPreferenceRepository.delete(guestPreference.getId());
+        log.info("delete preference service is called");
+
+        //return the remaining records with that guest id and preference type id.
+
+        List<GuestPreference> guestPreferences = guestPreferenceRepository.findGuestPreference(guestId, preferenceTypeId);
+        return guestPreferences;
+    }
+
+    //get the guest preferences of a perticular type
     @RequestMapping(value = "guest/{guestId}/preference/{preferenceTypeId}")
-    public GuestPreference getGuestPreference(@PathVariable("guestId") Long guestId, @PathVariable("preferenceTypeId") Long preferenceTypeId) {
+    public List<GuestPreference> getGuestPreference(@PathVariable("guestId") Long guestId, @PathVariable("preferenceTypeId") Long preferenceTypeId) {
         log.info("show guest preference service");
 
-        GuestPreference guestPreference = guestPreferenceRepository.findGuestPreference(guestId, preferenceTypeId);
-        return guestPreference;
+        List<GuestPreference> guestPreferences = guestPreferenceRepository.findGuestPreference(guestId, preferenceTypeId);
+        return guestPreferences;
     }
+    //END OF GUEST PREFERENCE SERVICES
+
+
+
+
 
 
     //Guest Stay Details
     //get stay details of a guest
     @RequestMapping(value = "guest/{guestId}/gueststaydetails", method = RequestMethod.GET, produces = "application/json")
-    public GuestStayHistory getStayDetails(@PathVariable("guestId") Long guestId) {
+    public List<GuestStayHistory> getStayDetails(@PathVariable("guestId") Long guestId) {
         log.info("view guest stay detail  service");
-        return guestStayHistoryRepository.findByGuest(guestId);
+        List<GuestStayHistory> guestStayHistories=guestStayHistoryRepository.findGuests(guestId);
+        return guestStayHistories;
     }
 
 
     //get all rooms in the hotel(latter we should get all rooms that are not allotted to anyone.)
 
-    @RequestMapping(value="hotel/{hotelId}/rooms")
-    public List<Room> getRooms(@PathVariable("hotelId") Long hotelId)
-    {
-        List<Room> rooms=roomRepository.getRooms(hotelId);
+    @RequestMapping(value = "hotel/{hotelId}/rooms")
+    public List<Room> getRooms(@PathVariable("hotelId") Long hotelId) {
+        List<Room> rooms = roomRepository.getRooms(hotelId);
         return rooms;
     }
 
@@ -493,17 +513,17 @@ public class Services {
 
         String roomNumber = guestStayHistory.getRoom().getRoomNumber();
         Room room = roomRepository.getRoom(roomNumber);
+        room.setRoomStatusInd(true);
         log.info("current guest stays in " + roomNumber);
 
-        GuestStayHistory gsh = guestStayHistoryRepository.findByGuest(guestId);
         Hotel hotel = hotelRepository.findOne(guestStayHistory.getHotel().getId());
+        Guest guest = guestRepository.findOne(guestId);
+        GuestStayHistory gsh = new GuestStayHistory();
 
         gsh.setArrivalTime(guestStayHistory.getArrivalTime());
         gsh.setDepartureTime(guestStayHistory.getDepartureTime());
-
-
+        gsh.setGuest(guest);
         gsh.setRoom(room);
-
 
         gsh.setRoomType(room.getRoomType());
         gsh.setHotel(hotel);
@@ -513,7 +533,7 @@ public class Services {
     }
 
     //update the stay detail
-    @RequestMapping(value = "guest/{guestId}/updatestaydetails", method = RequestMethod.POST, consumes = "application/json")
+    /*@RequestMapping(value = "guest/{guestId}/updatestaydetails", method = RequestMethod.POST, consumes = "application/json")
     @ResponseStatus(HttpStatus.OK)
     public void updateStayDetails(@RequestBody GuestStayHistory guestStayHistory, @PathVariable("guestId") Long guestId) {
         log.info("add guest stay details service");
@@ -538,15 +558,13 @@ public class Services {
         // then the user must get the request to change the room no of the guest so there is no need to increase the no of previous stays.
 
 
-        /*if (!gsh.getCurrentStayIndicator()) {
+        *//*if (!gsh.getCurrentStayIndicator()) {
             log.info("current stay indicator status::" + gsh.getCurrentStayIndicator());
             gsh.setNoOfPreviousStays(gsh.getNoOfPreviousStays() + 1);
         }
-        gsh.setCurrentStayIndicator(guestStayHistory.getCurrentStayIndicator());*/
+        gsh.setCurrentStayIndicator(guestStayHistory.getCurrentStayIndicator());*//*
         guestStayHistoryRepository.save(gsh);
-    }
-
-
+    }*/
 
 
     //manage room keycard for the guest
@@ -577,7 +595,7 @@ public class Services {
     }
 
 
-    @RequestMapping(value = "guest/{guestId}/keycard/{cardId}/assign")
+   /* @RequestMapping(value = "guest/{guestId}/keycard/{cardId}/assign")
     public void assignKeyCard(@PathVariable("guestId") Long guestId, @PathVariable("cardId") Long cardId) {
 
         Card card = cardRepository.findOne(cardId);
@@ -600,16 +618,16 @@ public class Services {
         //change the guest current stay indicator to true bcoz guest holds the guest card means he/she is staying in the hotel
         GuestStayHistory guestStayHistory = guestStayHistoryRepository.findByGuest(guest.getId());
         guestStayHistory.setCurrentStayIndicator(true);
-        guestStayHistory.setNoOfPreviousStays(guestStayHistory.getNoOfPreviousStays()+1);
+        guestStayHistory.setNoOfPreviousStays(guestStayHistory.getNoOfPreviousStays() + 1);
         guestStayHistoryRepository.save(guestStayHistory);
     }
+*/
 
-
-    @RequestMapping(value = "guest/{guestId}/keycard/return")
+   /* @RequestMapping(value = "guest/{guestId}/keycard/return")
     public void assignKeyCard(@PathVariable("guestId") Long guestId) {
 
 
-        GuestCard guestCard=guestCardRepository.findGuest(guestId);
+        GuestCard guestCard = guestCardRepository.findGuest(guestId);
         guestCard.setStatus(false);
         guestCard.setReturnDate(new Date());
         guestCardRepository.save(guestCard);
@@ -620,7 +638,7 @@ public class Services {
         guestStayHistory.setCurrentStayIndicator(false);
         guestStayHistoryRepository.save(guestStayHistory);
 
-    }
+    }*/
 
 
 }

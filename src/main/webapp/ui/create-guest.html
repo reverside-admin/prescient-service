@@ -44,7 +44,8 @@
                                ng-model="guest.firstName"
                                placeholder="First Name"
                                style="width: 100%"
-                            required></td>
+                               required
+                            ></td>
                 </tr>
 
                 <tr>
@@ -65,7 +66,7 @@
                                placeholder="Identity No"
                                style="width: 100%"
                                required
-                               unique-idnumber></td>
+                               ng-blur="OnIdBlur()"></td>
                 </tr>
 
                 <tr>
@@ -76,7 +77,7 @@
                                placeholder="Passport No"
                                style="width: 100%"
                                required
-                               unique-passport></td>
+                               ng-blur="OnPassportBlur()"></td>
                 </tr>
 
                 <tr>
@@ -89,19 +90,19 @@
                     </td>
                 </tr>
 
-                 <tr>
+                <tr>
                     <td>DOB</td>
 
-                     <td>
-                         <select ng-model="day" required
-                                 ng-options="obj for obj in days">
-                             <option value="">day</option>
-                         </select>
-                          <select ng-model="month" required
-                                 ng-options="obj.id as obj.name  for obj in months">
-                             <option value="">month</option>
-                         </select>
-                     </td>
+                    <td>
+                        <select ng-model="day" required
+                                ng-options="obj for obj in days">
+                            <option value="">day</option>
+                        </select>
+                        <select ng-model="month" required
+                                ng-options="obj.id as obj.name  for obj in months">
+                            <option value="">month</option>
+                        </select>
+                    </td>
                 </tr>
 
                 <tr>

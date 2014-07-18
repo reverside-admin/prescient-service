@@ -11,12 +11,16 @@ import java.util.List;
 public interface GuestStayHistoryRepository extends JpaRepository<GuestStayHistory, Long> {
 
     // TODO: Add filter to get latest history
-    @Query("select gsh from GuestStayHistory gsh where gsh.guest.id = ?1")
+    @Query("select gsh from GuestStayHistory gsh where gsh.currentStayIndicator = true and gsh.guest.id= ?1")
     public GuestStayHistory findByGuest(Long guestId );
 
 
     @Query("select gsh from GuestStayHistory gsh where gsh.currentStayIndicator = true and gsh.hotel.id= ?1 ")
     public List<GuestStayHistory> findCheckedInByHotelId(Long hotelId);
+
+
+    @Query("select gsh from GuestStayHistory gsh where  gsh.guest.id= ?1 ")
+    public List<GuestStayHistory> findGuests(Long GuestId);
 
     @Query("select gsh from GuestStayHistory gsh where gsh.currentStayIndicator = true and gsh.guest.id = " +
             "(select gc.guest.id from GuestCard gc where gc.card.rfidTagNo = ?1 and gc.status = true)")

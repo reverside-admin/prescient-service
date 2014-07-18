@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface RoomRepository extends JpaRepository<Room,Long> {
 
-    @Query("select rm from Room rm where rm.hotel.id=?1")
+    @Query("select rm from Room rm where rm.hotel.id=?1 and rm.roomStatusInd=false")
     public List<Room> getRooms(Long hotelId);
 
     @Query("select rm from Room  rm where rm.roomNumber=?1")

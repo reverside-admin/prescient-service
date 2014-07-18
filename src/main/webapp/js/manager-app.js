@@ -3,6 +3,40 @@
  */
 var manager_app = angular.module('manager_app', ['ngRoute', 'ngCookies', 'ngDialog']);
 
+manager_app.service('sharedProperties', function () {
+    var guest_property;
+
+    return {
+        getProperty: function () {
+            return guest_property;
+        },
+        setProperty: function (value) {
+            guest_property = value;
+        }
+    };
+});
+
+manager_app.service('sharedPreferenceProperties', function () {
+    var preference_type_property;
+    var preference_desc_property;
+
+
+    return {
+        getTypeProperty: function () {
+            return preference_type_property;
+        },
+        setTypeProperty: function (value) {
+            preference_type_property = value;
+        },
+        getDescProperty: function () {
+            return  preference_desc_property;
+        },
+        setDescProperty: function (value) {
+            preference_desc_property = value;
+        }
+    };
+});
+
 
 manager_app.config(['$routeProvider',
     function ($routeProvider) {
@@ -187,7 +221,7 @@ manager_app.controller('guest_details_controller', function ($scope, $http, $rou
 
 
 <!--Create A Guest-->
-manager_app.controller('create_guest_controller',function ($scope, $http, $routeParams, $cookieStore, $location, ngDialog) {
+manager_app.controller('create_guest_controller', function ($scope, $http, $routeParams, $cookieStore, $location, ngDialog, sharedProperties) {
 
     $scope.guest = {};
     $scope.dob;
@@ -196,7 +230,7 @@ manager_app.controller('create_guest_controller',function ($scope, $http, $route
     $scope.passport_validator_flag;
     $scope.id_validator_flag;
 
-     $scope.guest_detail;
+    $scope.guest_detail;
 
     $scope.gender = ['Male', 'Female', 'Trans gender'];
     // $scope.months=[{"id":0,"name":"jan"}];
@@ -216,6 +250,69 @@ manager_app.controller('create_guest_controller',function ($scope, $http, $route
     ];
 
     $scope.days = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31];
+
+
+
+    $scope.OnPassportBlur=function()
+    {
+        console.log('unfocusing  with value::'+$scope.guest.passportNumber);
+
+        $http({
+            url: 'http://localhost:8080/api/guest/passport/' + $scope.guest.passportNumber + '/details',
+            method: 'get',
+            headers: {
+                'Authorization': $cookieStore.get("auth")
+            }
+        }).
+            success(function (data, status) {
+                if (data.firstName == undefined) {
+                    console.log('passport is not available in the database')
+                    $scope.passport_validator_flag = true;
+                }
+                else {
+                    console.log('Data returned from server' + data.firstName);
+                    $scope.passport_validator_flag = false;
+                    //scope.guest_detail=data;
+
+                    //if the guest is found with that passport no then set the guest in the shared data.
+                    sharedProperties.setProperty(data);
+
+                    $scope.open_passport_popup();
+                }
+            })
+            .error(function (error) {
+                console.log(error);
+            });
+    }
+
+    $scope.OnIdBlur=function()
+    {
+        $http({
+            url: 'http://localhost:8080/api/guest/uniqueid/' + $scope.guest.idNumber + '/details',
+            method: 'get',
+            headers: {
+                'Authorization': $cookieStore.get("auth")
+            }
+        }).
+            success(function (data, status) {
+                if (data.firstName == undefined) {
+                    console.log('id is not available in the database')
+                    $scope.id_validator_flag = true;
+                }
+                else {
+                    console.log('Data returned from server' + data.firstName);
+                    $scope.id_validator_flag = false;
+
+                    sharedProperties.setProperty(data);
+
+                    $scope.open_id_popup();
+                }
+            })
+            .error(function (error) {
+                console.log(error);
+            });
+
+    }
 
 
     $scope.create = function (app_form) {
@@ -268,115 +365,78 @@ manager_app.controller('create_guest_controller',function ($scope, $http, $route
 
     }
 
-    $scope.open_passport_popup = function (data) {
-        console.log('passport popup' + data);
-        $scope.guest_detail = data;
-        console.log('passport popup  again' + $scope.guest_detail);
+    $scope.open_passport_popup = function () {
         ngDialog.open({
             template: '<body style="text-align:center;color: RED;"><h4>' +
                 'Duplicate Passport Number is Found !!</h4>' +
+                '<a class="btn btn-primary" ng-click="getValue()" ng-show="flag">Detail</a>' +
+                '<div style="width: 100%; margin-left: auto;margin-right: auto;" ng-show="guest_profile_data"> <table class=" table table-responsive">'+
+                '<tr><td>Title</td><td><input type="text" name="title" ng-model="guest_profile_data.title"></td></tr>'+
+                '<tr><td>First Name</td><td><input type="text" name="title" ng-model="guest_profile_data.firstName"></td></tr>'+
+                '<tr><td>Sur Name</td><td><input type="text" name="title" ng-model="guest_profile_data.surname"></td></tr>'+
+                '<tr><td>Passport Number</td><td><input type="text" name="title" ng-model="guest_profile_data.passportNumber"></td></tr>'+
+                '<tr><td>Id</td><td><input type="text" name="title" ng-model="guest_profile_data.idNumber"></td></tr>'+
+                '</table></div>'+
+                '</body>',
+            plain:true,
+            className:'ngdialog-theme-default',
+            controller:'passport_popup_controller'
 
-                '</body>', plain: true,
-            className: 'ngdialog-theme-default'
         });
     }
-
 
     $scope.open_id_popup = function () {
         console.log('open popup for this window');
         ngDialog.open({
             template: '<body style="text-align:center;color: RED;"><h4>' +
-                'Duplicate Id Number Found !!</h4>' +
-                '</body>', plain: true,
+                'Duplicate Id Number is Found !!</h4>' +
+                '<a class="btn btn-primary" ng-click="getValue()" ng-show="flag">Detail</a>' +
+                '<div style="width: 100%; margin-left: auto;margin-right: auto;" ng-show="guest_profile_data"> <table class=" table table-responsive">'+
+                '<tr><td>Title</td><td><input type="text" name="title" ng-model="guest_profile_data.title"></td></tr>'+
+                '<tr><td>First Name</td><td><input type="text" name="title" ng-model="guest_profile_data.firstName"></td></tr>'+
+                '<tr><td>Sur Name</td><td><input type="text" name="title" ng-model="guest_profile_data.surname"></td></tr>'+
+                '<tr><td>Passport Number</td><td><input type="text" name="title" ng-model="guest_profile_data.passportNumber"></td></tr>'+
+                '<tr><td>Id</td><td><input type="text" name="title" ng-model="guest_profile_data.idNumber"></td></tr>'+
+                '</table></div>'+
+                '</body>',
+            plain:true,
+            className:'ngdialog-theme-default',
+            controller:'id_popup_controller',
+            plain: true,
             className: 'ngdialog-theme-default'
         });
     }
 
 
-})
-    .directive('uniquePassport', function ($http, $cookieStore) {
-    return {
-        restrict: 'A',
-        require: 'ngModel',
-        link: function (scope, elem, attr, ctrl) {
-            //when the scope changes, check the email.
-            scope.$watch(attr.ngModel, function (value) {
+});
 
 
-                // call to some API that returns { isValid: true } or { isValid: false }
 
-                if (value != undefined) {
-                    $http({
-                        url: 'http://localhost:8080/api/guest/passport/' + value + '/details',
-                        method: 'get',
-                        headers: {
-                            'Authorization': $cookieStore.get("auth")
-                        }
-                    }).
-                        success(function (data, status) {
-                            if (data.firstName == undefined) {
-                                console.log('passport is not available in the database')
-                                scope.passport_validator_flag = true;
-                            }
-                            else {
-                                console.log('Data returned from server' + data.firstName);
-                                scope.passport_validator_flag = false;
-                                //scope.guest_detail=data;
-                                scope.open_passport_popup(data);
-                            }
-                        })
-                        .error(function (error) {
-                            console.log(error);
-                        });
-                }
+manager_app.controller('passport_popup_controller', function ($scope, $http, $routeParams, $cookieStore, sharedProperties) {
 
-            })
-        }
+    $scope.guest_profile_data;
+    $scope.flag=true;
+    $scope.getValue = function () {
+        $scope.guest_profile_data = sharedProperties.getProperty();
+        $scope.flag=false;
     }
-})
 
-    .directive('uniqueIdnumber', function ($http, $cookieStore) {
-        return {
-            restrict: 'A',
-            require: 'ngModel',
-            link: function (scope, elem, attr, ctrl) {
-                //when the scope changes, check the email.
-                scope.$watch(attr.ngModel, function (value) {
+});
 
 
-                    // call to some API that returns { isValid: true } or { isValid: false }
+manager_app.controller('id_popup_controller', function ($scope, $http, $routeParams, $cookieStore, sharedProperties) {
 
-                    if (value != undefined) {
-                        $http({
-                            url: 'http://localhost:8080/api/guest/uniqueid/' + value + '/details',
-                            method: 'get',
-                            headers: {
-                                'Authorization': $cookieStore.get("auth")
-                            }
-                        }).
-                            success(function (data, status) {
-                                if (data.firstName == undefined) {
-                                    console.log('id is not available in the database')
-                                    scope.id_validator_flag = true;
-                                }
-                                else {
-                                    console.log('Data returned from server' + data.firstName);
-                                    scope.id_validator_flag = false;
-                                    scope.open_id_popup();
-                                }
-                            })
-                            .error(function (error) {
-                                console.log(error);
-                            });
-                    }
+    $scope.guest_profile_data;
+    $scope.flag=true;
+    $scope.getValue = function () {
+        $scope.guest_profile_data = sharedProperties.getProperty();
+        $scope.flag=false;
+    }
 
-                })
-            }
-        }
-    });
+});
 
 
-manager_app.controller('update_details_controller',function ($scope, $cookieStore, $routeParams, $http, $location, ngDialog) {
+manager_app.controller('update_details_controller', function ($scope, $cookieStore, $routeParams, $http, $location, ngDialog,sharedProperties) {
     console.log('update guest controller is loaded');
 
     $scope.guest_id = $routeParams.guestId;
@@ -444,8 +504,7 @@ manager_app.controller('update_details_controller',function ($scope, $cookieStor
 
 
         //validate the form
-        if(!guest_update_form.$valid)
-        {
+        if (!guest_update_form.$valid) {
             $scope.open_invalid_form_popup();
             return;
         }
@@ -502,10 +561,20 @@ manager_app.controller('update_details_controller',function ($scope, $cookieStor
         console.log('passport popup');
         ngDialog.open({
             template: '<body style="text-align:center;color: RED;"><h4>' +
-                'Duplicate Passport Number is  Found !!</h4>' +
+                'Duplicate Passport Number is Found !!</h4>' +
+                '<a class="btn btn-primary" ng-click="getValue()" ng-show="flag">Detail</a>' +
+                '<div style="width: 100%; margin-left: auto;margin-right: auto;" ng-show="guest_profile_data"> <table class=" table table-responsive">'+
+                '<tr><td>Title</td><td><input type="text" name="title" ng-model="guest_profile_data.title"></td></tr>'+
+                '<tr><td>First Name</td><td><input type="text" name="title" ng-model="guest_profile_data.firstName"></td></tr>'+
+                '<tr><td>Sur Name</td><td><input type="text" name="title" ng-model="guest_profile_data.surname"></td></tr>'+
+                '<tr><td>Passport Number</td><td><input type="text" name="title" ng-model="guest_profile_data.passportNumber"></td></tr>'+
+                '<tr><td>Id</td><td><input type="text" name="title" ng-model="guest_profile_data.idNumber"></td></tr>'+
+                '</table></div>'+
+                '</body>',
+            plain:true,
+            className:'ngdialog-theme-default',
+            controller:'passport_popup_controller'
 
-                '</body>', plain: true,
-            className: 'ngdialog-theme-default'
         });
     }
 
@@ -514,12 +583,21 @@ manager_app.controller('update_details_controller',function ($scope, $cookieStor
         console.log('id popup');
         ngDialog.open({
             template: '<body style="text-align:center;color: RED;"><h4>' +
-                'Duplicate Id Number is Found !!</h4>' +
-                '</body>', plain: true,
-            className: 'ngdialog-theme-default'
+                'Duplicate id is Found !!</h4>' +
+                '<a class="btn btn-primary" ng-click="getValue()" ng-show="flag">Detail</a>' +
+                '<div style="width: 100%; margin-left: auto;margin-right: auto;" ng-show="guest_profile_data"> <table class=" table table-responsive">'+
+                '<tr><td>Title</td><td><input type="text" name="title" ng-model="guest_profile_data.title"></td></tr>'+
+                '<tr><td>First Name</td><td><input type="text" name="title" ng-model="guest_profile_data.firstName"></td></tr>'+
+                '<tr><td>Sur Name</td><td><input type="text" name="title" ng-model="guest_profile_data.surname"></td></tr>'+
+                '<tr><td>Passport Number</td><td><input type="text" name="title" ng-model="guest_profile_data.passportNumber"></td></tr>'+
+                '<tr><td>Id</td><td><input type="text" name="title" ng-model="guest_profile_data.idNumber"></td></tr>'+
+                '</table></div>'+
+                '</body>',
+            plain:true,
+            className:'ngdialog-theme-default',
+            controller:'id_popup_controller'
         });
     }
-
 
 
     $scope.open_invalid_form_popup = function () {
@@ -533,8 +611,7 @@ manager_app.controller('update_details_controller',function ($scope, $cookieStor
     }
 
 
-    $scope.checkPassport=function()
-    {
+    $scope.checkPassport = function () {
         console.log('ckecking the passport');
         $http({
             url: 'http://localhost:8080/api/guest/passport/' + $scope.guest_detail.passportNumber + '/details',
@@ -549,16 +626,18 @@ manager_app.controller('update_details_controller',function ($scope, $cookieStor
                     $scope.passport_validator_flag = true;
                     return;
                 }
-                if(data.id==$scope.guest_id)
-                {
+                if (data.id == $scope.guest_id) {
                     console.log('this passport no belongs to the same guest');
                     $scope.passport_validator_flag = true;
                     return;
                 }
-                 if(data.id!=$scope.guest_id){
+                if (data.id != $scope.guest_id) {
                     console.log('Data returned from server' + data.firstName);
                     $scope.passport_validator_flag = false;
                     //scope.guest_detail=data;
+                    //store guest data to the shared resource
+                    sharedProperties.setProperty(data);
+
                     $scope.open_passport_popup();
                 }
             })
@@ -568,8 +647,7 @@ manager_app.controller('update_details_controller',function ($scope, $cookieStor
     }
 
 
-    $scope.checkUniqueId=function()
-    {
+    $scope.checkUniqueId = function () {
         console.log('ckecking the id');
         $http({
             url: 'http://localhost:8080/api/guest/uniqueid/' + $scope.guest_detail.idNumber + '/details',
@@ -584,16 +662,17 @@ manager_app.controller('update_details_controller',function ($scope, $cookieStor
                     $scope.id_validator_flag = true;
                     return;
                 }
-                if(data.id==$scope.guest_id)
-                {
+                if (data.id == $scope.guest_id) {
                     console.log('this id no belongs to the same guest');
                     $scope.id_validator_flag = true;
                     return;
                 }
-                if(data.id!=$scope.guest_id){
+                if (data.id != $scope.guest_id) {
                     console.log('Data returned from server' + data.firstName);
                     $scope.id_validator_flag = false;
                     //scope.guest_detail=data;
+                    //store the data in the shared property
+                    sharedProperties.setProperty(data);
                     $scope.open_id_popup();
                 }
             })
@@ -601,7 +680,6 @@ manager_app.controller('update_details_controller',function ($scope, $cookieStor
                 console.log(error);
             });
     }
-
 
 
 });
@@ -637,7 +715,7 @@ manager_app.controller('view_guest_preference_data_controller', function ($scope
 
 <!-- add guest preference -->
 
-manager_app.controller('add_guest_preference_controller', function ($scope, $http, $routeParams, $cookieStore, $location) {
+manager_app.controller('add_guest_preference_controller', function ($scope, $http,ngDialog, $routeParams, $cookieStore, $location,sharedPreferenceProperties) {
 
     $scope.guest_id = $routeParams.guestId;
     $scope.guest_preference_types;
@@ -645,6 +723,11 @@ manager_app.controller('add_guest_preference_controller', function ($scope, $htt
     $scope.guest_preference = {};
     $scope.guest_preference_description = '';
     $scope.message = '';
+    $scope.all_preferences_of_given_type;
+    $scope.flag=false;
+    $scope.selected_preference={};
+
+
 
     $http({
         url: 'http://localhost:8080/api/guest/preference/types',
@@ -666,7 +749,7 @@ manager_app.controller('add_guest_preference_controller', function ($scope, $htt
         });
 
 
-    $scope.add = function () {
+    $scope.addPreference = function () {
         console.log('add preferences');
 
         //bind the variables
@@ -688,10 +771,11 @@ manager_app.controller('add_guest_preference_controller', function ($scope, $htt
             success(function (data, status) {
                 if (status == 200) {
                     console.log('Guest preference added successfully');
-                    $scope.guest_preference_description = '';
                     $scope.message = 'Guest Preferences added Successfully';
-                    $scope.guest_preference_type = {};
-
+                    //get all preference of the selected preferenceTypeId.
+                    $scope.all_preferences_of_given_type=data;
+                    $scope.guest_preference_description='';
+                    console.log('all preferences of the given id::'+data);
                 } else {
                     console.log('status:' + status);
                 }
@@ -702,76 +786,15 @@ manager_app.controller('add_guest_preference_controller', function ($scope, $htt
 
     }
 
-    $scope.update = function () {
 
-        $scope.guest_preference.guestPreferenceType = $scope.guest_preference_type;
-        $scope.guest_preference.description = $scope.guest_preference_description;
-        console.log('guest preference type' + $scope.guest_preference_type);
-
-
-        $http({
-
-            url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/preference/update',
-            method: 'post',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
-            },
-            data: $scope.guest_preference
-        }).
-            success(function (data, status) {
-                if (status == 200) {
-                    console.log('Guest preference added successfully');
-                    $scope.message = 'Guest Preferences updated successfully';
-
-                } else {
-                    console.log('status:' + status);
-                }
-            })
-            .error(function (error) {
-                console.log(error);
-            });
-
-    }
 
 
     $scope.cancel = function () {
         $location.url('maintain/guest/' + $scope.guest_id + '/guestpreference');
     }
 
-    $scope.reset = function () {
+    $scope.onSelectPreferenceType = function () {
         $scope.message = '';
-    }
-
-
-    $scope.delete = function () {
-        $http({
-            url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/preference/' + $scope.guest_preference_type.id + '/delete',
-            method: 'get',
-            headers: {
-                'Authorization': $cookieStore.get("auth")
-            }
-        }).
-            success(function (data, status) {
-                if (status == 200) {
-                    console.log('preference deleted successfully');
-                    $scope.guest_preference_description = '';
-                    $scope.message = 'Preference Deleted Successfully';
-                } else {
-                    console.log('status:' + status);
-                }
-            })
-            .error(function (error) {
-                console.log(error);
-            });
-
-    }
-
-    $scope.onSelectType = function () {
-        $scope.message = '';
-        $scope.flag = false;
-
-
         //get the guest preferences if this guest have any preferences of the selected type.
         $http({
             url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/preference/' + $scope.guest_preference_type.id,
@@ -782,11 +805,8 @@ manager_app.controller('add_guest_preference_controller', function ($scope, $htt
         }).
             success(function (data, status) {
                 if (status == 200) {
-                    $scope.guest_preference_description = data.description;
-                    if (data.description != undefined) {
-                        $scope.flag = true;
-                    }
-
+                    $scope.all_preferences_of_given_type=data;
+                    $scope.guest_preference_description='';
 
                 } else {
                     console.log('status:' + status);
@@ -798,6 +818,133 @@ manager_app.controller('add_guest_preference_controller', function ($scope, $htt
 
     }
 
+    $scope.onSelectPreference=function()
+    {
+        $scope.flag = true;
+        $scope.message = '';
+        console.log('you have selected the preference with id::'+$scope.selected_preference);
+
+    }
+
+    $scope.deletePreference=function()
+    {
+        console.log('deleting the preference');
+        $http({
+            url: 'http://localhost:8080/api/guest/preference/delete' ,
+            method: 'post',
+            headers: {
+                'Authorization': $cookieStore.get("auth")
+            },
+            data: $scope.selected_preference
+
+        }).
+            success(function (data, status) {
+                if (status == 200) {
+                    console.log('preference deleted successfully');
+                    $scope.guest_preference_description = '';
+                    $scope.message = 'Preference Deleted Successfully';
+                    $scope.all_preferences_of_given_type=data;
+                    $scope.flag=false;
+                } else {
+                    console.log('status:' + status);
+                }
+            })
+            .error(function (error) {
+                console.log(error);
+            });
+
+    }
+
+    $scope.updatePreference=function()
+    {
+        //we can store the type and description in a shared property and open a popup
+        // then show the value from the shared property.
+        console.log('setting the value in the sharedPreferenceService');
+        sharedPreferenceProperties.setTypeProperty($scope.guest_preference_type);
+        sharedPreferenceProperties.setDescProperty($scope.selected_preference);
+        console.log('setting the value in the sharedPreferenceService');
+        console.log('type::'+sharedPreferenceProperties.getTypeProperty());
+        console.log('desc::'+sharedPreferenceProperties.getDescProperty());
+        $scope.flag = false;
+
+        //open a popup to update preference.
+        ngDialog.open({
+            template: '<body style="text-align:center;color: RED;"><h4>' +
+                'Update Preference !!  {{message}}</h4>' +
+                '<div style="width: 100%; margin-left: auto;margin-right: auto;"> <table class=" table table-responsive">'+
+                '<tr><td>Type</td>' +
+                '<td>' +
+                '<select ng-model="preferenceTypeId" ng-options="obj.id as obj.name for obj in preferenceTypeEle"></select>'+
+                '</td>' +
+                '</tr>'+
+                '<tr><td>Description</td><td><input type="text" name="title" ng-model="preferenceDescription.description" ng-focus="reset()"></td></tr>'+
+                '</table><a class="btn btn-primary" ng-click="updatePreference()" style="text-align: center;">Update</a></div>'+
+                '</body>',
+            plain:true,
+            className:'ngdialog-theme-default',
+            controller:'update_preference_popup_controller'
+        });
+    }
+});
+
+
+manager_app.controller('update_preference_popup_controller', function ($scope, $http,ngDialog, $routeParams, $cookieStore, $location,sharedPreferenceProperties) {
+    $scope.preferenceType=sharedPreferenceProperties.getTypeProperty();//getting type
+    $scope.preferenceDescription=sharedPreferenceProperties.getDescProperty();//getting description
+
+    //assigned so that item  will be selected at the time of displaying
+    $scope.preferenceTypeId=$scope.preferenceType.id;
+
+    //array is used to display a drop down.
+    $scope.preferenceTypeEle=[];
+    //storing the selected element in the array.
+    $scope.preferenceTypeEle[0]=$scope.preferenceType;
+    console.log('selected preference type name::'+$scope.preferenceType.name);
+    console.log('selected preference id name::'+$scope.preferenceType.id);
+
+    //$scope.preferenceDescription contain the object that we need to update its description
+    //for avoiding confusion we declared below preference object and assigned the $scope.preferenceDescription to it.
+    $scope.preference=$scope.preferenceDescription;
+    //message
+    $scope.message='';
+
+    $scope.updatePreference=function()
+    {
+        $http({
+            url: 'http://localhost:8080/api/guest/preference/update',
+            method: 'post',
+            headers: {
+                'Authorization': $cookieStore.get("auth")
+            },
+            data:$scope.preference
+
+        }).
+            success(function (data, status) {
+                if (status == 200) {
+                    console.log('preference description amended successfully');
+                    $scope.message='updated successfully';
+                    $scope.close();
+                } else {
+                    console.log('status:' + status);
+                }
+            })
+            .error(function (error) {
+                console.log(error);
+            });
+    }
+
+
+    $scope.reset=function()
+    {
+        $scope.message='';
+    }
+    $scope.close=function()
+    {
+        ngDialog.close();
+    }
+
+
+
 });
 
 
@@ -806,6 +953,32 @@ manager_app.controller('add_guest_preference_controller', function ($scope, $htt
 manager_app.controller('view_guest_stay_details_controller', function ($scope, $http, $routeParams, $cookieStore) {
 
     $scope.guest_stay_detail = {};
+
+    $scope.guest_profile_detail={};
+
+
+
+    $http({
+        url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/details',
+        method: 'get',
+        headers: {
+            'Authorization': $cookieStore.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            if (status == 200) {
+                $scope.guest_profile_detail = data;
+
+
+            } else {
+                console.log('status:' + status);
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+
+
 
 
     $http({
@@ -845,8 +1018,8 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
     $scope.details = {};
     $scope.hotel = {"id": $scope.current_user_hotel_id};
 
-    $scope.ind=[
-        {"id":0}
+    $scope.ind = [
+        {"id": 0}
     ];
     $scope.current_stay_status;
 
@@ -877,18 +1050,17 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
 
             if ($scope.details.currentStayIndicator == 1) {
                 $scope.stay_detail.currentStayIndicator = 1;
-                $scope.ind[0].name='True';
-                $scope.current_stay_status=0;
+                $scope.ind[0].name = 'True';
+                $scope.current_stay_status = 0;
 
 
             }
             if ($scope.details.currentStayIndicator == 0) {
                 $scope.stay_detail.currentStayIndicator = 0;
-                $scope.ind[0].name='False';
-                $scope.current_stay_status=0;
+                $scope.ind[0].name = 'False';
+                $scope.current_stay_status = 0;
 
             }
-
 
 
         })

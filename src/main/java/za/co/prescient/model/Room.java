@@ -27,4 +27,7 @@ public class Room {
     @JoinColumn(name = "room_type_id")
     RoomType roomType;
 
+    @Column(name = "room_status_ind")
+    Boolean roomStatusInd;
+
 }

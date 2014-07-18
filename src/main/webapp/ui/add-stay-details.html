@@ -4,7 +4,7 @@
 
         <div class="col-md-12 text-right">
             <div class="btn-group btn-group-sm">
-             </div>
+            </div>
         </div>
 
         <div class="col-md-12 text-right">
@@ -32,7 +32,7 @@
                                placeholder="Arrival Date Time"
                                style="width: 100%"
                             ></td>
-                 </tr>
+                </tr>
 
                 <tr>
                     <td>Departure Date Time</td>
@@ -47,10 +47,10 @@
                 <tr>
                     <td>Room Numbers</td>
                     <td>
-                    <select ng-model="selected_room"
-                            ng-options="obj.roomNumber as obj.roomNumber for obj in hotel_rooms">
-                        <option value="">select</option>
-                    </select>
+                        <select ng-model="selected_room"
+                                ng-options="obj.roomNumber as obj.roomNumber for obj in hotel_rooms">
+                            <option value="">select</option>
+                        </select>
                     </td>
                 </tr>
 
@@ -70,8 +70,8 @@
 
         <div class="col-md-12 text-right">
             <div class="btn-group btn-group-sm">
-                <input type="submit" value="Add"    ng-if="!flag"   ng-click="add()" class="btn btn-primary"/>
-                <input type="submit" value="update"  ng-if="flag"  ng-click="update()" class="btn btn-primary"/>
+                <input type="submit" value="Add"       ng-click="add()" class="btn btn-primary"/>
+                <input type="submit" value="update"    ng-click="update()" class="btn btn-primary"/>
             </div>
         </div>
 

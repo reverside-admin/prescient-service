@@ -15,7 +15,7 @@ import java.util.List;
 public interface GuestPreferenceRepository extends JpaRepository<GuestPreference,Long>{
 
     @Query("select gp from GuestPreference gp where gp.guest.id=?1 and gp.guestPreferenceType.id=?2")
-    public GuestPreference findGuestPreference(Long guestId, Long guestPreferenceTypeId);
+    public List<GuestPreference> findGuestPreference(Long guestId, Long guestPreferenceTypeId);
 
 
     @Query("delete  from GuestPreference gp where gp.guest.id=?1 and gp.guestPreferenceType.id=?2")
