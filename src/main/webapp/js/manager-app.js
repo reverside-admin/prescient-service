@@ -1006,70 +1006,27 @@ manager_app.controller('view_guest_stay_details_controller', function ($scope, $
 <!--Add Stay Details-->
 manager_app.controller('add_stay_details_controller', function ($scope, $http, $routeParams, $cookieStore, $location) {
 
+
+    console.log('add stay detail controller is loaded');
     $scope.current_user_hotel_id = $cookieStore.get("user").hotel.id;
-    $scope.hotel_rooms;
-    $scope.stay_detail = {};
+    $scope.current_hotel=$cookieStore.get("user").hotel;
+
+    //get all rooms
+    $scope.available_hotel_rooms;
     $scope.departure_time;
     $scope.arrival_time;
-    $scope.selected_room;
-    $scope.flag;
-    $scope.current_guest_id = $routeParams.guestId;
-    $scope.room = {};
-    $scope.details = {};
-    $scope.hotel = {"id": $scope.current_user_hotel_id};
+    $scope.rooms=[];
+    $scope.selected_room={};
 
-    $scope.ind = [
-        {"id": 0}
-    ];
-    $scope.current_stay_status;
+    //object to bind
+    $scope.stay_detail = {};
 
+    //bind multiple selection objects.
+    $scope.y={available_hotel_rooms:[]};
 
-//to view the guest stay details if it any
-    $http({
-        url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/gueststaydetails',
-        method: 'get',
-        headers: {
-            'Authorization': $cookieStore.get("auth")
-        }
-    }).
-        success(function (data, status) {
+    //get all available rooms toallocate to a guest
 
 
-            $scope.details = data;
-            //bind these below two variables so that while update, if user does not change  the guest arrival and departure date then it will bind the previous arrival and departure date.
-            $scope.arrival_time = $scope.details.arrivalTime;
-            $scope.departure_time = $scope.details.departureTime;
-
-
-            if ($scope.details.room != null) {
-                $scope.selected_room = $scope.details.room.roomNumber;
-                $scope.room.roomNumber = $scope.selected_room;
-                //flag is used to switch the appearance of add and update button.
-                $scope.flag = true;
-            }
-
-            if ($scope.details.currentStayIndicator == 1) {
-                $scope.stay_detail.currentStayIndicator = 1;
-                $scope.ind[0].name = 'True';
-                $scope.current_stay_status = 0;
-
-
-            }
-            if ($scope.details.currentStayIndicator == 0) {
-                $scope.stay_detail.currentStayIndicator = 0;
-                $scope.ind[0].name = 'False';
-                $scope.current_stay_status = 0;
-
-            }
-
-
-        })
-        .error(function (error) {
-            console.log(error);
-        });
-
-
-    //get all rooms of the hotel that the current user belong so that he/she can assign the rooms of the same hotel to the guest.
     $http({
         url: 'http://localhost:8080/api/hotel/' + $scope.current_user_hotel_id + '/rooms',
         method: 'get',
@@ -1079,7 +1036,7 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
     }).
         success(function (data, status) {
             if (status == 200) {
-                $scope.hotel_rooms = data;
+                $scope.available_hotel_rooms = data;
 
             } else {
                 console.log('status:' + status);
@@ -1090,14 +1047,17 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
         });
 
 
-    $scope.add = function () {
-        $scope.stay_detail.arrivalTime = new Date($scope.arrival_time);
-        $scope.stay_detail.departureTime = new Date($scope.departure_time);
 
-        $scope.room.roomNumber = $scope.selected_room;
 
-        $scope.stay_detail.room = $scope.room;
-        $scope.stay_detail.hotel = $scope.hotel;
+
+
+    $scope.add=function()
+    {
+        console.log('adding stay details');
+        $scope.stay_detail.arrivalTime=new Date($scope.arrival_time);
+        $scope.stay_detail.departureTime=new Date($scope.departure_time);
+        $scope.stay_detail.hotel=$scope.current_hotel;
+        $scope.stay_detail.rooms=$scope.y.available_hotel_rooms;
 
 
         $http({
@@ -1124,47 +1084,7 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
             });
 
     }
-
-
-    $scope.update = function () {
-        console.log('changing the stay details');
-
-
-        $scope.stay_detail.arrivalTime = new Date($scope.arrival_time);
-        $scope.stay_detail.departureTime = new Date($scope.departure_time);
-
-        $scope.room.roomNumber = $scope.selected_room;
-
-        $scope.stay_detail.room = $scope.room;
-        $scope.stay_detail.hotel = $scope.hotel;
-
-
-        $http({
-            url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/updatestaydetails',
-            method: 'post',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
-            },
-            data: $scope.stay_detail
-        }).
-            success(function (data, status) {
-                if (status == 200) {
-                    console.log('Update hotel stay details successfully');
-                    $location.url('maintain/guest/' + $routeParams.guestId + '/gueststaydetails');
-
-                } else {
-                    console.log('status:' + status);
-                }
-            })
-            .error(function (error) {
-                console.log(error);
-            });
-    }
-
-
 });
-
 
 <!--View guest Room Card  data-->
 

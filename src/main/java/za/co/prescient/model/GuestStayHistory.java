@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "current_resident_guest_stay_detail")
@@ -22,13 +23,23 @@ public class GuestStayHistory {
 //    @Column(name = "room_id")
 //    String roomId;
 
-    @ManyToOne
+    /*@ManyToOne
     @JoinColumn(name = "room_id")
-    Room room;
+    Room room;*/
 
-    @ManyToOne
+    //added now
+    /*@OneToMany(mappedBy = "guestStayHistory")
+    List<Room> rooms;*/
+
+
+    @ManyToMany
+    @JoinTable(joinColumns = @JoinColumn(name = "hid"),
+            inverseJoinColumns = @JoinColumn(name = "rid"))
+    List<Room> rooms;
+
+    /*@ManyToOne
     @JoinColumn(name = "room_type_id")
-    RoomType roomType;
+    RoomType roomType;*/
 
     @Column(name = "arrival_time")
     Date arrivalTime;

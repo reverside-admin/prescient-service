@@ -59,7 +59,27 @@
 
         </table>
 
+        <!--
+                <div style="width: 100%; margin-left: auto;margin-right: auto;">
+                    <table class="table table-hover table-condensed  table-bordered table-responsive">
+                        <tr>
+                            <th>Arrival Date Time</th>
+                            <th>Departure Date Time</th>
+                            <th>Room Numbers</th>
+                            <th>Current Stay Indicator</th>
+                        </tr>
 
+                        <tr ng-repeat="stay_detail in guest_stay_detail">
+                            <td>{{stay_detail.arrivalTime | date:'medium'}}</td>
+                            <td>{{stay_detail.departureTime| date:'medium'}}</td>
+                            <td>{{stay_detail.rooms}}</td>
+                            <td>{{stay_detail.currentStayIndicator}}</td>
+                        </tr>
+                    </table>
+                </div>
+                -->
+
+        <!--test  -->
         <div style="width: 100%; margin-left: auto;margin-right: auto;">
             <table class="table table-hover table-condensed  table-bordered table-responsive">
                 <tr>
@@ -69,14 +89,25 @@
                     <th>Current Stay Indicator</th>
                 </tr>
 
-                <tr ng-repeat="stay_detail in guest_stay_detail">
-                    <td>{{stay_detail.arrivalTime | date:'medium'}}</td>
-                    <td>{{stay_detail.departureTime| date:'medium'}}</td>
-                    <td>{{stay_detail.room.roomNumber}}</td>
-                    <td>{{stay_detail.currentStayIndicator}}</td>
+                <tr ng-repeat="(key,value) in guest_stay_detail">
+                    <td>{{value.arrivalTime | date:'medium'}}</td>
+                    <td>{{value.departureTime| date:'medium'}}</td>
+                    <td>
+                        <select ng-model="pp" ng-options="room.roomNumber as room.roomNumber for room in value.rooms">
+                            <option value="">ROOMS</option>
+                        </select>
+                    </td>
+                    <td>{{value.currentStayIndicator}}</td>
                 </tr>
             </table>
         </div>
+
+
+
+
+
+
+
     </div>
 
 </div>

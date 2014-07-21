@@ -30,4 +30,9 @@ public class Room {
     @Column(name = "room_status_ind")
     Boolean roomStatusInd;
 
+   /* @ManyToOne
+    //@JoinColumn(name="guest_stay_id")
+    @JoinTable(name="GUEST_ROOMS")
+     GuestStayHistory guestStayHistory;*/
+
 }

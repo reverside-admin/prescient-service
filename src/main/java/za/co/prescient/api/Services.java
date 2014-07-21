@@ -483,16 +483,12 @@ public class Services {
     //END OF GUEST PREFERENCE SERVICES
 
 
-
-
-
-
     //Guest Stay Details
     //get stay details of a guest
     @RequestMapping(value = "guest/{guestId}/gueststaydetails", method = RequestMethod.GET, produces = "application/json")
     public List<GuestStayHistory> getStayDetails(@PathVariable("guestId") Long guestId) {
         log.info("view guest stay detail  service");
-        List<GuestStayHistory> guestStayHistories=guestStayHistoryRepository.findGuests(guestId);
+        List<GuestStayHistory> guestStayHistories = guestStayHistoryRepository.findGuests(guestId);
         return guestStayHistories;
     }
 
@@ -511,11 +507,6 @@ public class Services {
     public void addStayDetails(@RequestBody GuestStayHistory guestStayHistory, @PathVariable("guestId") Long guestId) {
         log.info("add guest stay details service");
 
-        String roomNumber = guestStayHistory.getRoom().getRoomNumber();
-        Room room = roomRepository.getRoom(roomNumber);
-        room.setRoomStatusInd(true);
-        log.info("current guest stays in " + roomNumber);
-
         Hotel hotel = hotelRepository.findOne(guestStayHistory.getHotel().getId());
         Guest guest = guestRepository.findOne(guestId);
         GuestStayHistory gsh = new GuestStayHistory();
@@ -523,9 +514,17 @@ public class Services {
         gsh.setArrivalTime(guestStayHistory.getArrivalTime());
         gsh.setDepartureTime(guestStayHistory.getDepartureTime());
         gsh.setGuest(guest);
-        gsh.setRoom(room);
 
-        gsh.setRoomType(room.getRoomType());
+        List<Room> rooms = guestStayHistory.getRooms();
+        List<Room> allRooms = new ArrayList<Room>();
+
+        for (Room rm : rooms) {
+            Room room = roomRepository.findOne(rm.getId());
+            room.setRoomStatusInd(true);
+            allRooms.add(room);
+        }
+
+        gsh.setRooms(allRooms);
         gsh.setHotel(hotel);
         //gsh.setNoOfPreviousStays(gsh.getNoOfPreviousStays() + 1);
         gsh.setCurrentStayIndicator(false);

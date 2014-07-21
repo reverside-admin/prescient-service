@@ -47,8 +47,8 @@
                 <tr>
                     <td>Room Numbers</td>
                     <td>
-                        <select ng-model="selected_room"
-                                ng-options="obj.roomNumber as obj.roomNumber for obj in hotel_rooms">
+                        <select multiple ng-model="y.available_hotel_rooms" size="3"
+                                ng-options="obj as obj.roomNumber for obj in available_hotel_rooms">
                             <option value="">select</option>
                         </select>
                     </td>
