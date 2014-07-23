@@ -493,12 +493,19 @@ public class Services {
     }
 
 
-    //get all rooms in the hotel(latter we should get all rooms that are not allotted to anyone.)
-
+    //get all rooms in the hotel( get all rooms that are not allotted to anyone.)
     @RequestMapping(value = "hotel/{hotelId}/rooms")
     public List<Room> getRooms(@PathVariable("hotelId") Long hotelId) {
         List<Room> rooms = roomRepository.getRooms(hotelId);
         return rooms;
+    }
+
+
+    //get guests latest stay record
+    @RequestMapping(value = "guest/{guestId}/lateststay")
+    public GuestStayHistory getlatestStayOfAGuest(@PathVariable("guestId") Long guestId) {
+        GuestStayHistory guestStayHistory=guestStayHistoryRepository.getGuestLastStay(guestId);
+        return guestStayHistory;
     }
 
     //add stay details to the guest
@@ -506,6 +513,11 @@ public class Services {
     @ResponseStatus(HttpStatus.CREATED)
     public void addStayDetails(@RequestBody GuestStayHistory guestStayHistory, @PathVariable("guestId") Long guestId) {
         log.info("add guest stay details service");
+
+        /*String roomNumber = guestStayHistory.getRooms().get(0).getRoomNumber();
+        Room room = roomRepository.getRoom(roomNumber);
+        room.setRoomStatusInd(true);
+        log.info("current guest stays in " + roomNumber);*/
 
         Hotel hotel = hotelRepository.findOne(guestStayHistory.getHotel().getId());
         Guest guest = guestRepository.findOne(guestId);
@@ -515,11 +527,12 @@ public class Services {
         gsh.setDepartureTime(guestStayHistory.getDepartureTime());
         gsh.setGuest(guest);
 
-        List<Room> rooms = guestStayHistory.getRooms();
-        List<Room> allRooms = new ArrayList<Room>();
+        List<Room> rooms=guestStayHistory.getRooms();
+        List<Room> allRooms=new ArrayList<Room>();
 
-        for (Room rm : rooms) {
-            Room room = roomRepository.findOne(rm.getId());
+        for(Room rm:rooms)
+        {
+            Room room=roomRepository.findOne(rm.getId());
             room.setRoomStatusInd(true);
             allRooms.add(room);
         }
@@ -532,38 +545,37 @@ public class Services {
     }
 
     //update the stay detail
-    /*@RequestMapping(value = "guest/{guestId}/updatestaydetails", method = RequestMethod.POST, consumes = "application/json")
+    @RequestMapping(value = "guest/{guestId}/updatestaydetails", method = RequestMethod.POST, consumes = "application/json")
     @ResponseStatus(HttpStatus.OK)
     public void updateStayDetails(@RequestBody GuestStayHistory guestStayHistory, @PathVariable("guestId") Long guestId) {
         log.info("add guest stay details service");
 
-        //get the room no and find the room and then set the room object for that guest
-        String roomNumber = guestStayHistory.getRoom().getRoomNumber();
-        Room room = roomRepository.getRoom(roomNumber);
+        GuestStayHistory history=guestStayHistoryRepository.getGuestLastStay(guestId);
+        LOGGER.info(history.getId());
 
-        //take the hotel id coming from the client and find the hotel object and assign to the guest.
-        GuestStayHistory gsh = guestStayHistoryRepository.findByGuest(guestId);
-        Hotel hotel = hotelRepository.findOne(guestStayHistory.getHotel().getId());
+        history.setArrivalTime(guestStayHistory.getArrivalTime());
+        history.setDepartureTime(guestStayHistory.getDepartureTime());
+        List<Room> previouslyAllocatedRooms=history.getRooms();
+        List<Room> newRoomsRequested=guestStayHistory.getRooms();
+        List<Room> newRoomsToBeAllocated=new ArrayList<Room>();
 
-        gsh.setArrivalTime(guestStayHistory.getArrivalTime());
-        gsh.setDepartureTime(guestStayHistory.getDepartureTime());
+        for(Room room:previouslyAllocatedRooms)
+        {
+            Room rm=roomRepository.findOne(room.getId());
+            rm.setRoomStatusInd(false);
 
-
-        gsh.setRoom(room);
-        gsh.setRoomType(room.getRoomType());
-        gsh.setHotel(hotel);
-        //to increase the  No of previous stays we need to compare if the current guest stay indicator is false (In DB)and user change the indicator to true(from UI)
-        //meaning the guest has come for the one more time so we need to increase the no of previous stays+1 but  if the current stay indicator is true (In DB) and update button is clicked by the user
-        // then the user must get the request to change the room no of the guest so there is no need to increase the no of previous stays.
-
-
-        *//*if (!gsh.getCurrentStayIndicator()) {
-            log.info("current stay indicator status::" + gsh.getCurrentStayIndicator());
-            gsh.setNoOfPreviousStays(gsh.getNoOfPreviousStays() + 1);
         }
-        gsh.setCurrentStayIndicator(guestStayHistory.getCurrentStayIndicator());*//*
-        guestStayHistoryRepository.save(gsh);
-    }*/
+
+        for(Room room:newRoomsRequested)
+        {
+            Room rm=roomRepository.findOne(room.getId());
+            rm.setRoomStatusInd(true);
+            newRoomsToBeAllocated.add(rm);
+
+        }
+        history.setRooms(newRoomsToBeAllocated);
+        guestStayHistoryRepository.save(history);
+    }
 
 
     //manage room keycard for the guest

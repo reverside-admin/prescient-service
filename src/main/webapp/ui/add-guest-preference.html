@@ -58,7 +58,9 @@
             <button type="submit" ng-show="flag"   class="btn btn-primary" ng-click="deletePreference()">Delete</button>
 
 
-            <button type="submit" class="btn btn-primary" ng-click="cancel()">Cancel</button>
+            <button type="submit" ng-show="!flag" class="btn btn-primary" ng-click="cancelPage()">Cancel</button>
+            <button type="submit" ng-show="flag" class="btn btn-primary" ng-click="flag=false">Cancel</button>
+
         </div>
     </div>
 </div>

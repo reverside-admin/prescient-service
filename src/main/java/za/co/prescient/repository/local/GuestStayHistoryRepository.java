@@ -14,6 +14,9 @@ public interface GuestStayHistoryRepository extends JpaRepository<GuestStayHisto
     @Query("select gsh from GuestStayHistory gsh where gsh.currentStayIndicator = true and gsh.guest.id= ?1")
     public GuestStayHistory findByGuest(Long guestId );
 
+    @Query("select gsh from GuestStayHistory gsh where current_date <= gsh.departureTime and gsh.guest.id=?1")
+    GuestStayHistory getGuestLastStay(Long guestId);
+
 
     @Query("select gsh from GuestStayHistory gsh where gsh.currentStayIndicator = true and gsh.hotel.id= ?1 ")
     public List<GuestStayHistory> findCheckedInByHotelId(Long hotelId);

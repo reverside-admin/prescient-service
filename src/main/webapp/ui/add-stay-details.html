@@ -21,57 +21,65 @@
 
 
         <div style="width: 50%; margin-left: auto;margin-right: auto;">
-
             <table class=" table table-responsive">
-
                 <tr>
                     <td>Arrival Date Time</td>
-                    <td><input type="date"
-                               name="arrivalTime"
-                               ng-model="arrival_time"
-                               placeholder="Arrival Date Time"
-                               style="width: 100%"
-                            ></td>
+                    <td><input type="date"  name="arrivalTime" ng-model="arrival_time" placeholder="Arrival Date Time"  style="width: 100%"></td>
                 </tr>
 
                 <tr>
                     <td>Departure Date Time</td>
-                    <td><input type="date"
-                               name="departureTime"
-                               ng-model="departure_time"
-                               placeholder="Departure Date Time"
-                               style="width: 100%"
-                            ></td>
+                    <td><input type="date" name="departureTime" ng-model="departure_time" placeholder="Departure Date Time" style="width: 100%"></td>
                 </tr>
 
-                <tr>
+                <tr ng-show="!view_switcher_flag">
                     <td>Room Numbers</td>
                     <td>
-                        <select multiple ng-model="y.available_hotel_rooms" size="3"
+                        <select multiple  ng-model="y.available_hotel_rooms" size="3"
                                 ng-options="obj as obj.roomNumber for obj in available_hotel_rooms">
                             <option value="">select</option>
                         </select>
                     </td>
                 </tr>
-
-                <tr ng-if="flag">
-                    <td>Current Stay Indicator</td>
-
-                    <td>
-                        <select ng-model="current_stay_status"
-                                ng-options="obj.id as obj.name for obj in ind">
-                        </select>
-                    </td>
-                </tr>
-
             </table>
+        </div>
+
+        <!-- update screen-->
+
+
+        <div class="panel-body" style="margin-left: 20%" ng-show="view_switcher_flag">
+            <div style="float: left;margin-left: 80px;">
+                <select size="8" style="width: 200px; "
+                        ng-model="selected_room"
+                        ng-options="obj as obj.roomNumber for obj  in available_hotel_rooms">
+                    <option value=""><b>Not Assigned Room</b></option>
+                </select>
+            </div>
+
+
+            <div style="float: left;margin-left: 30px;margin-top: 5%">
+                <input type="button" class="btn btn-primary" value="Add >>" ng-click="pushRoomToRight()"/>
+                <br/>
+                <input type="button" class="btn btn-primary" value="<< Remove" ng-click="pushRoomToLeft()"
+                       style="margin-top: 10px;"/>
+            </div>
+
+
+            <div class="panel-body" style="margin-left: 30%">
+                <div style="float: left;margin-left: 30px;">
+                    <select size="8" style="width: 200px;"
+                            ng-model="selected_room" ng-options="obj as obj.roomNumber for obj  in assigned_rooms">
+                        <option value=""><b>Assigned Rooms</b></option>
+                    </select>
+                </div>
+            </div>
         </div>
 
 
         <div class="col-md-12 text-right">
             <div class="btn-group btn-group-sm">
-                <input type="submit" value="Add"       ng-click="add()" class="btn btn-primary"/>
-                <input type="submit" value="update"    ng-click="update()" class="btn btn-primary"/>
+                <input type="submit" value="Add"  ng-show="!view_switcher_flag"  ng-click="add()" class="btn btn-primary"/>
+                <input type="submit" value="update"  ng-show="view_switcher_flag"   ng-click="update()" class="btn btn-primary"/>
             </div>
         </div>
 

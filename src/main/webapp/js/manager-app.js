@@ -789,7 +789,7 @@ manager_app.controller('add_guest_preference_controller', function ($scope, $htt
 
 
 
-    $scope.cancel = function () {
+    $scope.cancelPage = function () {
         $location.url('maintain/guest/' + $scope.guest_id + '/guestpreference');
     }
 
@@ -954,8 +954,7 @@ manager_app.controller('view_guest_stay_details_controller', function ($scope, $
 
     $scope.guest_stay_detail = {};
 
-    $scope.guest_profile_detail={};
-
+    $scope.guest_profile_detail = {};
 
 
     $http({
@@ -977,8 +976,6 @@ manager_app.controller('view_guest_stay_details_controller', function ($scope, $
         .error(function (error) {
             console.log(error);
         });
-
-
 
 
     $http({
@@ -1006,27 +1003,67 @@ manager_app.controller('view_guest_stay_details_controller', function ($scope, $
 <!--Add Stay Details-->
 manager_app.controller('add_stay_details_controller', function ($scope, $http, $routeParams, $cookieStore, $location) {
 
-
     console.log('add stay detail controller is loaded');
     $scope.current_user_hotel_id = $cookieStore.get("user").hotel.id;
-    $scope.current_hotel=$cookieStore.get("user").hotel;
+    $scope.current_hotel = $cookieStore.get("user").hotel;
 
     //get all rooms
     $scope.available_hotel_rooms;
     $scope.departure_time;
     $scope.arrival_time;
-    $scope.rooms=[];
-    $scope.selected_room={};
+    $scope.rooms = [];
+    $scope.selected_room = {};
 
     //object to bind
     $scope.stay_detail = {};
 
+    //flag to switch between add and update screen
+    $scope.view_switcher_flag=false;
+
     //bind multiple selection objects.
-    $scope.y={available_hotel_rooms:[]};
+    $scope.y = {available_hotel_rooms: []};
 
-    //get all available rooms toallocate to a guest
+    //store all rooms assigned to the guest
+    $scope.assigned_rooms=[];
+
+    //model element
+    $scope.selected_room;
+
+    //new rooms to be allocated to the guest on guest request
+    $scope.new_rooms=[];
 
 
+    //store the latest record if the guest is in the hotel
+    $scope.guest_history={};
+
+    //check guests current stay(if guest record is found then only we can update his details)
+
+    $http({
+        url: 'http://localhost:8080/api/guest/'+ $routeParams.guestId + '/lateststay ',
+        method: 'get',
+        headers: {
+            'Authorization': $cookieStore.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            if (status == 200) {
+                if(data.id != undefined)
+                {
+                    console.log('guest stay is found');
+                    $scope.guest_history=data;
+                    $scope.view_switcher_flag=true;
+                    $scope.assigned_rooms=data.rooms;
+                }
+
+            } else {
+                console.log('status:' + status);
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+
+    //get all available rooms in the hotel  to allocate to a guest
     $http({
         url: 'http://localhost:8080/api/hotel/' + $scope.current_user_hotel_id + '/rooms',
         method: 'get',
@@ -1046,18 +1083,48 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
             console.log(error);
         });
 
-
-
-
-
-
-    $scope.add=function()
+    $scope.pushRoomToRight=function()
     {
+        console.log('push to right');
+
+        if ($scope.selected_room != null) {
+            for (var i = 0; i < $scope.available_hotel_rooms.length; i++) {
+
+                if ($scope.available_hotel_rooms[i].id == $scope.selected_room.id) {
+                    $scope.available_hotel_rooms.splice(i, 1);
+                    $scope.assigned_rooms.push($scope.selected_room);
+                    return;
+                }
+            }
+        }
+
+
+    }
+
+    $scope.pushRoomToLeft=function()
+    {
+        console.log('push to left');
+        if ($scope.selected_room != null) {
+            for (var i = 0; i < $scope.assigned_rooms.length; i++) {
+
+                if ($scope.assigned_rooms[i].id == $scope.selected_room.id) {
+                    $scope.assigned_rooms.splice(i, 1);
+                    $scope.available_hotel_rooms.push($scope.selected_room);
+                    return;
+                }
+            }
+        }
+    }
+
+
+
+
+    $scope.add = function () {
         console.log('adding stay details');
-        $scope.stay_detail.arrivalTime=new Date($scope.arrival_time);
-        $scope.stay_detail.departureTime=new Date($scope.departure_time);
-        $scope.stay_detail.hotel=$scope.current_hotel;
-        $scope.stay_detail.rooms=$scope.y.available_hotel_rooms;
+        $scope.stay_detail.arrivalTime = new Date($scope.arrival_time);
+        $scope.stay_detail.departureTime = new Date($scope.departure_time);
+        $scope.stay_detail.hotel = $scope.current_hotel;
+        $scope.stay_detail.rooms = $scope.y.available_hotel_rooms;
 
 
         $http({
@@ -1073,8 +1140,46 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
                 if (status == 201) {
                     console.log('Add hotel stay details successfully');
                     $location.url('maintain/guest/' + $routeParams.guestId + '/gueststaydetails');
+                } else {
+                    console.log('status:' + status);
+                }
+            })
+            .error(function (error) {
+                console.log(error);
+            });
+    }
 
 
+
+
+    $scope.update = function () {
+        if($scope.arrival_time== undefined)
+        {
+            $scope.stay_detail.arrivalTime = new Date($scope.guest_history.arrivalTime);
+        }
+
+
+        if($scope.departure_time== undefined)
+        {
+            $scope.stay_detail.departureTime = new Date($scope.guest_history.departureTime);
+        }
+
+        $scope.stay_detail.hotel = $scope.current_hotel;
+        $scope.stay_detail.rooms = $scope.assigned_rooms;
+
+        $http({
+            url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/updatestaydetails',
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': $cookieStore.get("auth")
+            },
+            data: $scope.stay_detail
+        }).
+            success(function (data, status) {
+                if (status == 200) {
+                    console.log('Add hotel stay details successfully');
+                    $location.url('maintain/guest/' + $routeParams.guestId + '/gueststaydetails');
                 } else {
                     console.log('status:' + status);
                 }
@@ -1083,7 +1188,11 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
                 console.log(error);
             });
 
+
+
     }
+
+
 });
 
 <!--View guest Room Card  data-->
