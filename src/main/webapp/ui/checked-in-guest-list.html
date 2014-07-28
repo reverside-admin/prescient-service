@@ -27,14 +27,16 @@
                 <th></th>
             </tr>
 
-            <tr ng-repeat="guest in checked_in_guest_list1=(checkedin_guest_list | filter:search)">
-                <td style="text-align: center">{{guest.guest.title}}</td>
-                <td style="text-align: center">{{guest.guest.firstName}}</td>
-                <td style="text-align: center">{{guest.guest.surname}}</td>
-                <td style="text-align: center">{{guest.guest.preferredName}}</td>
-                <td style="text-align: center">{{guest.room.roomNumber}}</td>
+            <tr ng-repeat="(key,value) in checked_in_guest_list1=(checkedin_guest_list | filter:search)">
+                <td style="text-align: center">{{value.guest.title}}</td>
+                <td style="text-align: center">{{value.guest.firstName}}</td>
+                <td style="text-align: center">{{value.guest.surname}}</td>
+                <td style="text-align: center">{{value.guest.preferredName}}</td>
+                <td style="text-align: center"><select ng-model="pp" ng-options="room.roomNumber as room.roomNumber for room in value.rooms">
+                    <option value="">ROOMS</option>
+                </select></td>
 
-                <td><a ng-href="#checked-in-guest/{{guest.id}}">Detail</a>
+                <td><a ng-href="#checked-in-guest/{{value.guest.id}}">Detail</a>
                 </td>
             </tr>
         </table>

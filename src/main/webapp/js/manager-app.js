@@ -1158,12 +1158,21 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
         if($scope.arrival_time== undefined)
         {
             $scope.stay_detail.arrivalTime = new Date($scope.guest_history.arrivalTime);
+        }else
+        {
+            $scope.stay_detail.arrivalTime=$scope.arrival_time;
+
         }
 
 
         if($scope.departure_time== undefined)
         {
             $scope.stay_detail.departureTime = new Date($scope.guest_history.departureTime);
+        }
+        else
+        {
+            $scope.stay_detail.departureTime=$scope.departure_time;
+
         }
 
         $scope.stay_detail.hotel = $scope.current_hotel;
@@ -1701,6 +1710,8 @@ manager_app.controller('current_guest_location_controller', function ($scope, $h
     console.log('current guest location::' + $scope.guest_id);
 
     <!-- get guest detail by guests id  -->
+    $scope.room_message='';
+    $scope.rooms={};
 
     $http({
         url: 'http://localhost:8080/api/guest/' + $scope.guest_id,
@@ -1713,7 +1724,15 @@ manager_app.controller('current_guest_location_controller', function ($scope, $h
             console.log('get success code::' + status);
             if (status == 200) {
                 $scope.guest_detail = data;
+                $scope.rooms=data.rooms;
+                for(var i=0;i<$scope.rooms.length;i++)
+                {
+                    $scope.room_message=$scope.room_message+','+$scope.rooms[i].roomNumber;
+                }
+
                 console.log('Guest Detail::' + $scope.guest_detail);
+                console.log('room details::'+$scope.room_message);
+
 
 
             } else {
@@ -1724,6 +1743,7 @@ manager_app.controller('current_guest_location_controller', function ($scope, $h
             console.log(error);
         });
 
+    $scope.location_message='';
 
     $http({
         url: 'http://localhost:8080/api/guests/' + $scope.guest_id + '/locations',
@@ -1737,6 +1757,11 @@ manager_app.controller('current_guest_location_controller', function ($scope, $h
 
                 $scope.guest_current_position = data;
                 console.log('current guest position detail ::' + $scope.guest_current_position);
+                for(var i=0;i<$scope.guest_current_position.length;i++)
+                {
+                    $scope.location_message=$scope.location_message+','+$scope.guest_current_position[i].zoneId;
+                }
+                console.log('currently found locations::'+$scope.location_message);
 
             } else {
                 console.log('status:' + status);

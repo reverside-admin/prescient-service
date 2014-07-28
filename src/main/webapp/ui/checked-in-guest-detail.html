@@ -62,8 +62,15 @@
 
             <tr>
                 <td><b>Room Number</b></td>
-                <td style="width: 50%">{{checked_in_guest_detail.room.roomNumber}}</td>
+                <td style="width: 50%">
+                    <select ng-model="rm"
+                            ng-options="obj.roomNumber as obj.roomNumber for obj in checked_in_guest_detail.rooms">
+                        <option value="">Rooms</option>
+                    </select>
+                </td>
             </tr>
+
+
 
             <tr>
                 <td><b>Arrival Time</b></td>

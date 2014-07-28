@@ -35,9 +35,15 @@
                 <td><b>Preferred Name</b></td>
                 <td style="width: 50%">{{guest_detail.guest.preferredName}}</td>
             </tr>
+
             <tr>
                 <td><b>Room Number</b></td>
-                <td style="width: 50%">{{guest_detail.room.roomNumber}}</td>
+                <td style="width: 50%">
+                    <select ng-model="rm"
+                            ng-options="obj.roomNumber as obj.roomNumber for obj in guest_detail.rooms">
+                        <option value="">Rooms</option>
+                    </select>
+                </td>
             </tr>
 
 
@@ -48,7 +54,8 @@
 
 
     <div style="width: 50%; margin-left: auto;margin-right: auto;" ng-if="guest_current_position" >
-        <h4><b style="color: red"> {{guest_detail.guest.preferredName}} residing in room number {{guest_detail.room.roomNumber}} is currently in {{guest_current_position.zoneId}} </b></h4>
+        <h4><b style="color: red"> {{guest_detail.guest.preferredName}} residing in room number {{room_message}}
+            is currently in {{location_message}} </b></h4>
 
     </div>
 

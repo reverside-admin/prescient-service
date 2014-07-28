@@ -17,6 +17,8 @@ import za.co.prescient.repository.local.*;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @RestController
@@ -116,43 +118,42 @@ public class Services {
         log.info("guest card---------------" + guestCardAllocation);
 //        ItcsTagRead itc=itcsTagReadRepository.findGuestCardHistory(guestCardAllocation.getCard().getId().intValue());
         List<ItcsTagRead> itcsTagReads = new ArrayList<ItcsTagRead>();
-        for (int i=0; i<guestCardAllocation.size(); i++)
-        {
-        String guestCardRFIDTagNo = guestCardAllocation.get(i).getCard().getRfidTagNo();
-        log.info("String value of guestCardRFIDTagNo : " + guestCardRFIDTagNo);
+        for (int i = 0; i < guestCardAllocation.size(); i++) {
+            String guestCardRFIDTagNo = guestCardAllocation.get(i).getCard().getRfidTagNo();
+            log.info("String value of guestCardRFIDTagNo : " + guestCardRFIDTagNo);
 
-        String responseStr = "";
-        try {
-            URL url = new URL("http://localhost:9090/tags/" + guestCardRFIDTagNo + "/now");
-            log.info("guestCardRFIDTagNo : " + guestCardRFIDTagNo);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Accept", "application/json");
+            String responseStr = "";
+            try {
+                URL url = new URL("http://localhost:9090/tags/" + guestCardRFIDTagNo + "/now");
+                log.info("guestCardRFIDTagNo : " + guestCardRFIDTagNo);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Accept", "application/json");
 
-            BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+                BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
 
-            System.out.println("Output from Server .... \n");
-            String res;
-            while ((res = br.readLine()) != null) {
-                System.out.println(res);
-                responseStr = responseStr + res;
+                System.out.println("Output from Server .... \n");
+                String res;
+                while ((res = br.readLine()) != null) {
+                    System.out.println(res);
+                    responseStr = responseStr + res;
+                }
+
+                JSONObject obj = new JSONObject(responseStr);
+                System.out.println(obj.getDouble("xcoordRead"));
+
+                itcsTagRead = new ItcsTagRead();
+                itcsTagRead.setId(obj.getLong("id"));
+                itcsTagRead.setGuestCard(obj.getString("guestCard"));
+                itcsTagRead.setZoneId(obj.getString("zoneId"));
+                itcsTagRead.setXCoordRead(obj.getDouble("xcoordRead"));
+                itcsTagRead.setYCoordRead(obj.getDouble("ycoordRead"));
+                itcsTagRead.setTagReadDatetime(new Date(obj.getLong("tagReadDatetime")));
+            } catch (Exception e) {
+                itcsTagRead = new ItcsTagRead();
+                log.info("guestCardRFIDTagNo Exp : " + guestCardRFIDTagNo);
+                e.getMessage();
             }
-
-            JSONObject obj = new JSONObject(responseStr);
-            System.out.println(obj.getDouble("xcoordRead"));
-
-            itcsTagRead = new ItcsTagRead();
-            itcsTagRead.setId(obj.getLong("id"));
-            itcsTagRead.setGuestCard(obj.getString("guestCard"));
-            itcsTagRead.setZoneId(obj.getString("zoneId"));
-            itcsTagRead.setXCoordRead(obj.getDouble("xcoordRead"));
-            itcsTagRead.setYCoordRead(obj.getDouble("ycoordRead"));
-            itcsTagRead.setTagReadDatetime(new Date(obj.getLong("tagReadDatetime")));
-        } catch (Exception e) {
-            itcsTagRead = new ItcsTagRead();
-            log.info("guestCardRFIDTagNo Exp : " + guestCardRFIDTagNo);
-            e.getMessage();
-        }
             itcsTagReads.add(itcsTagRead);
         }
         return itcsTagReads;
@@ -507,7 +508,7 @@ public class Services {
     //get guests latest stay record
     @RequestMapping(value = "guest/{guestId}/lateststay")
     public GuestStayHistory getlatestStayOfAGuest(@PathVariable("guestId") Long guestId) {
-        GuestStayHistory guestStayHistory=guestStayHistoryRepository.getGuestLastStay(guestId);
+        GuestStayHistory guestStayHistory = guestStayHistoryRepository.getGuestLastStay(guestId);
         return guestStayHistory;
     }
 
@@ -530,12 +531,11 @@ public class Services {
         gsh.setDepartureTime(guestStayHistory.getDepartureTime());
         gsh.setGuest(guest);
 
-        List<Room> rooms=guestStayHistory.getRooms();
-        List<Room> allRooms=new ArrayList<Room>();
+        List<Room> rooms = guestStayHistory.getRooms();
+        List<Room> allRooms = new ArrayList<Room>();
 
-        for(Room rm:rooms)
-        {
-            Room room=roomRepository.findOne(rm.getId());
+        for (Room rm : rooms) {
+            Room room = roomRepository.findOne(rm.getId());
             room.setRoomStatusInd(true);
             allRooms.add(room);
         }
@@ -553,25 +553,23 @@ public class Services {
     public void updateStayDetails(@RequestBody GuestStayHistory guestStayHistory, @PathVariable("guestId") Long guestId) {
         log.info("add guest stay details service");
 
-        GuestStayHistory history=guestStayHistoryRepository.getGuestLastStay(guestId);
+        GuestStayHistory history = guestStayHistoryRepository.getGuestLastStay(guestId);
         LOGGER.info(history.getId());
 
         history.setArrivalTime(guestStayHistory.getArrivalTime());
         history.setDepartureTime(guestStayHistory.getDepartureTime());
-        List<Room> previouslyAllocatedRooms=history.getRooms();
-        List<Room> newRoomsRequested=guestStayHistory.getRooms();
-        List<Room> newRoomsToBeAllocated=new ArrayList<Room>();
+        List<Room> previouslyAllocatedRooms = history.getRooms();
+        List<Room> newRoomsRequested = guestStayHistory.getRooms();
+        List<Room> newRoomsToBeAllocated = new ArrayList<Room>();
 
-        for(Room room:previouslyAllocatedRooms)
-        {
-            Room rm=roomRepository.findOne(room.getId());
+        for (Room room : previouslyAllocatedRooms) {
+            Room rm = roomRepository.findOne(room.getId());
             rm.setRoomStatusInd(false);
 
         }
 
-        for(Room room:newRoomsRequested)
-        {
-            Room rm=roomRepository.findOne(room.getId());
+        for (Room room : newRoomsRequested) {
+            Room rm = roomRepository.findOne(room.getId());
             rm.setRoomStatusInd(true);
             newRoomsToBeAllocated.add(rm);
 
@@ -588,19 +586,17 @@ public class Services {
     @ResponseStatus(HttpStatus.OK)
     public List<Card> getRoomKeyCards() {
         List<Card> allCards = cardRepository.findAll();
-        List<GuestCard> guestCards=guestCardRepository.findAllAllocatedCards();
-        LOGGER.info("card id::"+guestCards.get(0).getCard().getId()+"is given to::"+guestCards.get(0).getGuest().getFirstName());
-        List<Card> allocatedCards=new ArrayList<Card>();
-        for(GuestCard c:guestCards)
-        {
-            Card card=c.getCard();
+        List<GuestCard> guestCards = guestCardRepository.findAllAllocatedCards();
+        LOGGER.info("card id::" + guestCards.get(0).getCard().getId() + "is given to::" + guestCards.get(0).getGuest().getFirstName());
+        List<Card> allocatedCards = new ArrayList<Card>();
+        for (GuestCard c : guestCards) {
+            Card card = c.getCard();
             allocatedCards.add(card);
         }
         //now substract allocated cards from all cards to get the available cards
         allCards.removeAll(allocatedCards);
         return allCards;
     }
-
 
 
     //get all cards issued to a guest
@@ -611,13 +607,11 @@ public class Services {
     }
 
 
-
     @RequestMapping(value = "guest/{guestId}/cards/assign", method = RequestMethod.POST, produces = "application/json")
-    public void saveCards(@RequestBody List<GuestCard> guestCards,@PathVariable("guestId") Long guestId) {
+    public void saveCards(@RequestBody List<GuestCard> guestCards, @PathVariable("guestId") Long guestId) {
         LOGGER.info("service to assign multiple cards is called");
-        LOGGER.info("get cards of length::"+guestCards.size());
-        for(GuestCard guestCard:guestCards)
-        {
+        LOGGER.info("get cards of length::" + guestCards.size());
+        for (GuestCard guestCard : guestCards) {
             guestCard.setGuest(guestRepository.findOne(guestId));
             guestCard.setCard(guestCard.getCard());
             guestCard.setIssueDate(new Date());
@@ -641,16 +635,36 @@ public class Services {
         guestCard.setStatus(false);
         guestCard.setReturnDate(new Date());
         guestCardRepository.save(guestCard);
-        Long guestId=guestCard.getGuest().getId();
+        Long guestId = guestCard.getGuest().getId();
 
-        //ckeck if the guest have any cards or not if guest donot have cards we can change its stay indicator status to false
+        //ckeck if the guest have any cards or not if guest donot have cards and he return all his card on the day of his/her departure date ,we can change its stay indicator status to false
+        //and return all his room as well.
 
-        List<GuestCard> guestCards=guestCardRepository.findAllCardsOfAGuest(guestId);
-        if(guestCards.size()==0)
-        {
+        List<GuestCard> guestCards = guestCardRepository.findAllCardsOfAGuest(guestId);
+        if (guestCards.size() == 0) {
             GuestStayHistory guestStayHistory = guestStayHistoryRepository.getGuestLastStay(guestId);
-            guestStayHistory.setCurrentStayIndicator(false);
-            guestStayHistoryRepository.save(guestStayHistory);
+            Date departureDate = guestStayHistory.getDepartureTime();
+
+            Calendar calendar1 = Calendar.getInstance();
+            calendar1.setTime(departureDate);
+            Calendar calendar2 = Calendar.getInstance();
+            calendar2.setTime(new Date());
+            int departureDay = calendar1.get(Calendar.DAY_OF_MONTH);
+            int todayDay = calendar2.get(Calendar.DAY_OF_MONTH);
+
+            int departureMonth = calendar1.get(Calendar.MONTH);
+            int todayMonth = calendar2.get(Calendar.MONTH);
+
+            if (departureDay == todayDay && departureMonth == todayMonth) {
+                List<Room> rooms = guestStayHistory.getRooms();
+
+                for (Room rm : rooms) {
+                    Room room = roomRepository.findOne(rm.getId());
+                    room.setRoomStatusInd(false);
+                }
+                guestStayHistory.setCurrentStayIndicator(false);
+                guestStayHistoryRepository.save(guestStayHistory);
+            }
         }
 
 
@@ -661,8 +675,7 @@ public class Services {
 
 
         List<GuestCard> guestCards = guestCardRepository.findAllCardsOfAGuest(guestId);
-        for(GuestCard guestCard:guestCards)
-        {
+        for (GuestCard guestCard : guestCards) {
             guestCard.setReturnDate(new Date());
             guestCard.setStatus(false);
 
@@ -671,8 +684,28 @@ public class Services {
 
         //change the guest current stay indicator to false bcoz guest is leaving the the hotel
         GuestStayHistory guestStayHistory = guestStayHistoryRepository.getGuestLastStay(guestId);
-        guestStayHistory.setCurrentStayIndicator(false);
-        guestStayHistoryRepository.save(guestStayHistory);
+        Date departureDate = guestStayHistory.getDepartureTime();
+
+        Calendar calendar1 = Calendar.getInstance();
+        calendar1.setTime(departureDate);
+        Calendar calendar2 = Calendar.getInstance();
+        calendar2.setTime(new Date());
+        int departureDay = calendar1.get(Calendar.DAY_OF_MONTH);
+        int todayDay = calendar2.get(Calendar.DAY_OF_MONTH);
+
+        int departureMonth = calendar1.get(Calendar.MONTH);
+        int todayMonth = calendar2.get(Calendar.MONTH);
+
+        if (departureDay == todayDay && departureMonth == todayMonth) {
+            List<Room> rooms = guestStayHistory.getRooms();
+
+            for (Room rm : rooms) {
+                Room room = roomRepository.findOne(rm.getId());
+                room.setRoomStatusInd(false);
+            }
+            guestStayHistory.setCurrentStayIndicator(false);
+            guestStayHistoryRepository.save(guestStayHistory);
+        }
     }
 
 

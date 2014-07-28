@@ -50,7 +50,12 @@
 
             <tr>
                 <td><b>Room Number</b></td>
-                <td style="width: 50%">{{guest_detail.room.roomNumber}}</td>
+                <td>
+                    <select ng-model="rm"
+                            ng-options="obj.roomNumber as obj.roomNumber for obj in guest_detail.rooms">
+                        <option value="">Rooms</option>
+                    </select>
+                </td>
             </tr>
 
             <tr>
