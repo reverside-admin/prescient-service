@@ -1006,6 +1006,8 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
     console.log('add stay detail controller is loaded');
     $scope.current_user_hotel_id = $cookieStore.get("user").hotel.id;
     $scope.current_hotel = $cookieStore.get("user").hotel;
+    $scope.current_guest_id=$routeParams.guestId;
+
 
     //get all rooms
     $scope.available_hotel_rooms;
@@ -1199,7 +1201,7 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
 
 manager_app.controller('view_guest_room_card_controller', function ($scope, $http, $routeParams, $cookieStore) {
 
-    $scope.roomcard_data = {};
+    $scope.guest_cards;
     $scope.guest_detail = {};
 
 
@@ -1235,8 +1237,7 @@ manager_app.controller('view_guest_room_card_controller', function ($scope, $htt
     }).
         success(function (data, status) {
             if (status == 200) {
-                $scope.roomcard_data = data;
-                console.log("guest room status::" + $scope.roomcard_data);
+                $scope.guest_cards = data;
 
             } else {
                 console.log('status:' + status);
@@ -1256,20 +1257,24 @@ manager_app.controller('maintain_room_key_cards_controller', function ($scope, $
     $scope.guest_room_key_cards;  //all available cards
     $scope.message = '';          //confirmation message
     $scope.room_card_status;
-    $scope.card_id;
-    $scope.flag;
-
-    $scope.guest_key_card_status = [
-        {"id": 0, "name": "False"},
-        {"id": 1, "name": "True"}
-    ];
-
-    $scope.current_key_card = [
-        {"id": 0}
-    ];
+    $scope.card;
+    $scope.issue_flag=false;
+    $scope.return_flag=false;
+    $scope.return_all_flag=false;
 
 
-    //get the guest card allowcation details of the current guest.
+    //all cards holding by the guest
+    $scope.current_key_cards;
+
+    //object to bind
+    $scope.guest_card = {};
+    //array of bind objects
+    $scope.guest_cards = [];
+
+    $scope.y = {guest_room_key_cards: []};
+
+
+    //get all cards given to a guest.
     $http({
         url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/roomcarddetails',
         method: 'get',
@@ -1278,31 +1283,28 @@ manager_app.controller('maintain_room_key_cards_controller', function ($scope, $
         }
     }).
         success(function (data, status) {
-            if (status == 200) {
-                //$scope.roomcard_data = data;
-                //console.log("guest room status::" + $scope.roomcard_data);
-                //$scope.card_id=data.card.magStripeNo;
-                if (data.card != undefined) {
-                    $scope.card_id = data.card.id;
-                    $scope.flag = true;
-                    $scope.current_key_card[0].magStripeNo = data.card.magStripeNo;
-                    $scope.current_card = 0;
-                }
-                else {
-                    $scope.flag = false;
-                }
+            if(data.length!=0)
+            {
+                console.log('all cards are returned successfully');
+                $scope.current_key_cards=data;
+                $scope.return_all_flag=true;
+                $scope.return_flag=false;
+                $scope.issue_flag=false;
 
-
-            } else {
-                console.log('status:' + status);
             }
+            else{
+                $scope.return_all_flag=false;
+                $scope.return_flag=false;
+                $scope.issue_flag=true;
+            }
+
         })
         .error(function (error) {
             console.log(error);
         });
 
 
-    //get all guest room key cards data
+    //get all guest room key cards data that are available.
     $http({
         url: 'http://localhost:8080/api/guest/roomkeycards',
         method: 'get',
@@ -1324,73 +1326,50 @@ manager_app.controller('maintain_room_key_cards_controller', function ($scope, $
         });
 
 
-    //view the guest room key card data for testing purpose only
-    $scope.onSelectMSN = function () {
-        console.log("onselectmsn method calling.......")
 
-        $http({
-            url: 'http://localhost:8080/api/' + $scope.card_id + '/roomcarddetails',
-            method: 'get',
-            headers: {
-                'Authorization': $cookieStore.get("auth")
-            }
-        }).
-            success(function (data, status) {
-                if (status == 200) {
-                    $scope.roomcard_data = data;
-                    console.log("guest room status::" + $scope.roomcard_data.status);
+    $scope.onSelectCardFromList=function()
+    {
+        console.log('card is selected'+$scope.current_card.magStripeNo);
+        $scope.return_flag=true;
+        $scope.return_all_flag=false;
+        $scope.issue_flag=false;
+    }
 
-
-                    if ($scope.roomcard_data.status == 1) {
-                        $scope.room_card_status = 1;
-                        // $scope.flag = true;
-                        console.log("room card status is found::" + $scope.room_card_status);
-                    }
-                    else {
-                        $scope.room_card_status = 0;
-                        //$scope.flag=false;
-                    }
-
-
-                } else {
-                    console.log('status:' + status);
-                }
-            })
-            .error(function (error) {
-                console.log(error);
-            });
-
-
+    $scope.onClickIssueButton=function()
+    {
+        $scope.issue_flag=true;
+        $scope.return_all_flag=false;
+        $scope.return_flag=false;
     }
 
     $scope.issueCard = function () {
-        console.log('issue room key cards.....');
-
-        //bind the variables
-        console.log('guest room key cards' + $scope.guest_room_key_card);
+        $scope.obj = {};
+        //doing pre calculation
+        for (var i = 0; i < $scope.y.guest_room_key_cards.length; i++) {
+            console.log($scope.y.guest_room_key_cards[i].magStripeNo);
+            $scope.obj.card = $scope.y.guest_room_key_cards[i];
+            $scope.guest_cards.push($scope.obj);
+            $scope.obj = {};
+        }
 
         $http({
-            url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/keycard/' + $scope.card_id + '/assign',
-            method: 'get',
+            url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/cards/assign',
+            method: 'post',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': $cookieStore.get("auth")
-            }
+            },
+            //data:$scope.guest_cards
+            data: $scope.guest_cards
         }).
             success(function (data, status) {
-                if (status == 200) {
-
-                    console.log('card is assigned successfully');
-                    $location.url('maintain/guest/' + $routeParams.guestId + '/roomcarddetails');
-
-                } else {
-                    console.log('status:' + status);
-                }
+                // $scope.guest_cards=[];
+                console.log('saved successfully');
+                $location.url('maintain/guest/'+$routeParams.guestId+'/roomcarddetails');
             })
             .error(function (error) {
                 console.log(error);
             });
-
     }
 
 
@@ -1398,7 +1377,7 @@ manager_app.controller('maintain_room_key_cards_controller', function ($scope, $
         console.log('returning the guest room key card');
 
         $http({
-            url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/keycard/return',
+            url: 'http://localhost:8080/api/guest/' + $scope.current_card.id + '/returncard',
             method: 'get',
             headers: {
                 'Content-Type': 'application/json',
@@ -1420,6 +1399,31 @@ manager_app.controller('maintain_room_key_cards_controller', function ($scope, $
             });
     }
 
+    $scope.returnAllCards=function()
+    {
+        console.log('return all cards from the guest');
+        $http({
+            url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/returncards',
+            method: 'get',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': $cookieStore.get("auth")
+            }
+        }).
+            success(function (data, status) {
+                if (status == 200) {
+
+                    console.log('all cards are returned successfully');
+                    $location.url('maintain/guest/' + $routeParams.guestId + '/roomcarddetails');
+
+                } else {
+                    console.log('status:' + status);
+                }
+            })
+            .error(function (error) {
+                console.log(error);
+            });
+    }
 });
 
 manager_app.controller('current_guest_location_history_controller', function ($scope, $cookieStore, $routeParams, $http) {

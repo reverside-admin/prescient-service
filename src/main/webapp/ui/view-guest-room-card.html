@@ -3,8 +3,9 @@
 
     <div class="col-md-12 text-right">
         <div class="btn-group btn-group-sm">
-            <a ng-href="#maintain/guest/{{guest_detail.id}}/maintaincard"  class="btn btn-primary">MaintainGuestRoomCards</a>
-            <a ng-href="#maintain/guest/{{roomcard_data.guest.id}}/details"  class="btn btn-primary">Back</a>
+            <a ng-href="#maintain/guest/{{guest_detail.id}}/maintaincard"
+               class="btn btn-primary">MaintainGuestRoomCards</a>
+            <a ng-href="#maintain/guest/{{roomcard_data.guest.id}}/details" class="btn btn-primary">Back</a>
         </div>
     </div>
 
@@ -56,32 +57,25 @@
                 <td>{{guest_detail.nationalityId}}</td>
             </tr>
         </table>
-        <div style="width: 50%; margin-left: auto;margin-right: auto;">
-            <table class="table table-hover table-condensed table-bordered  table-responsive">
 
-
+        <div style="width: 100%; margin-left: auto;margin-right: auto;">
+            <table class="table table-hover table-condensed  table-bordered table-responsive">
                 <tr>
-                    <td style="text-align: right"><b>Room Key Card</b></td>
-                    <td>{{roomcard_data.card.magStripeNo}}</td>
+                    <th>Room Key Card</th>
+                    <th>RFID_Tag_Number</th>
+                    <th>Card Issue Datetime</th>
+                    <th>Guest Card Status</th>
                 </tr>
 
-                <tr>
-                    <td style="text-align: right"><b>RFID_Tag_Number</b></td>
-                    <td>{{roomcard_data.card.rfidTagNo}}</td>
+                <tr ng-repeat="guest_card in guest_cards">
+                    <td>{{guest_card.card.magStripeNo }}</td>
+                    <td>{{guest_card.card.rfidTagNo }}</td>
+                    <td>{{guest_card.issueDate | date:'yyyy-MM-dd' }}</td>
+                    <td>{{guest_card.status}}</td>
                 </tr>
-
-                <tr>
-                    <td style="text-align: right"><b>Card Issue Datetime</b></td>
-                    <td>{{roomcard_data.issueDate | date:'yyyy-MM-dd'}}</td>
-                </tr>
-
-                <tr>
-                    <td style="text-align: right"><b>Guest Card Status </b></td>
-                    <td>{{roomcard_data.status}}</td>
-                </tr>
-
             </table>
         </div>
+
 
     </div>
 </div>

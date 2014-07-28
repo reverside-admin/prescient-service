@@ -17,15 +17,27 @@ public interface GuestCardRepository extends JpaRepository<GuestCard, Long> {
     @Query("select gca.guest from GuestCard gca where gca.card.rfidTagNo in (?1) and gca.status = true")
     public List<GuestCard> findByCardIdListWithStatusActive(List<String> cardIdList);
 
+
+    //return type changed to list
     @Query("select gca from GuestCard gca where gca.guest.id = ?1 and gca.status = true")
-    public GuestCard findGuestCardByGuestId(Long guestId);
+    public List<GuestCard> findGuestCardByGuestId(Long guestId);
 
     @Query("select gca from GuestCard gca where gca.card.id=?1 and gca.status=true")
     public GuestCard findGuestCardByCardId(Long cardId);
 
 
-    @Query("select gca from GuestCard gca where gca.guest.id=?1")
-    public GuestCard findGuest(Long guestId);
+   /* @Query("select gca from GuestCard gca where gca.guest.id=?1")
+    public GuestCard findGuest(Long guestId);*/
+
+    @Query("select gca from GuestCard gca where gca.status=true")
+    public List<GuestCard> findAllAllocatedCards();
+
+
+    //get cards given to a guest.we have implemented a method doing the same thing here but currently we donot want to change that method
+    //because it may hamper other functionality.we are dealing with guest card now after fixing this we will refactor the code.
+
+    @Query("select gca from GuestCard gca where gca.guest.id = ?1 and gca.status = true")
+    public List<GuestCard> findAllCardsOfAGuest(Long guestId);
 
 
 

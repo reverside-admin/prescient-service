@@ -106,17 +106,19 @@ public class Services {
     ItcsTagRead itcsTagRead;
 
     @RequestMapping(value = "guests/{guestId}/locations")
-    public ItcsTagRead getGuestCardHistory(@PathVariable("guestId") Long guestId) {
+    public List<ItcsTagRead> getGuestCardHistory(@PathVariable("guestId") Long guestId) {
         log.info("guestcard by guest id service is called" + guestId);
 
-        GuestCard guestCardAllocation;
+        List<GuestCard> guestCardAllocation;
         guestCardAllocation = guestCardRepository.findGuestCardByGuestId(guestId);
 
 
         log.info("guest card---------------" + guestCardAllocation);
 //        ItcsTagRead itc=itcsTagReadRepository.findGuestCardHistory(guestCardAllocation.getCard().getId().intValue());
-
-        String guestCardRFIDTagNo = guestCardAllocation.getCard().getRfidTagNo();
+        List<ItcsTagRead> itcsTagReads = new ArrayList<ItcsTagRead>();
+        for (int i=0; i<guestCardAllocation.size(); i++)
+        {
+        String guestCardRFIDTagNo = guestCardAllocation.get(i).getCard().getRfidTagNo();
         log.info("String value of guestCardRFIDTagNo : " + guestCardRFIDTagNo);
 
         String responseStr = "";
@@ -146,20 +148,21 @@ public class Services {
             itcsTagRead.setXCoordRead(obj.getDouble("xcoordRead"));
             itcsTagRead.setYCoordRead(obj.getDouble("ycoordRead"));
             itcsTagRead.setTagReadDatetime(new Date(obj.getLong("tagReadDatetime")));
-
         } catch (Exception e) {
             itcsTagRead = new ItcsTagRead();
             log.info("guestCardRFIDTagNo Exp : " + guestCardRFIDTagNo);
             e.getMessage();
         }
-        return itcsTagRead;
+            itcsTagReads.add(itcsTagRead);
+        }
+        return itcsTagReads;
     }
 
 
     ItcsTagReadHistory itcsTagReadHistory;
     List<ItcsTagReadHistory> itc;
 
-    @RequestMapping(value = "guests/{guestId}/location/history")
+    /*@RequestMapping(value = "guests/{guestId}/location/history")
     public List<ItcsTagReadHistory> getGuestHistory(@PathVariable("guestId") Long guestId) {
         log.info("guestcard history service is called");
         GuestCard guestCardAllocation = guestCardRepository.findGuestCardByGuestId(guestId);
@@ -211,7 +214,7 @@ public class Services {
 
         log.info("return list size::" + itc.size());
         return itc;
-    }
+    }*/
 
 
     List<ItcsTagRead> itr;
@@ -579,77 +582,98 @@ public class Services {
 
 
     //manage room keycard for the guest
-    //get guest issued room card details
-    @RequestMapping(value = "guest/{guestId}/roomcarddetails", method = RequestMethod.GET, produces = "application/json")
-    public GuestCard getCardDetails(@PathVariable("guestId") Long guestId) {
-        log.info("view guest room card detail  service");
-        return guestCardRepository.findGuestCardByGuestId(guestId);
-    }
 
-
-    //added to get the guest room key cards data
+    //added to get the guest room key cards that are available
     @RequestMapping(value = "guest/roomkeycards", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     public List<Card> getRoomKeyCards() {
-        List<Card> cards = cardRepository.findAll();
-        return cards;
+        List<Card> allCards = cardRepository.findAll();
+        List<GuestCard> guestCards=guestCardRepository.findAllAllocatedCards();
+        LOGGER.info("card id::"+guestCards.get(0).getCard().getId()+"is given to::"+guestCards.get(0).getGuest().getFirstName());
+        List<Card> allocatedCards=new ArrayList<Card>();
+        for(GuestCard c:guestCards)
+        {
+            Card card=c.getCard();
+            allocatedCards.add(card);
+        }
+        //now substract allocated cards from all cards to get the available cards
+        allCards.removeAll(allocatedCards);
+        return allCards;
     }
 
-    //get room card details and stauts by passing the room key card
-    @RequestMapping(value = "{cardId}/roomcarddetails", method = RequestMethod.GET, produces = "application/json")
-    public GuestCard getRoomCardDetails(@PathVariable("cardId") Long cardId) {
-        log.info("view st room card detail  service");
-        GuestCard guestCard = guestCardRepository.findGuestCardByCardId(cardId);
-        log.info("guest card...." + guestCard);
-        return guestCard;
 
+
+    //get all cards issued to a guest
+    @RequestMapping(value = "guest/{guestId}/roomcarddetails", method = RequestMethod.GET, produces = "application/json")
+    public List<GuestCard> getCardDetails(@PathVariable("guestId") Long guestId) {
+        log.info("view guest room card detail  service");
+        return guestCardRepository.findAllCardsOfAGuest(guestId);
     }
 
 
-   /* @RequestMapping(value = "guest/{guestId}/keycard/{cardId}/assign")
-    public void assignKeyCard(@PathVariable("guestId") Long guestId, @PathVariable("cardId") Long cardId) {
 
-        Card card = cardRepository.findOne(cardId);
-        Guest guest = guestRepository.findOne(guestId);
+    @RequestMapping(value = "guest/{guestId}/cards/assign", method = RequestMethod.POST, produces = "application/json")
+    public void saveCards(@RequestBody List<GuestCard> guestCards,@PathVariable("guestId") Long guestId) {
+        LOGGER.info("service to assign multiple cards is called");
+        LOGGER.info("get cards of length::"+guestCards.size());
+        for(GuestCard guestCard:guestCards)
+        {
+            guestCard.setGuest(guestRepository.findOne(guestId));
+            guestCard.setCard(guestCard.getCard());
+            guestCard.setIssueDate(new Date());
+            guestCard.setStatus(true);
+            guestCard.setReturnDate(null);
+            guestCardRepository.save(guestCard);
 
-        GuestCard guestCard = guestCardRepository.findGuest(guestId);
-
-        if (guestCard == null) {
-            guestCard = new GuestCard();
         }
 
-        guestCard.setGuest(guest);
-        guestCard.setCard(card);
-        guestCard.setIssueDate(new Date());
-        guestCard.setStatus(true);
-        guestCard.setReturnDate(null);
-        guestCardRepository.save(guestCard);
-
-
-        //change the guest current stay indicator to true bcoz guest holds the guest card means he/she is staying in the hotel
-        GuestStayHistory guestStayHistory = guestStayHistoryRepository.findByGuest(guest.getId());
+        //set current stay indicator of a guest to true;
+        GuestStayHistory guestStayHistory = guestStayHistoryRepository.getGuestLastStay(guestId);
         guestStayHistory.setCurrentStayIndicator(true);
-        guestStayHistory.setNoOfPreviousStays(guestStayHistory.getNoOfPreviousStays() + 1);
         guestStayHistoryRepository.save(guestStayHistory);
     }
-*/
 
-   /* @RequestMapping(value = "guest/{guestId}/keycard/return")
-    public void assignKeyCard(@PathVariable("guestId") Long guestId) {
+    @RequestMapping(value = "guest/{cardId}/returncard")
+    public void returnKeyCard(@PathVariable("cardId") Long cardId) {
 
 
-        GuestCard guestCard = guestCardRepository.findGuest(guestId);
+        GuestCard guestCard = guestCardRepository.findGuestCardByCardId(cardId);
         guestCard.setStatus(false);
         guestCard.setReturnDate(new Date());
         guestCardRepository.save(guestCard);
+        Long guestId=guestCard.getGuest().getId();
 
+        //ckeck if the guest have any cards or not if guest donot have cards we can change its stay indicator status to false
+
+        List<GuestCard> guestCards=guestCardRepository.findAllCardsOfAGuest(guestId);
+        if(guestCards.size()==0)
+        {
+            GuestStayHistory guestStayHistory = guestStayHistoryRepository.getGuestLastStay(guestId);
+            guestStayHistory.setCurrentStayIndicator(false);
+            guestStayHistoryRepository.save(guestStayHistory);
+        }
+
+
+    }
+
+    @RequestMapping(value = "guest/{guestId}/returncards")
+    public void returnAllKeyCards(@PathVariable("guestId") Long guestId) {
+
+
+        List<GuestCard> guestCards = guestCardRepository.findAllCardsOfAGuest(guestId);
+        for(GuestCard guestCard:guestCards)
+        {
+            guestCard.setReturnDate(new Date());
+            guestCard.setStatus(false);
+
+        }
+        guestCardRepository.save(guestCards);
 
         //change the guest current stay indicator to false bcoz guest is leaving the the hotel
-        GuestStayHistory guestStayHistory = guestStayHistoryRepository.findByGuest(guestId);
+        GuestStayHistory guestStayHistory = guestStayHistoryRepository.getGuestLastStay(guestId);
         guestStayHistory.setCurrentStayIndicator(false);
         guestStayHistoryRepository.save(guestStayHistory);
-
-    }*/
+    }
 
 
 }
