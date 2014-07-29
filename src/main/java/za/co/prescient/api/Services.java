@@ -14,11 +14,12 @@ import za.co.prescient.model.itcs.ItcsTagRead;
 import za.co.prescient.model.itcs.ItcsTagReadHistory;
 import za.co.prescient.repository.local.*;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @RestController
@@ -132,15 +133,15 @@ public class Services {
 
                 BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
 
-                System.out.println("Output from Server .... \n");
+                log.info("Output from Server .... \n");
                 String res;
                 while ((res = br.readLine()) != null) {
-                    System.out.println(res);
+                    log.info(res);
                     responseStr = responseStr + res;
                 }
 
                 JSONObject obj = new JSONObject(responseStr);
-                System.out.println(obj.getDouble("xcoordRead"));
+                log.info("xcoordRead"+obj.getDouble("xcoordRead"));
 
                 itcsTagRead = new ItcsTagRead();
                 itcsTagRead.setId(obj.getLong("id"));
@@ -162,61 +163,66 @@ public class Services {
 
     ItcsTagReadHistory itcsTagReadHistory;
     List<ItcsTagReadHistory> itc;
+    List<ItcsTagReadHistory> itcsTagReadHistories;
 
-    /*@RequestMapping(value = "guests/{guestId}/location/history")
+    //comment start
+    @RequestMapping(value = "guests/{guestId}/location/history")
     public List<ItcsTagReadHistory> getGuestHistory(@PathVariable("guestId") Long guestId) {
         log.info("guestcard history service is called");
-        GuestCard guestCardAllocation = guestCardRepository.findGuestCardByGuestId(guestId);
+        List<GuestCard> guestCardAllocation;
+        guestCardAllocation = guestCardRepository.findGuestCardByGuestId(guestId);
 
 //        List<ItcsTagReadHistory> itc= itcsTagReadHistoryRepository.findGuestHistory(guestCardAllocation.getCard().getId().intValue());
 
-        String guestCardId = guestCardAllocation.getCard().getRfidTagNo();
-        System.out.println("guestCardId >>>" + guestCardId);
-        String responseStr = "";
-//        List<ItcsTagReadHistory> itc = new ArrayList<ItcsTagReadHistory>();
         itc = new ArrayList<ItcsTagReadHistory>();
-        try {
-            URL url = new URL("http://localhost:9090/tags/" + guestCardId + "/history");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Accept", "application/json");
+        itcsTagReadHistories = new ArrayList<ItcsTagReadHistory>();
 
-            BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+        for (int j = 0; j < guestCardAllocation.size(); j++) {
+            String guestCardId = guestCardAllocation.get(j).getCard().getRfidTagNo();
+            log.info("guestCardId : " + guestCardId);
+            String responseStr = "";
+//        List<ItcsTagReadHistory> itc = new ArrayList<ItcsTagReadHistory>();
 
-            System.out.println("Output from Server .... \n");
-            String res;
-            while ((res = br.readLine()) != null) {
-                System.out.println(res);
-                responseStr = responseStr + res;
-            }
-            JSONArray obj = new JSONArray(responseStr);
-            System.out.println("obj length " + obj.length());
+            try {
+                URL url = new URL("http://localhost:9090/tags/" + guestCardId + "/history");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Accept", "application/json");
 
-
-            for (int i = 0; i < obj.length(); i++) {
-                JSONObject jObj = (JSONObject) obj.get(i);
-                System.out.println(jObj.get("zoneId").getClass().getName());
-                if (!(jObj.isNull("zoneId"))) {
-                    itcsTagReadHistory = new ItcsTagReadHistory();
-                    itcsTagReadHistory.setId(jObj.getLong("id"));
-                    System.out.println("i : " + i);
-                    itcsTagReadHistory.setGuestCard(jObj.getString("guestCard"));
-                    itcsTagReadHistory.setZoneId(jObj.getString("zoneId"));
-                    itcsTagReadHistory.setXCoordRead(jObj.getDouble("xcoordRead"));
-                    itcsTagReadHistory.setYCoordRead(jObj.getDouble("ycoordRead"));
-                    itcsTagReadHistory.setTagReadDatetime(new Date(jObj.getLong("tagReadDatetime")));
-                    itc.add(itcsTagReadHistory);
+                BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+                String res;
+                while ((res = br.readLine()) != null) {
+                    log.info("Response from Server : " + res);
+                    responseStr = responseStr + res;
                 }
-
+                JSONArray obj = new JSONArray(responseStr);
+                log.info("obj length " + obj.length());
+                JSONObject jObj;
+                for (int i = 0; i < obj.length(); i++) {
+                    jObj = (JSONObject) obj.get(i);
+                    log.info("jobj outer : "+i);
+                    if (!(jObj.isNull("zoneId"))) {
+                        log.info("jobj inner :"+i);
+                        itcsTagReadHistory = new ItcsTagReadHistory();
+                        itcsTagReadHistory.setId(jObj.getLong("id"));
+                        itcsTagReadHistory.setGuestCard(jObj.getString("guestCard"));
+                        itcsTagReadHistory.setZoneId(jObj.getString("zoneId"));
+                        itcsTagReadHistory.setXCoordRead(jObj.getDouble("xcoordRead"));
+                        itcsTagReadHistory.setYCoordRead(jObj.getDouble("ycoordRead"));
+                        itcsTagReadHistory.setTagReadDatetime(new Date(jObj.getLong("tagReadDatetime")));
+                        itc.add(itcsTagReadHistory);
+                    }
+                }
+            } catch (Exception e) {
+                log.info(e.getMessage());
             }
-        } catch (Exception e) {
-            log.info(e.getMessage());
+            itcsTagReadHistories.addAll(itc);
+
         }
-
-        log.info("return list size::" + itc.size());
-        return itc;
-    }*/
-
+        log.info("return list size:" + itcsTagReadHistories.size());
+        return itcsTagReadHistories;
+    }
+    //comment end
 
     List<ItcsTagRead> itr;
 
@@ -234,20 +240,19 @@ public class Services {
 
             BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
 
-            System.out.println("Output from Server .... \n");
+            log.info("Output from Server .... \n");
             String res;
             while ((res = br.readLine()) != null) {
-                System.out.println(res);
+                log.info(res);
                 responseStr = responseStr + res;
             }
             JSONArray obj = new JSONArray(responseStr);
-            System.out.println("obj length " + obj.length());
+            log.info("obj length " + obj.length());
 
             for (int i = 0; i < obj.length(); i++) {
                 JSONObject jObj = obj.getJSONObject(i);
                 itcsTagRead = new ItcsTagRead();
                 itcsTagRead.setId(jObj.getLong("id"));
-                System.out.println("i : " + i);
                 itcsTagRead.setGuestCard(jObj.getString("guestCard"));
                 itcsTagRead.setZoneId(jObj.getString("zoneId"));
                 itcsTagRead.setXCoordRead(jObj.getDouble("xcoordRead"));
@@ -258,8 +263,6 @@ public class Services {
             }
         } catch (Exception e) {
         }
-
-
         return itr;
     }
 
@@ -285,7 +288,7 @@ public class Services {
         File imageFileDir = new File("C:\\Prescient\\Images\\Guest Photographs\\");
         String listOfFiles[] = imageFileDir.list();
         for (int i = 0; i < listOfFiles.length; i++) {
-            System.out.println(listOfFiles[i]);
+            log.info("List of Files : "+listOfFiles[i]);
         }
         //imageList = (ArrayList) Arrays.asList(listOfFiles);
         return listOfFiles;
