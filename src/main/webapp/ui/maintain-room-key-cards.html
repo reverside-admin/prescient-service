@@ -15,11 +15,32 @@
         <h4 class="text-primary"><b>Room key Cards</b></h4>
     </div>
 
+
     <div style="width: 50%; margin-left: auto;margin-right: auto;">
         <table class=" table table-responsive table-bordered">
 
 
-            <tr>
+            <tr style="text-align: center;background-color:#aaaaaa">
+                <td>Title</td>
+                <td>First Name</td>
+                <td>Sur name</td>
+                <td>Preferred Name</td>
+            </tr>
+
+            <tr style="text-align: center">
+                <td>{{guest_detail.title}}</td>
+                 <td>{{guest_detail.firstName}}</td>
+                 <td>{{guest_detail.surname}}</td>
+                 <td>{{guest_detail.preferredName}}</td>
+            </tr>
+            </table>
+        </div>
+
+
+    <div style="width: 50%; margin-left: auto;margin-right: auto;">
+        <table class=" table table-responsive table-bordered">
+
+           <tr>
                 <td>Allotted Cards</td>
                 <td>
                     <select ng-model="current_card"  ng-change="onSelectCardFromList()"

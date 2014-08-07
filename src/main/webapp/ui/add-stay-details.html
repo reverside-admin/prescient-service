@@ -21,18 +21,29 @@
 
 
         <div style="width: 50%; margin-left: auto;margin-right: auto;">
+
             <table class=" table table-responsive">
                 <tr>
                     <td>Arrival Date Time</td>
-                    <td><input type="date"  name="arrivalTime" ng-model="arrival_time" placeholder="Arrival Date Time"  style="width: 100%"></td>
+                    <td>{{arrival_time |date}}</td>
+                    <td><input type="date"  name="arrivalTime" ng-change="onChangeArrivalOrDepartureDate()" ng-model="arrival_time" placeholder="Arrival Date Time"  style="width: 100%" required></td>
                 </tr>
 
                 <tr>
                     <td>Departure Date Time</td>
-                    <td><input type="date" name="departureTime" ng-model="departure_time" placeholder="Departure Date Time" style="width: 100%"></td>
+                    <td>{{departure_time |date}}</td>
+                    <td><input type="date" name="departureTime" ng-change="onChangeArrivalOrDepartureDate()" ng-model="departure_time"  placeholder="Departure Date Time" style="width: 100%" required></td>
+                </tr>
+                <tr ng-show="button_flag">
+                    <td>
+                        <input type="submit" value="Get Rooms"  ng-click="getAvailableRooms(app_form)" class="btn btn-primary"/>
+                    </td>
+                    <td>
+                    </td>
+                    </td>
                 </tr>
 
-                <tr ng-show="!view_switcher_flag">
+                <tr ng-show="room_flag">
                     <td>Room Numbers</td>
                     <td>
                         <select multiple  ng-model="y.available_hotel_rooms" size="3"
@@ -44,10 +55,18 @@
             </table>
         </div>
 
+
+
+
+
+
+
+
+
         <!-- update screen-->
 
 
-        <div class="panel-body" style="margin-left: 20%" ng-show="view_switcher_flag">
+        <div class="panel-body" style="margin-left: 20%" ng-show="update_flag">
             <div style="float: left;margin-left: 80px;">
                 <select size="8" style="width: 200px; "
                         ng-model="selected_room"
@@ -78,8 +97,8 @@
 
         <div class="col-md-12 text-right">
             <div class="btn-group btn-group-sm">
-                <input type="submit" value="Add"  ng-show="!view_switcher_flag"  ng-click="add()" class="btn btn-primary"/>
-                <input type="submit" value="update"  ng-show="view_switcher_flag"   ng-click="update()" class="btn btn-primary"/>
+                <input type="submit" value="Add"  ng-show="true"  ng-click="add()" class="btn btn-primary"/>
+                <input type="submit" value="update"  ng-show="true"   ng-click="update()" class="btn btn-primary"/>
             </div>
         </div>
 

@@ -171,6 +171,7 @@ public class Services {
         log.info("guestcard history service is called");
         List<GuestCard> guestCardAllocation;
         guestCardAllocation = guestCardRepository.findGuestCardByGuestId(guestId);
+        log.info("guest card allocated to guest id:"+guestId+"  "+guestCardAllocation.size());
 
 //        List<ItcsTagReadHistory> itc= itcsTagReadHistoryRepository.findGuestHistory(guestCardAllocation.getCard().getId().intValue());
 
@@ -501,10 +502,65 @@ public class Services {
 
 
     //get all rooms in the hotel( get all rooms that are not allotted to anyone.)
-    @RequestMapping(value = "hotel/{hotelId}/rooms")
+   /* @RequestMapping(value = "hotel/{hotelId}/rooms")
     public List<Room> getRooms(@PathVariable("hotelId") Long hotelId) {
         List<Room> rooms = roomRepository.getRooms(hotelId);
         return rooms;
+    }*/
+
+
+    //get all available rooms based on date
+    /*@RequestMapping(value = "hotel/{hotelId}/rooms",method=RequestMethod.POST)
+    public List<Room> getRooms(@RequestBody GuestStayHistory guestStayHistory,@PathVariable("hotelId") Long hotelId) {
+        log.info("get all room service method is called");
+        Date arrivalDate=guestStayHistory.getArrivalTime();
+        Date departureDate=guestStayHistory.getDepartureTime();
+        log.info("arrival date::" + arrivalDate);
+        log.info("departure date::"+departureDate);
+        List<GuestStayHistory> guestStayHistories=guestStayHistoryRepository.getGuestHistoryBasedOnDate(hotelId,arrivalDate,departureDate);
+        log.info("no of records::"+guestStayHistories.size());
+        List<Room> allottedRooms=new ArrayList<Room>();
+        List<Room> allRooms=new ArrayList<Room>();
+        List<Room> availableRooms=new ArrayList<Room>();
+        for(GuestStayHistory gsh:guestStayHistories)
+        {
+            List<Room> rooms=gsh.getRooms();
+            allottedRooms.addAll(rooms);
+        }
+
+        allRooms=roomRepository.findAll();
+        allRooms.removeAll(allottedRooms);
+        availableRooms=allRooms;
+         return availableRooms;
+    }*/
+
+
+
+
+
+    @RequestMapping(value = "hotel/{hotelId}/rooms",method=RequestMethod.POST)
+    public List<Room> getRooms(@RequestBody GuestStayHistory guestStayHistory,@PathVariable("hotelId") Long hotelId) {
+        log.info("get all room service method is called");
+        Date arrivalDate=guestStayHistory.getArrivalTime();
+        Date departureDate=guestStayHistory.getDepartureTime();
+        Long guestId=guestStayHistory.getGuest().getId();
+        log.info("arrival date::" + arrivalDate);
+        log.info("departure date::"+departureDate);
+        List<GuestStayHistory> guestStayHistories=guestStayHistoryRepository.getGuestHistoryBasedOnDate(hotelId,arrivalDate,departureDate,guestId);
+        log.info("no of records::"+guestStayHistories.size());
+        List<Room> allottedRooms=new ArrayList<Room>();
+        List<Room> allRooms=new ArrayList<Room>();
+        List<Room> availableRooms=new ArrayList<Room>();
+        for(GuestStayHistory gsh:guestStayHistories)
+        {
+            List<Room> rooms=gsh.getRooms();
+            allottedRooms.addAll(rooms);
+        }
+
+        allRooms=roomRepository.findAll();
+        allRooms.removeAll(allottedRooms);
+        availableRooms=allRooms;
+        return availableRooms;
     }
 
 
@@ -539,14 +595,17 @@ public class Services {
 
         for (Room rm : rooms) {
             Room room = roomRepository.findOne(rm.getId());
-            room.setRoomStatusInd(true);
+            //room.setRoomStatusInd(true);
             allRooms.add(room);
         }
 
         gsh.setRooms(allRooms);
         gsh.setHotel(hotel);
-        //gsh.setNoOfPreviousStays(gsh.getNoOfPreviousStays() + 1);
         gsh.setCurrentStayIndicator(false);
+        //set no of previous stays
+        Long previousStays=guestStayHistoryRepository.getGuestPreviousStays(guestId);
+        gsh.setNoOfPreviousStays(previousStays);
+
         guestStayHistoryRepository.save(gsh);
     }
 
@@ -561,19 +620,19 @@ public class Services {
 
         history.setArrivalTime(guestStayHistory.getArrivalTime());
         history.setDepartureTime(guestStayHistory.getDepartureTime());
-        List<Room> previouslyAllocatedRooms = history.getRooms();
+        //List<Room> previouslyAllocatedRooms = history.getRooms();
         List<Room> newRoomsRequested = guestStayHistory.getRooms();
         List<Room> newRoomsToBeAllocated = new ArrayList<Room>();
 
-        for (Room room : previouslyAllocatedRooms) {
+        /*for (Room room : previouslyAllocatedRooms) {
             Room rm = roomRepository.findOne(room.getId());
             rm.setRoomStatusInd(false);
 
-        }
+        }*/
 
         for (Room room : newRoomsRequested) {
             Room rm = roomRepository.findOne(room.getId());
-            rm.setRoomStatusInd(true);
+            //rm.setRoomStatusInd(true);
             newRoomsToBeAllocated.add(rm);
 
         }
@@ -659,12 +718,12 @@ public class Services {
             int todayMonth = calendar2.get(Calendar.MONTH);
 
             if (departureDay == todayDay && departureMonth == todayMonth) {
-                List<Room> rooms = guestStayHistory.getRooms();
+                /*List<Room> rooms = guestStayHistory.getRooms();
 
                 for (Room rm : rooms) {
                     Room room = roomRepository.findOne(rm.getId());
                     room.setRoomStatusInd(false);
-                }
+                }*/
                 guestStayHistory.setCurrentStayIndicator(false);
                 guestStayHistoryRepository.save(guestStayHistory);
             }
@@ -700,16 +759,75 @@ public class Services {
         int todayMonth = calendar2.get(Calendar.MONTH);
 
         if (departureDay == todayDay && departureMonth == todayMonth) {
-            List<Room> rooms = guestStayHistory.getRooms();
+            //List<Room> rooms = guestStayHistory.getRooms();
 
-            for (Room rm : rooms) {
+            /*for (Room rm : rooms) {
                 Room room = roomRepository.findOne(rm.getId());
                 room.setRoomStatusInd(false);
-            }
+            }*/
             guestStayHistory.setCurrentStayIndicator(false);
             guestStayHistoryRepository.save(guestStayHistory);
         }
     }
+
+
+
+    //get list of guests whose birth day is today(to be consumed by mobile)
+    @RequestMapping(value = "hotel/{hotelId}/guest/birthday/list", method = RequestMethod.GET, produces = "application/json")
+    public List<Guest> getGuestList(@PathVariable("hotelId") Long hotelId) {
+        log.info("view guest room card detail  service");
+        //find all checked in Guest(1)
+
+        List<Guest> allBirthDayGuests=new ArrayList<Guest>();
+        List<GuestStayHistory> guestStayHistories=guestStayHistoryRepository.findCheckedInByHotelId(hotelId);
+        List<Long> guestIds=new ArrayList<Long>();
+        for(GuestStayHistory guestStayHistory:guestStayHistories)
+        {
+            guestIds.add(guestStayHistory.getGuest().getId());
+        }
+
+        //get all guest whose guest whose bday is today
+        List<Guest> allGuests=guestRepository.getAllGuestBornToday(guestIds);
+
+        for(Guest guest:allGuests)
+        {
+            Date guestDOB=guest.getDob();
+            Calendar cal=Calendar.getInstance();
+            cal.setTime(guestDOB);
+
+            Date currentDate=new Date();
+            Calendar calendar=Calendar.getInstance();
+            calendar.setTime(currentDate);
+
+            int guestDOBDay=cal.get(Calendar.DAY_OF_MONTH);
+            int currentDay=calendar.get(Calendar.DAY_OF_MONTH);
+
+
+            int guestDOBMonth=cal.get(Calendar.MONTH);
+            int currentMonth=calendar.get(Calendar.MONTH);
+
+            LOGGER.info("....................."+guest.getFirstName());
+
+            LOGGER.info("guestDOBDay::"+guestDOBDay);
+            LOGGER.info("currentDay::"+currentDay);
+
+            LOGGER.info("guestDOBMonth::"+guestDOBMonth);
+
+            LOGGER.info("currentMonth::"+currentMonth);
+
+            LOGGER.info("..................................");
+
+
+            if((guestDOBDay==currentDay) && (guestDOBMonth==currentMonth))
+            {
+                allBirthDayGuests.add(guest);
+            }
+        }
+
+        return allBirthDayGuests;
+
+    }
+
 
 
 }

@@ -27,9 +27,9 @@ public class Room {
     @JoinColumn(name = "room_type_id")
     RoomType roomType;
 
-    @Column(name = "room_status_ind")
+    /*@Column(name = "room_status_ind")
     Boolean roomStatusInd;
-
+*/
    /* @ManyToOne
     //@JoinColumn(name="guest_stay_id")
     @JoinTable(name="GUEST_ROOMS")

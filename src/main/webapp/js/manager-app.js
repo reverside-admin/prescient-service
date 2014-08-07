@@ -232,6 +232,7 @@ manager_app.controller('create_guest_controller', function ($scope, $http, $rout
 
     $scope.guest_detail;
 
+
     $scope.gender = ['Male', 'Female', 'Trans gender'];
     // $scope.months=[{"id":0,"name":"jan"}];
     $scope.months = [
@@ -325,12 +326,14 @@ manager_app.controller('create_guest_controller', function ($scope, $http, $rout
         //check if passport no is valid or not
         if ($scope.passport_validator_flag == false) {
             $scope.open_passport_popup();
-            return;
+            console.log('Duplicate passport no found');
+             return;
         }
 
         //check if user id is valid or not
         if ($scope.id_validator_flag == false) {
             $scope.open_id_popup();
+            console.log('duplicate id no found');
             return;
         }
 
@@ -1038,7 +1041,12 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
     //store the latest record if the guest is in the hotel
     $scope.guest_history={};
 
+
+
     //check guests current stay(if guest record is found then only we can update his details)
+
+    $scope.update_flag=false;
+    $scope.update_page_flag=false;
 
     $http({
         url: 'http://localhost:8080/api/guest/'+ $routeParams.guestId + '/lateststay ',
@@ -1053,8 +1061,18 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
                 {
                     console.log('guest stay is found');
                     $scope.guest_history=data;
-                    $scope.view_switcher_flag=true;
+
+                    $scope.guest_rooms=data;
+                    //bind model
+                    $scope.arrival_time=data.arrivalTime;
+                    $scope.departure_time=data.departureTime;
+
+                    $scope.update_page_flag=true;
+                    $scope.update_flag=true;
+                    $scope.button_flag=false;
                     $scope.assigned_rooms=data.rooms;
+                    $scope.allFreeRooms();
+
                 }
 
             } else {
@@ -1065,26 +1083,314 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
             console.log(error);
         });
 
-    //get all available rooms in the hotel  to allocate to a guest
-    $http({
-        url: 'http://localhost:8080/api/hotel/' + $scope.current_user_hotel_id + '/rooms',
-        method: 'get',
-        headers: {
-            'Authorization': $cookieStore.get("auth")
-        }
-    }).
-        success(function (data, status) {
-            if (status == 200) {
-                $scope.available_hotel_rooms = data;
 
-            } else {
-                console.log('status:' + status);
+
+    $scope.getLatestStay=function()
+    {
+        $http({
+            url: 'http://localhost:8080/api/guest/'+ $routeParams.guestId + '/lateststay ',
+            method: 'get',
+            headers: {
+                'Authorization': $cookieStore.get("auth")
             }
-        })
-        .error(function (error) {
-            console.log(error);
-        });
+        }).
+            success(function (data, status) {
+                if (status == 200) {
+                    if(data.id != undefined)
+                    {
+                        $scope.assigned_rooms=data.rooms;
 
+                    }
+
+                } else {
+                    console.log('status:' + status);
+                }
+            })
+            .error(function (error) {
+                console.log(error);
+            });
+    }
+
+
+
+
+
+    //get all available rooms
+    $scope.allFreeRooms=function()
+    {
+        console.log('get free rooms');
+        $http({
+            url: 'http://localhost:8080/api/hotel/' + $scope.current_user_hotel_id + '/rooms',
+            method: 'post',
+            headers: {
+                'Authorization': $cookieStore.get("auth")
+            },
+            data:$scope.guest_history
+        }).
+            success(function (data, status) {
+                if (status == 200) {
+                    $scope.available_hotel_rooms = data;
+                    console.log('get all available rooms::'+$scope.available_hotel_rooms);
+                    $scope.preCalculated1();
+
+
+                } else {
+                    console.log('status:' + status);
+                }
+            })
+            .error(function (error) {
+                console.log(error);
+            });
+    }
+
+
+    //pre calculation for room extending
+
+    $scope.preCalculated2=function()
+    {
+        var temp=[];
+        var j;
+        var i;
+        var size=$scope.available_hotel_rooms.length;
+        console.log('pre calculated');
+        for(i=0;i<$scope.assigned_rooms.length;i++)
+        {
+            console.log('first for loop');
+            for(j=0;j<$scope.available_hotel_rooms.length;j++)
+            {
+                console.log('value of j::'+j);
+
+                if($scope.assigned_rooms[i].id==$scope.available_hotel_rooms[j].id)
+                {
+                    console.log('removed element from left'+$scope.available_hotel_rooms[j].roomNumber);
+                    $scope.available_hotel_rooms.splice(j,1);
+                    console.log('available hotel room length::'+$scope.available_hotel_rooms.length);
+                    break;
+                }
+                else if(j==$scope.available_hotel_rooms.length-1)
+                {
+                    temp.push($scope.assigned_rooms[i]);
+                    //$scope.assigned_rooms.splice(i,1);
+                    console.log('pushed elememt::'+$scope.assigned_rooms[i].roomNumber);
+                }
+
+            }
+            console.log('value of j last::'+j);
+
+            /* if(j==$scope.available_hotel_rooms.length)
+             {
+             temp.push($scope.assigned_rooms[i]);
+             //$scope.assigned_rooms.splice(i,1);
+             console.log('pushed elememt::'+$scope.assigned_rooms[i].roomNumber);
+             }*/
+
+        }
+
+
+
+        for(var k=0;k<temp.length;k++)
+        {
+            console.log('second for loop');
+            for(var l=0;l<$scope.assigned_rooms.length;l++)
+            {
+                if(temp[k].id==$scope.assigned_rooms[l].id)
+                {
+                    $scope.assigned_rooms.splice(l,1);
+                }
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+//pre calculation for change room
+    $scope.preCalculated1=function()
+    {
+        var temp=[];
+        var j;
+        var i;
+        var size=$scope.available_hotel_rooms.length;
+        console.log('pre calculated');
+        for(i=0;i<$scope.assigned_rooms.length;i++)
+        {
+            console.log('first for loop');
+            for(j=0;j<$scope.available_hotel_rooms.length;j++)
+            {
+                console.log('value of j::'+j);
+
+                if($scope.assigned_rooms[i].id==$scope.available_hotel_rooms[j].id)
+                {
+                    console.log('removed element from left'+$scope.available_hotel_rooms[j].roomNumber);
+                    $scope.available_hotel_rooms.splice(j,1);
+                    console.log('available hotel room length::'+$scope.available_hotel_rooms.length);
+                    break;
+                }
+            }
+            console.log('value of j last::'+j);
+
+            /*if(j==$scope.available_hotel_rooms.length)
+             {
+             temp.push($scope.assigned_rooms[i]);
+             //$scope.assigned_rooms.splice(i,1);
+             console.log('pushed elememt::'+$scope.assigned_rooms[i].roomNumber);
+             }*/
+
+        }
+
+
+
+        /*for(var k=0;k<temp.length;k++)
+         {
+         console.log('second for loop');
+         for(var l=0;l<$scope.assigned_rooms.length;l++)
+         {
+         if(temp[k].id==$scope.assigned_rooms[l].id)
+         {
+         $scope.assigned_rooms.splice(l,1);
+         }
+         }
+         }*/
+    }
+
+
+
+
+
+
+
+
+
+
+
+//switch the vie when arrival date or departure date is changed
+    $scope.onChangeArrivalOrDepartureDate=function()
+    {
+        /*$scope.button_flag=true;
+         $scope.room_flag=false;
+         //$scope.update_flag=false;*/
+
+        $scope.button_flag=true;
+        $scope.room_flag=false;
+        $scope.update_flag=false;
+
+        $scope.getLatestStay();
+
+
+
+    }
+
+
+
+
+//get all available rooms when button is clicked
+    $scope.gsh={};
+    $scope.guest={};
+    $scope.button_flag=true;
+    $scope.room_flag=false;
+
+    $scope.getAvailableRooms=function(app_form)
+    {
+        console.log('get all available rooms');
+        if(!app_form.$valid)
+        {
+            return;
+        }
+        else{
+            $scope.gsh.arrivalTime=$scope.arrival_time;
+            $scope.gsh.departureTime=$scope.departure_time;
+
+            $scope.guest.id=$routeParams.guestId;
+            $scope.gsh.guest=$scope.guest;
+
+            console.log('get all available rooms');
+
+            $http({
+                url: 'http://localhost:8080/api/hotel/' + $scope.current_user_hotel_id + '/rooms',
+                method: 'post',
+                headers: {
+                    'Authorization': $cookieStore.get("auth")
+                },
+                data:$scope.gsh
+            }).
+                success(function (data, status) {
+                    if (status == 200) {
+                        $scope.available_hotel_rooms = data;
+
+                        // $scope.assigned_rooms=$scope.guest_history.rooms;
+                        //$scope.assigned_rooms=$scope.guest_rooms.rooms;
+                        //$scope.getLatestStay();
+
+                        console.log('get available room button is clicked');
+                        //console.log('assigned room length:'+$scope.assigned_rooms.length);
+                        //console.log('guest history room length:'+$scope.guest_history.rooms.length);
+
+                        //added 1:41PM
+
+                        if($scope.update_page_flag==true)
+                        {
+                            $scope.button_flag=false;
+                            $scope.room_flag=false;
+                            $scope.update_flag=true;
+                        }
+                        else{
+                            $scope.button_flag=false;
+                            $scope.room_flag=true;
+                        }
+
+                        /*$scope.room_flag=true;
+                         $scope.button_flag=false;
+                         $scope.update_flag=true;*/
+                        // $scope.allFreeRooms();
+                        $scope.preCalculated2();
+
+                    } else {
+                        console.log('status:' + status);
+                    }
+                })
+                .error(function (error) {
+                    console.log(error);
+                });
+        }
+    }
+    $scope.add = function () {
+        console.log('adding stay details');
+        $scope.stay_detail.arrivalTime = new Date($scope.arrival_time);
+        $scope.stay_detail.departureTime = new Date($scope.departure_time);
+        $scope.stay_detail.hotel = $scope.current_hotel;
+        $scope.stay_detail.rooms = $scope.y.available_hotel_rooms;
+
+
+        $http({
+            url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/addstaydetails',
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': $cookieStore.get("auth")
+            },
+            data: $scope.stay_detail
+        }).
+            success(function (data, status) {
+                if (status == 201) {
+                    console.log('Add hotel stay details successfully');
+                    $location.url('maintain/guest/' + $routeParams.guestId + '/gueststaydetails');
+                } else {
+                    console.log('status:' + status);
+                }
+            })
+            .error(function (error) {
+                console.log(error);
+            });
+    }
+
+
+//before update we have to push and pop
     $scope.pushRoomToRight=function()
     {
         console.log('push to right');
@@ -1117,41 +1423,6 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
             }
         }
     }
-
-
-
-
-    $scope.add = function () {
-        console.log('adding stay details');
-        $scope.stay_detail.arrivalTime = new Date($scope.arrival_time);
-        $scope.stay_detail.departureTime = new Date($scope.departure_time);
-        $scope.stay_detail.hotel = $scope.current_hotel;
-        $scope.stay_detail.rooms = $scope.y.available_hotel_rooms;
-
-
-        $http({
-            url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/addstaydetails',
-            method: 'post',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
-            },
-            data: $scope.stay_detail
-        }).
-            success(function (data, status) {
-                if (status == 201) {
-                    console.log('Add hotel stay details successfully');
-                    $location.url('maintain/guest/' + $routeParams.guestId + '/gueststaydetails');
-                } else {
-                    console.log('status:' + status);
-                }
-            })
-            .error(function (error) {
-                console.log(error);
-            });
-    }
-
-
 
 
     $scope.update = function () {
@@ -1202,6 +1473,7 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
 
 
     }
+
 
 
 });
@@ -1262,6 +1534,7 @@ manager_app.controller('view_guest_room_card_controller', function ($scope, $htt
 manager_app.controller('maintain_room_key_cards_controller', function ($scope, $http, $routeParams, $cookieStore, $location) {
 
     $scope.guest_id = $routeParams.guestId;
+    $scope.guest_detail;
     $scope.roomcard_data = {};     //store  room card detail
     $scope.guest_room_key_cards;  //all available cards
     $scope.message = '';          //confirmation message
@@ -1281,6 +1554,28 @@ manager_app.controller('maintain_room_key_cards_controller', function ($scope, $
     $scope.guest_cards = [];
 
     $scope.y = {guest_room_key_cards: []};
+
+
+    //get the guest profile detail.
+
+    $http({
+        url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/details',
+        method: 'get',
+        headers: {
+            'Authorization': $cookieStore.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            if (status == 200) {
+                $scope.guest_detail=data;
+            } else {
+                console.log('status:' + status);
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+
 
 
     //get all cards given to a guest.
@@ -1707,7 +2002,6 @@ manager_app.controller('current_guest_location_controller', function ($scope, $h
     $scope.guest_current_position;
     $scope.current_guest_location_history;
     $scope.guest_detail;
-    console.log('current guest location::' + $scope.guest_id);
 
     <!-- get guest detail by guests id  -->
     $scope.room_message='';

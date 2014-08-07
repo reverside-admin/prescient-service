@@ -62,22 +62,24 @@
                     <td>Identity No</td>
                     <td><input type="text"
                                name="identityno"
+                               ng-blur="OnIdBlur()"
                                ng-model="guest.idNumber"
                                placeholder="Identity No"
                                style="width: 100%"
                                required
-                               ng-blur="OnIdBlur()"></td>
+                               ></td>
                 </tr>
 
                 <tr>
                     <td>Passport No</td>
                     <td><input type="text"
                                name="passportno"
+                               ng-blur="OnPassportBlur()"
                                ng-model="guest.passportNumber"
                                placeholder="Passport No"
                                style="width: 100%"
                                required
-                               ng-blur="OnPassportBlur()"></td>
+                               ></td>
                 </tr>
 
                 <tr>
