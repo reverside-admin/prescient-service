@@ -1037,8 +1037,33 @@ staff_app.controller('add_stay_details_controller', function ($scope, $http, $ro
 
                     $scope.guest_rooms=data;
                     //bind model
-                    $scope.arrival_time=data.arrivalTime;
-                    $scope.departure_time=data.departureTime;
+                    $scope.arrival_date=new Date(data.arrivalTime).getDate().toString();
+                    $scope.arrival_year=new Date(data.arrivalTime).getFullYear().toString();
+                    $scope.arrival_month=new Date(data.arrivalTime).getMonth().toString();
+
+                    $scope.arrival_time=$scope.arrival_year+'-'+("0"+(new Date(data.arrivalTime).getMonth() +1)).slice(-2)+'-'+$scope.arrival_date;
+
+
+                    $scope.arrival_hour=new Date(data.arrivalTime).getHours().toString();
+                    $scope.arrival_min=new Date(data.arrivalTime).getMinutes().toString();
+                    $scope.arrival_sec=new Date(data.arrivalTime).getSeconds().toString();
+                    $scope.arrival_millisec=new Date(data.arrivalTime).getMilliseconds().toString();
+                    $scope.startTime=("0"+(new Date(data.arrivalTime).getHours())).slice(-2)+":"+("0"+(new Date(data.arrivalTime).getMinutes())).slice(-2);
+
+                    //$scope.departure_time=data.departureTime;
+
+                    $scope.departure_date=new Date(data.departureTime).getDate().toString();
+                    $scope.departure_year=new Date(data.departureTime).getFullYear().toString();
+                    $scope.departure_month=new Date(data.departureTime).getMonth().toString();
+                    $scope.departure_time=$scope.departure_year+'-'+("0"+(new Date(data.departureTime).getMonth() +1)).slice(-2)+'-'+$scope.departure_date;
+
+                    $scope.departure_hour=new Date(data.departureTime).getHours().toString();
+                    $scope.departure_min=new Date(data.departureTime).getMinutes().toString();
+                    $scope.departure_sec=new Date(data.departureTime).getSeconds().toString();
+                    $scope.departure_millisec=new Date(data.departureTime).getMilliseconds().toString();
+                    $scope.endTime=("0"+(new Date(data.departureTime).getHours())).slice(-2)+":"+("0"+(new Date(data.departureTime).getMinutes())).slice(-2);
+
+
 
                     $scope.update_page_flag=true;
                     $scope.update_flag=true;
@@ -1175,14 +1200,6 @@ staff_app.controller('add_stay_details_controller', function ($scope, $http, $ro
     }
 
 
-
-
-
-
-
-
-
-
 //pre calculation for change room
     $scope.preCalculated1=function()
     {
@@ -1276,8 +1293,41 @@ staff_app.controller('add_stay_details_controller', function ($scope, $http, $ro
             return;
         }
         else{
-            $scope.gsh.arrivalTime=$scope.arrival_time;
-            $scope.gsh.departureTime=$scope.departure_time;
+            //$scope.gsh.arrivalTime=$scope.arrival_time;
+            //$scope.gsh.departureTime=$scope.departure_time;
+
+            var arr_date=new Date($scope.arrival_time).getDate().toString();
+            var arr_year=new Date($scope.arrival_time).getFullYear().toString();
+            var arr_month=new Date($scope.arrival_time).getMonth().toString();
+
+
+            if($scope.startTime==undefined)
+            {
+                $scope.gsh.arrivalTime = new Date(arr_year,arr_month,arr_date,14,00,00);
+            }
+            else
+            {
+                var arr_hour=$scope.startTime.toString().split(':');
+                console.log('hour in add is:::'+arr_hour[0]);
+                $scope.gsh.arrivalTime = new Date(arr_year,arr_month,arr_date,arr_hour[0],arr_hour[1],00);
+            }
+
+            var dep_date=new Date($scope.departure_time).getDate().toString();
+            var dep_year=new Date($scope.departure_time).getFullYear().toString();
+            var dep_month=new Date($scope.departure_time).getMonth().toString();
+
+            if($scope.endTime ==undefined)
+            {
+                $scope.gsh.departureTime = new Date(dep_year,dep_month,dep_date,11,30,00);
+
+            }
+            else
+            {
+                var dep_hour=$scope.endTime.toString().split(':');
+                console.log('hour in add is:::'+dep_hour[0]);
+                $scope.gsh.departureTime = new Date(dep_year,dep_month,dep_date,dep_hour[0],dep_hour[1],00);
+            }
+            //
 
             $scope.guest.id=$routeParams.guestId;
             $scope.gsh.guest=$scope.guest;
@@ -1334,8 +1384,41 @@ staff_app.controller('add_stay_details_controller', function ($scope, $http, $ro
     }
     $scope.add = function () {
         console.log('adding stay details');
-        $scope.stay_detail.arrivalTime = new Date($scope.arrival_time);
-        $scope.stay_detail.departureTime = new Date($scope.departure_time);
+
+        $scope.arrival_date1=new Date($scope.arrival_time).getDate().toString();
+        $scope.arrival_year1=new Date($scope.arrival_time).getFullYear().toString();
+        $scope.arrival_month1=new Date($scope.arrival_time).getMonth().toString();
+
+        if($scope.startTime==undefined)
+        {
+            $scope.stay_detail.arrivalTime = new Date($scope.arrival_year1,$scope.arrival_month1,$scope.arrival_date1,14,00,00);
+
+        }
+        else
+        {
+            var arrival_hour=$scope.startTime.toString().split(':');
+            console.log('hour in add is:::'+arrival_hour[0]);
+            $scope.stay_detail.arrivalTime = new Date($scope.arrival_year1,$scope.arrival_month1,$scope.arrival_date1,arrival_hour[0],arrival_hour[1],00);
+
+        }
+
+
+        $scope.departure_date1=new Date($scope.departure_time).getDate().toString();
+        $scope.departure_year1=new Date($scope.departure_time).getFullYear().toString();
+        $scope.departure_month1=new Date($scope.departure_time).getMonth().toString();
+
+        if($scope.endTime==undefined)
+        {
+            $scope.stay_detail.departureTime = new Date($scope.departure_year1,$scope.departure_month1,$scope.departure_date1,11,30,00);
+
+        }
+        else
+        {
+            var departure_hour=$scope.endTime.toString().split(':');
+            console.log('hour in add is:::'+departure_hour[0]);
+            $scope.stay_detail.departureTime = new Date($scope.departure_year1,$scope.departure_month1,$scope.departure_date1,departure_hour[0],departure_hour[1],00);
+        }
+
         $scope.stay_detail.hotel = $scope.current_hotel;
         $scope.stay_detail.rooms = $scope.y.available_hotel_rooms;
 
@@ -1401,21 +1484,49 @@ staff_app.controller('add_stay_details_controller', function ($scope, $http, $ro
     $scope.update = function () {
         if($scope.arrival_time== undefined)
         {
-            $scope.stay_detail.arrivalTime = new Date($scope.guest_history.arrivalTime);
+            var arr_date=new Date($scope.guest_history.arrivalTime).getDate().toString();
+            var arr_year=new Date($scope.guest_history.arrivalTime).getFullYear().toString();
+            var arr_month=new Date($scope.guest_history.arrivalTime).getMonth().toString();
+
+            var arr_hour=$scope.startTime.toString().split(':');
+            console.log('hour in add is:::'+arr_hour[0]);
+            $scope.stay_detail.arrivalTime = new Date(arr_year,arr_month,arr_date,arr_hour[0],arr_hour[1],00);
         }else
         {
-            $scope.stay_detail.arrivalTime=$scope.arrival_time;
+            var arr_date=new Date($scope.arrival_time).getDate().toString();
+            var arr_year=new Date($scope.arrival_time).getFullYear().toString();
+            var arr_month=new Date($scope.arrival_time).getMonth().toString();
+
+            var arr_hour=$scope.startTime.toString().split(':');
+            console.log('hour in add is:::'+arr_hour[0]);
+            $scope.stay_detail.arrivalTime = new Date(arr_year,arr_month,arr_date,arr_hour[0],arr_hour[1],00);
+
 
         }
 
 
         if($scope.departure_time== undefined)
         {
-            $scope.stay_detail.departureTime = new Date($scope.guest_history.departureTime);
+            // $scope.stay_detail.departureTime = new Date($scope.guest_history.departureTime);
+            var dep_date=new Date($scope.guest_history.departureTime).getDate().toString();
+            var dep_year=new Date($scope.guest_history.departureTime).getFullYear().toString();
+            var dep_month=new Date($scope.guest_history.departureTime).getMonth().toString();
+
+            var dep_hour=$scope.endTime.toString().split(':');
+            console.log('hour in add is:::'+dep_hour[0]);
+            $scope.stay_detail.departureTime = new Date(dep_year,dep_month,dep_date,dep_hour[0],dep_hour[1],00);
+
         }
         else
         {
-            $scope.stay_detail.departureTime=$scope.departure_time;
+            //$scope.stay_detail.departureTime=$scope.departure_time;
+            var dep_date=new Date($scope.departure_time).getDate().toString();
+            var dep_year=new Date($scope.departure_time).getFullYear().toString();
+            var dep_month=new Date($scope.departure_time).getMonth().toString();
+
+            var dep_hour=$scope.endTime.toString().split(':');
+            console.log('hour in add is:::'+dep_hour[0]);
+            $scope.stay_detail.departureTime = new Date(dep_year,dep_month,dep_date,dep_hour[0],dep_hour[1],00);
 
         }
 

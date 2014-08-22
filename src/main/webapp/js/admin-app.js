@@ -1,7 +1,7 @@
 /**
  * Created by Bibhuti on 2014/03/19.
  */
-var admin_app = angular.module('admin_app', ['ngRoute', 'ngCookies']);
+var admin_app = angular.module('admin_app', ['ngRoute', 'ngCookies','ngDialog']);
 
 admin_app.config(['$routeProvider',
     function ($routeProvider) {
@@ -527,8 +527,8 @@ admin_app.controller('update_users_controller', function ($scope, $http, $routeP
 });
 
 
-admin_app.controller('create_users_controller', function ($scope, $http, $location, $cookieStore) {
-
+admin_app.controller('create_users_controller', function ($scope, $http, $location, $cookieStore, ngDialog) {
+    console.log('create_users_controller of admin app module is loaded');
     $scope.hotel_list = [];
     $scope.hotel_department_list = [];
     $scope.touch_point_list = [];
@@ -538,6 +538,48 @@ admin_app.controller('create_users_controller', function ($scope, $http, $locati
     $scope.user = {};
     $scope.checked_departments = [];
     $scope.checked_touch_points = [];
+
+    $scope.user_name = {};
+    $scope.usename_validation_flag=true;
+
+    console.log('Beofre OnUserNamesBlur users name......'+$scope.user.userName);
+    $scope.OnUserNamesBlur=function()
+    {
+        console.log('inside OnUserNamesBlur users name is:'+$scope.user.userName);
+        $http({
+            url: 'http://localhost:8080/api/usernames',
+            method: 'get',
+            headers: {
+                'Authorization': $cookieStore.get("auth")
+            }
+        }).
+            success(function (data, status) {
+
+                $scope.user_name=data;
+
+                console.log('users list:'+$scope.user_name);
+
+                for (var i = 0; i < $scope.user_name.length; i++) {
+
+                     if($scope.user.userName.toLowerCase() == $scope.user_name[i].toLowerCase() ){
+                        console.log("ngmodel data and database data are matched");
+                        $scope.usename_validation_flag=false;
+                        $scope.open_username_popup();
+                        return;
+
+                    }else{
+                         $scope.usename_validation_flag=true;
+
+                    }
+
+                }
+            })
+            .error(function (error) {
+                console.log(error);
+            });
+    }
+
+
 
     $scope.onDepartmentSelection = function (department) {
         for (var i = 0; i < $scope.checked_departments.length; i++) {
@@ -681,6 +723,11 @@ admin_app.controller('create_users_controller', function ($scope, $http, $locati
 
     $scope.create = function (my_form) {
 
+        if ($scope.usename_validation_flag == false) {
+            $scope.open_username_popup();
+            return;
+        }
+
         console.log('verified' + my_form);
         console.log(my_form.$valid);
 
@@ -721,9 +768,22 @@ admin_app.controller('create_users_controller', function ($scope, $http, $locati
         $location.url('/users/list');
     }
 
+    //popup for username
+
+    $scope.open_username_popup = function(){
+        console.log('pop function is calling');
+        ngDialog.open({
+            template: '<body style="text-align:center;color: RED;"><h4>' +
+                'This User Name is already exist!!</h4>' +
+                '</body>',
+            plain:true,
+            className:'ngdialog-theme-default'
+
+        });
+    }
+
 
 });
-
 
 admin_app.controller('add_departments_controller', function ($scope, $http, $routeParams, $location, $cookieStore) {
     $scope.dept_list_assigned = [];

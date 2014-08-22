@@ -25,14 +25,14 @@
             <table class=" table table-responsive">
                 <tr>
                     <td>Arrival Date Time</td>
-                    <td>{{arrival_time |date}}</td>
                     <td><input type="date"  name="arrivalTime" ng-change="onChangeArrivalOrDepartureDate()" ng-model="arrival_time" placeholder="Arrival Date Time"  style="width: 100%" required></td>
+                    <td><input type="time" ng-model="startTime" ng-change="onChangeArrivalOrDepartureDate()" /></td>
                 </tr>
 
                 <tr>
                     <td>Departure Date Time</td>
-                    <td>{{departure_time |date}}</td>
-                    <td><input type="date" name="departureTime" ng-change="onChangeArrivalOrDepartureDate()" ng-model="departure_time"  placeholder="Departure Date Time" style="width: 100%" required></td>
+                     <td><input type="date" name="departureTime" ng-change="onChangeArrivalOrDepartureDate()" ng-model="departure_time"  placeholder="Departure Date Time" style="width: 100%" required></td>
+                     <td><input type="time" ng-model="endTime" ng-change="onChangeArrivalOrDepartureDate()"/></td>
                 </tr>
                 <tr ng-show="button_flag">
                     <td>
@@ -54,13 +54,6 @@
                 </tr>
             </table>
         </div>
-
-
-
-
-
-
-
 
 
         <!-- update screen-->
@@ -97,8 +90,8 @@
 
         <div class="col-md-12 text-right">
             <div class="btn-group btn-group-sm">
-                <input type="submit" value="Add"  ng-show="true"  ng-click="add()" class="btn btn-primary"/>
-                <input type="submit" value="update"  ng-show="true"   ng-click="update()" class="btn btn-primary"/>
+                <input type="submit" value="Add"  ng-show="room_flag"  ng-click="add()" class="btn btn-primary"/>
+                <input type="submit" value="update"  ng-show="update_flag"   ng-click="update()" class="btn btn-primary"/>
             </div>
         </div>
 

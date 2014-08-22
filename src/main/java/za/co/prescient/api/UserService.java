@@ -32,7 +32,7 @@ public class UserService {
     @RequestMapping(value = "api/users", method = RequestMethod.GET, produces = "application/json")
     public List<User> get() {
         log.info("Get All UserDetails service");
-        return userRepository.findAll();
+        return userRepository.findAllUser();
     }
 
     @RequestMapping(value = "api/users", method = RequestMethod.POST, consumes = "application/json")
@@ -116,6 +116,14 @@ public class UserService {
         userDetail.setDepartments(departments);
         userDetail.setTouchPoints(touchPoints);
         userRepository.save(userDetail);
+    }
+
+
+    @RequestMapping(value = "api/usernames", method = RequestMethod.GET)
+     public List<String> getUserNames() {
+         List<String> userNames=userRepository.findAllUserByUserName();
+        return userNames;
+
     }
 
 }

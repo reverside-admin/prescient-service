@@ -73,7 +73,7 @@
             <button type="submit"  ng-show="issue_flag"  class="btn btn-primary" ng-click="issueCard()">IssueCard</button>
             <button type="submit"  ng-show="return_flag"  class="btn btn-primary" ng-click="returnCard()">Return</button>
             <button type="submit"  ng-show="return_all_flag"  class="btn btn-primary" ng-click="returnAllCards()">Return All</button>
-            <button type="submit" class="btn btn-primary" ng-click="cancel()">Cancel</button>
+            <a ng-href="#maintain/guest/{{guest_id}}/roomcarddetails" class="btn btn-primary">Cancel</a>
         </div>
     </div>
 </div>

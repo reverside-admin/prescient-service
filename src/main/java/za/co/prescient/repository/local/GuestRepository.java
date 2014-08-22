@@ -22,5 +22,8 @@ public interface GuestRepository extends JpaRepository<Guest, Long>{
     @Query("select guest from Guest guest where guest.id in(?1)")
     public List<Guest> getAllGuestBornToday(List<Long> guestIds);
 
+    @Query("select guest from Guest guest order by id desc")
+    public List<Guest> getAllGuests();
+
 
 }

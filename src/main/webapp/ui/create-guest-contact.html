@@ -20,7 +20,9 @@
 
                 <tr>
                     <td>Guest Contact List Name</td>
-                    <td colspan="3"><input type="text" ng-model="guest_contact.name" style="width: 100%"></td>
+                    <td colspan="3"><input type="text" name="contactlistname" ng-model="guest_contact.name"
+                                           placeholder="Contactlist Name" style="width: 100%" ng-blur="OnContactListNameBlur()"></td>
+
                 </tr>
 
                 <tr>

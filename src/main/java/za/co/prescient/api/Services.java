@@ -175,6 +175,14 @@ public class Services {
 
 //        List<ItcsTagReadHistory> itc= itcsTagReadHistoryRepository.findGuestHistory(guestCardAllocation.getCard().getId().intValue());
 
+
+        //get the arrival date of this guest (of the guest's latest stay) Added 1:50 PM 12-8-2014
+        GuestStayHistory guestLatestStay=guestStayHistoryRepository.getGuestLastStay(guestId);
+        Date arrivalDateinDate=guestLatestStay.getArrivalTime();
+        Long arrivalDate=arrivalDateinDate.getTime();
+        LOGGER.info("arrival time of the guest in prescient service is::"+arrivalDate);
+        //
+
         itc = new ArrayList<ItcsTagReadHistory>();
         itcsTagReadHistories = new ArrayList<ItcsTagReadHistory>();
 
@@ -185,7 +193,7 @@ public class Services {
 //        List<ItcsTagReadHistory> itc = new ArrayList<ItcsTagReadHistory>();
 
             try {
-                URL url = new URL("http://localhost:9090/tags/" + guestCardId + "/history");
+                URL url = new URL("http://localhost:9090/tags/" + guestCardId + "/history/"+arrivalDate);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
                 conn.setRequestProperty("Accept", "application/json");
@@ -346,7 +354,7 @@ public class Services {
     @RequestMapping(value = "guest/all", method = RequestMethod.GET, produces = "application/json")
     public List<Guest> get() {
         log.info("Get All UserDetails service");
-        return guestRepository.findAll();
+        return guestRepository.getAllGuests();
     }
 
     //view a guest  detail

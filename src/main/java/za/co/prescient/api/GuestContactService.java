@@ -201,5 +201,59 @@ public class GuestContactService {
     }
 
 
+    @RequestMapping(value = "api/manager/{userId}/contactlistname")
+    public List<String> getContactListName(@PathVariable("userId") Long userId){
+         log.info("get all contact list names of a manager");
+        List<String> contactListNames=contactListRepository.getContactListName(userId);
+        /*List<String> contactListNames=new ArrayList<String>();
+        for(ContactList contact:contactList)
+        {
+            contactListNames.add(contact.getName().trim());
+        }*/
+        log.info("all contact list names::"+contactListNames.toString());
+        return contactListNames;
+    }
+
+
+
+
+    //get all guests present in managers all contact list having specific touch point access
+
+    @RequestMapping(value = "user/{ownerId}/contacts/{tagId}/guests")
+    public List<Guest> getAllGuestInAllContactList(@PathVariable("ownerId") Long ownerId,@PathVariable("tagId") String tagId) {
+        log.info("get guest list in all contact list");
+        List<ContactList> allContactLists=contactListRepository.findContactsByOwner(ownerId);
+        List<ContactList> contactList=new ArrayList<ContactList>();
+        List<Guest> guests=new ArrayList<Guest>();
+        for(ContactList contact:allContactLists)
+        {
+            List<ContactListTouchPoint> contactListTouchPoints=contact.getContactListTouchPoints();
+            for(ContactListTouchPoint contactListTouchPoint:contactListTouchPoints)
+            {
+                if(contactListTouchPoint.getTouchPoint().getName().equals(tagId.trim()))
+                {
+                    contactList.add(contact);
+                }
+            }
+
+        }
+
+
+        for(ContactList contact:contactList )
+        {
+            List<ContactListGuest> contactListGuests=contact.getContactListGuests();
+            for(ContactListGuest contactListGuest:contactListGuests)
+            {
+                guests.add(contactListGuest.getGuest());
+            }
+        }
+
+
+        log.info("No of guests in this list:"+guests.size());
+        return guests;
+    }
+
+
+
 
 }
