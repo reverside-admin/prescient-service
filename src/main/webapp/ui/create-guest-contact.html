@@ -20,14 +20,14 @@
 
                 <tr>
                     <td>Guest Contact List Name</td>
-                    <td colspan="3"><input type="text" name="contactlistname" ng-model="guest_contact.name"
+                    <td colspan="5"><input type="text" name="contactlistname" ng-model="guest_contact.name"
                                            placeholder="Contactlist Name" style="width: 100%" ng-blur="OnContactListNameBlur()"></td>
 
                 </tr>
 
                 <tr>
                     <td>TouchPoints</td>
-                    <td colspan="3">
+                    <td colspan="5">
                         <ul>
                             <li ng-repeat="touchpoint in assigned_touch_point_list">
                                 <input type="checkbox" ng-click="onSelectTouchPoint(touchpoint.id)"/>
@@ -42,6 +42,8 @@
                     <td>{{guest.title}}</td>
                     <td>{{guest.firstName}}</td>
                     <td>{{guest.surname}}</td>
+                    <td>{{guest.idNumber}}</td>
+                    <td>{{guest.passportNumber}}</td>
                 </tr>
             </table>
         </div>

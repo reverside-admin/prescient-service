@@ -19,12 +19,32 @@ public class GuestCardService {
 
     @RequestMapping(value = "api/guestcards/{msn}", method = RequestMethod.PUT, consumes = "application/json")
     @ResponseStatus(HttpStatus.OK)
-    public void update(@PathVariable("msn") String msn, @RequestBody Card guestCard) {
+    public void update(@PathVariable("msn") String msn, @RequestBody Card guestCard)throws Exception {
 
         Card gCard = cardRepository.findByMagStripeNo(msn);
         log.info("guestcard1 : " + gCard);
-        gCard.setRfidTagNo(guestCard.getRfidTagNo());
-        cardRepository.save(gCard);
+        if(gCard != null)
+        {
+           Card card=cardRepository.findByRFIDTagNo(guestCard.getRfidTagNo());
+            if(card == null)
+            {
+                gCard.setRfidTagNo(guestCard.getRfidTagNo());
+                cardRepository.save(gCard);
+            }
+            else
+            {
+                // new Exception("RFIDTag is in use");
+
+                if(card.getMagStripeNo().equals(msn.trim()))
+                {
+                    gCard.setRfidTagNo(guestCard.getRfidTagNo());
+                    cardRepository.save(gCard);
+                }
+                else throw new Exception("No card found with this MagStripeNo");
+
+             }
+        }
+        else throw new Exception("No card found with this MagStripeNo");
     }
 
     @RequestMapping(value = "api/guestcards/{msn}/detail")
@@ -38,7 +58,7 @@ public class GuestCardService {
         log.info("file data::" + linkedHashMap.get("fileData"));
         String str = linkedHashMap.get("fileData").toString();
         log.info("str::" + str);
-        String resultStr[] = str.split("\n");
+        String resultStr[] = str.split(",");
         log.info("No of cards::" + resultStr.length);
         Card guestCard;
         for(String obj:resultStr)
@@ -56,4 +76,20 @@ public class GuestCardService {
     public List<Card> getall() {
         return cardRepository.findAll();
     }
+
+    @RequestMapping(value = "api/guestcards/withRFID")
+    public List<Card> getAllCardsWithRFIDTagNO() {
+
+        List<Card> cards=cardRepository.findWithRFIDTagNo();
+        return cards;
+    }
+
+    @RequestMapping(value = "api/guestcards/withoutRFID")
+    public List<Card> getAllCardsWithoutRFIDTagNO() {
+        List<Card> cards=cardRepository.findWithoutRFIDTagNo();
+        return cards;
+    }
+
+
+
 }

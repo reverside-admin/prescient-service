@@ -19,10 +19,9 @@
                 <tr>
                     <td> Touch Point Name *</td>
                     <td>
-                        <select ng-model="selectedtouchpoint"
+                        <select ng-model="selectedtouchpoint" required
                                 ng-options="obj as obj.name for obj in current_touch_point_list">
-                            <option value="">select touchpoint</option>
-                        </select>
+                         </select>
                     </td>
                 </tr>
 
@@ -48,12 +47,12 @@
 
                 <tr>
                     <td>XLength *</td>
-                    <td><input type="text" ng-model="tpsetup.lengthX"  style="width: 100%" required></td>
+                    <td><input type="text" ng-model="tpsetup.lengthX"  style="width: 100%" required pattern="[0-9]+"></td>
                 </tr>
 
                 <tr>
                     <td>YLength *</td>
-                    <td><input type="text" ng-model="tpsetup.lengthY" style="width: 100%" required></td>
+                    <td><input type="text" ng-model="tpsetup.lengthY" style="width: 100%" required pattern="[0-9]+"></td>
                 </tr>
                 <tr>
                     <td>File Path *</td>

@@ -13,8 +13,19 @@
 
 
     <div class="col-md-12 text-right">
-        <h5><input type="text" ng-model="search" placeholder="Search"/></h5>
+        <h5>
+
+        <select ng-model="userStatusType" ng-change="filterUserList()" ng-options="obj.id as obj.status for obj in userStatusTypes" style="margin-right: 2%">
+            <option value="">status</option>
+        </select>
+        <input type="text" ng-model="search" placeholder="Search"/>
+            </h5>
     </div>
+
+    <div class="col-md-12 text-left">
+
+    </div>
+
 
 
     <div class="col-md-12">

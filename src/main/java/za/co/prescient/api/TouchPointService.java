@@ -28,6 +28,12 @@ public class TouchPointService {
         return touchPoints;
     }
 
+ /*  //to get all the touchpoints
+    @RequestMapping(value = "api/touchpoints", method = RequestMethod.GET, produces = "application/json")
+    public List<TouchPoint> getAllTouchPoints() {
+         return null;
+    }
+*/
     @RequestMapping(value = "api/departments/{departmentId}/touchpoints")
     public List<TouchPoint> getTouchPointsOfDepartment(@PathVariable("departmentId") Long departmentId) {
         log.info("Get All Touch Points by DepartmentId service");
@@ -45,6 +51,12 @@ public class TouchPointService {
             allTouchPoints.addAll(touchPoints);
         }
         return allTouchPoints;
+    }
+
+    @RequestMapping(value = "api/touchpoint/{id}", method = RequestMethod.GET, produces = "application/json")
+    public TouchPoint getTouchPointByTouchPoinId(@PathVariable("id") long id) {
+        TouchPoint touchPoint=touchPointRepository.findOne(id);
+       return  touchPoint;
     }
 
 }

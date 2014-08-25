@@ -1,7 +1,7 @@
 /**
  * Created by Bibhuti on 2014/03/19.
  */
-var admin_app = angular.module('admin_app', ['ngRoute', 'ngCookies','ngDialog']);
+var admin_app = angular.module('admin_app', ['ngRoute', 'LocalStorageModule','ngDialog']);
 
 admin_app.config(['$routeProvider',
     function ($routeProvider) {
@@ -88,16 +88,16 @@ admin_app.config(['$routeProvider',
     }]);
 
 
-admin_app.controller('admin_app_controller', function ($scope, $http, $location, $cookieStore, $window) {
+admin_app.controller('admin_app_controller', function ($scope, $http, $location, localStorageService, $window) {
 
     $scope.user;
 
-    if ($cookieStore.get("user") == null) {
+    if (localStorageService.get("user") == null) {
         console.log("User is not authenticated");
         $window.location.replace("login-app.html?admin-app.html" + $window.location.hash);
     } else {
         console.log("User is authenticated");
-        $scope.user = $cookieStore.get("user");
+        $scope.user = localStorageService.get("user");
         if ($scope.user.userType.value != "ROLE_ADMIN") {
             $window.location.replace("login-app.html");
         }
@@ -106,16 +106,22 @@ admin_app.controller('admin_app_controller', function ($scope, $http, $location,
 
     $scope.logout = function () {
         console.log('logout method is called');
-        $cookieStore.remove("user");
-        $cookieStore.remove("auth");
+        localStorageService.remove("user");
+        localStorageService.remove("auth");
         $window.location.replace("login-app.html");
     };
 
 });
 
 <!--list user  controller -->
-admin_app.controller('list_users_controller', function ($scope, $http, $routeParams, $cookieStore) {
+admin_app.controller('list_users_controller', function ($scope, $http, $routeParams, localStorageService) {
 
+    $scope.userStatusTypes=[
+        {"id": 2, "status": "Enable"},
+        {"id": 1, "status": "Disabled"},
+        {"id": 0, "status": "All"}
+    ];
+    $scope.userStatusType;
     $scope.user_list = [];
     $scope.name = $routeParams.userName;
     $scope.user = {};
@@ -123,7 +129,7 @@ admin_app.controller('list_users_controller', function ($scope, $http, $routePar
         url: 'http://localhost:8080/api/users',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -136,20 +142,89 @@ admin_app.controller('list_users_controller', function ($scope, $http, $routePar
         .error(function (error) {
             console.log(error);
         });
+
+    $scope.filterUserList=function()
+    {
+        console.log('user list filtered'+$scope.userStatusType);
+
+        if($scope.userStatusType==1)
+        {
+            $http({
+                url: 'http://localhost:8080/api/users/disabled',
+                method: 'get',
+                headers: {
+                    'Authorization': localStorageService.get("auth")
+                }
+            }).
+                success(function (data, status) {
+                    if (status == 200) {
+                        $scope.user_list = data;
+                    } else {
+                        console.log('status:' + status);
+                    }
+                })
+                .error(function (error) {
+                    console.log(error);
+                });
+        }
+        if($scope.userStatusType==2)
+        {
+            $http({
+                url: 'http://localhost:8080/api/users/enabled',
+                method: 'get',
+                headers: {
+                    'Authorization': localStorageService.get("auth")
+                }
+            }).
+                success(function (data, status) {
+                    if (status == 200) {
+                        $scope.user_list = data;
+                    } else {
+                        console.log('status:' + status);
+                    }
+                })
+                .error(function (error) {
+                    console.log(error);
+                });
+        }
+        if($scope.userStatusType==0)
+        {
+            $http({
+                url: 'http://localhost:8080/api/users',
+                method: 'get',
+                headers: {
+                    'Authorization': localStorageService.get("auth")
+                }
+            }).
+                success(function (data, status) {
+                    if (status == 200) {
+                        $scope.user_list = data;
+                    } else {
+                        console.log('status:' + status);
+                    }
+                })
+                .error(function (error) {
+                    console.log(error);
+                });
+        }
+
+    }
+
 });
 
-admin_app.controller('view_users_controller', function ($scope, $http, $routeParams, $cookieStore) {
+admin_app.controller('view_users_controller', function ($scope, $http, $routeParams, localStorageService) {
     $scope.uId = $routeParams.userId;
     $scope.user_detail;
     $scope.can_reset_password = false;
     $scope.can_edit = false;
 
 
+
     $http({
         url: 'http://localhost:8080/api/users/' + $scope.uId,
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
 
         }
     }).
@@ -161,7 +236,7 @@ admin_app.controller('view_users_controller', function ($scope, $http, $routePar
                     $scope.can_reset_password = true;
                     $scope.can_edit = true;
                 }
-                if ($scope.user_detail.id == $cookieStore.get("user").id) {
+                if ($scope.user_detail.id == localStorageService.get("user").id) {
                     $scope.can_reset_password = true;
                 }
             } else {
@@ -174,7 +249,7 @@ admin_app.controller('view_users_controller', function ($scope, $http, $routePar
 });
 
 
-admin_app.controller('update_users_controller', function ($scope, $http, $routeParams, $location, $cookieStore) {
+admin_app.controller('update_users_controller', function ($scope, $http, $routeParams, $location, localStorageService) {
     $scope.uId = $routeParams.userId;
     $scope.user_status_list = [];
     $scope.user_type_list = [];
@@ -200,7 +275,7 @@ admin_app.controller('update_users_controller', function ($scope, $http, $routeP
         url: 'http://localhost:8080/api/users/' + $scope.uId,
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
 
         }
     }).
@@ -221,7 +296,7 @@ admin_app.controller('update_users_controller', function ($scope, $http, $routeP
         url: 'http://localhost:8080/api/status',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
 
         }
     }).
@@ -243,7 +318,7 @@ admin_app.controller('update_users_controller', function ($scope, $http, $routeP
         url: 'http://localhost:8080/api/roles',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
 
         }
     }).
@@ -264,7 +339,7 @@ admin_app.controller('update_users_controller', function ($scope, $http, $routeP
         url: 'http://localhost:8080/api/hotels/' + $scope.uId + '/dept/having',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -285,7 +360,7 @@ admin_app.controller('update_users_controller', function ($scope, $http, $routeP
         url: 'http://localhost:8080/api/hotels/' + $scope.uId + '/dept/notHaving',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -306,7 +381,7 @@ admin_app.controller('update_users_controller', function ($scope, $http, $routeP
         url: 'http://localhost:8080/api/users/' + $scope.uId + '/notAssignedTouchpoints',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -331,7 +406,7 @@ admin_app.controller('update_users_controller', function ($scope, $http, $routeP
             url: 'http://localhost:8080/api/departments/' + departmentId + '/touchpoints',
             method: 'get',
             headers: {
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             }
         }).
             success(function (data, status) {
@@ -373,7 +448,7 @@ admin_app.controller('update_users_controller', function ($scope, $http, $routeP
             url: 'http://localhost:8080/api/departments/' + departmentId + '/touchpoints',
             method: 'get',
             headers: {
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             }
         }).
             success(function (data, status) {
@@ -503,7 +578,7 @@ admin_app.controller('update_users_controller', function ($scope, $http, $routeP
             url: 'http://localhost:8080/api/users/update/' + $scope.uId,
             method: 'put',
             headers: { 'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             },
             data: $scope.user
         }).
@@ -527,7 +602,7 @@ admin_app.controller('update_users_controller', function ($scope, $http, $routeP
 });
 
 
-admin_app.controller('create_users_controller', function ($scope, $http, $location, $cookieStore, ngDialog) {
+admin_app.controller('create_users_controller', function ($scope, $http, $location, localStorageService, ngDialog) {
     console.log('create_users_controller of admin app module is loaded');
     $scope.hotel_list = [];
     $scope.hotel_department_list = [];
@@ -550,7 +625,7 @@ admin_app.controller('create_users_controller', function ($scope, $http, $locati
             url: 'http://localhost:8080/api/usernames',
             method: 'get',
             headers: {
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             }
         }).
             success(function (data, status) {
@@ -610,7 +685,7 @@ admin_app.controller('create_users_controller', function ($scope, $http, $locati
         url: 'http://localhost:8080/api/roles',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
 
         }
     }).
@@ -630,7 +705,7 @@ admin_app.controller('create_users_controller', function ($scope, $http, $locati
         url: 'http://localhost:8080/api/status',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
 
         }
     }).
@@ -650,7 +725,7 @@ admin_app.controller('create_users_controller', function ($scope, $http, $locati
         url: 'http://localhost:8080/api/hotels',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
 
         }
     }).
@@ -677,7 +752,7 @@ admin_app.controller('create_users_controller', function ($scope, $http, $locati
             url: 'http://localhost:8080/api/hotels/' + $scope.user.hotel.id + '/departments',
             method: 'get',
             headers: {
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             }
         }).
             success(function (data, status) {
@@ -701,7 +776,7 @@ admin_app.controller('create_users_controller', function ($scope, $http, $locati
             url: 'http://localhost:8080/api/departments/touchpoints',
             method: 'post',
             headers: {
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             },
             data: $scope.checked_departments
         }).
@@ -743,7 +818,7 @@ admin_app.controller('create_users_controller', function ($scope, $http, $locati
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             },
             data: $scope.user
         }).
@@ -785,7 +860,7 @@ admin_app.controller('create_users_controller', function ($scope, $http, $locati
 
 });
 
-admin_app.controller('add_departments_controller', function ($scope, $http, $routeParams, $location, $cookieStore) {
+admin_app.controller('add_departments_controller', function ($scope, $http, $routeParams, $location, localStorageService) {
     $scope.dept_list_assigned = [];
     $scope.dept_list_not_assigned = [];
     $scope.selected_assigned_dept;
@@ -799,7 +874,7 @@ admin_app.controller('add_departments_controller', function ($scope, $http, $rou
         url: 'http://localhost:8080/api/hotels/' + $routeParams.uId + '/dept/notHaving',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
 
         }
     }).
@@ -820,7 +895,7 @@ admin_app.controller('add_departments_controller', function ($scope, $http, $rou
         url: 'http://localhost:8080/api/hotels/' + $routeParams.uId + '/dept/having',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
 
         }
     }).
@@ -860,7 +935,7 @@ admin_app.controller('add_departments_controller', function ($scope, $http, $rou
             url: 'http://localhost:8080/api/users/assignDept/' + $routeParams.uId,
             method: 'put',
             headers: {'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")},
+                'Authorization': localStorageService.get("auth")},
             data: $scope.dept_list_assigned
         }).
             success(function (data, status) {
@@ -878,7 +953,7 @@ admin_app.controller('add_departments_controller', function ($scope, $http, $rou
 });
 
 
-admin_app.controller('delete_users_controller', function ($scope, $http, $routeParams, $location, $cookieStore) {
+admin_app.controller('delete_users_controller', function ($scope, $http, $routeParams, $location, localStorageService) {
     console.log('delete user controller is loaded');
     $scope.confirm_flag = false;
     $scope.delete_button_status;
@@ -890,7 +965,7 @@ admin_app.controller('delete_users_controller', function ($scope, $http, $routeP
         url: 'http://localhost:8080/api/users/' + $scope.uId,
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
 
         }
     }).
@@ -931,7 +1006,7 @@ admin_app.controller('delete_users_controller', function ($scope, $http, $routeP
             url: 'http://localhost:8080/api/users/' + $scope.uId + '/update/status/' + $scope.userStatus,
             method: 'get',
             headers: { 'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             }
         }).
             success(function (data, status) {
@@ -957,7 +1032,7 @@ admin_app.controller('delete_users_controller', function ($scope, $http, $routeP
 });
 
 
-admin_app.controller('access_card_controller', function ($scope, $http, $routeParams, $location, $cookieStore) {
+admin_app.controller('access_card_controller', function ($scope, $http, $routeParams, $location, localStorageService,$route,ngDialog) {
     $scope.reset_mode = false;
     $scope.content;
     $scope.magStripeNo;
@@ -968,6 +1043,14 @@ admin_app.controller('access_card_controller', function ($scope, $http, $routePa
     $scope.access_card_detail = {};
     $scope.card_detail = {};
 
+    $scope.cardAssociationType;
+
+    $scope.cardAssociationTypes=[
+        {"id": 2, "status": "Not Associated"},
+        {"id": 1, "status": "Associated"},
+        {"id": 0, "status": "All"}
+    ];
+
     <!-- find all guest cards -->
 
 
@@ -975,7 +1058,7 @@ admin_app.controller('access_card_controller', function ($scope, $http, $routePa
         url: 'http://localhost:8080/api/guestcards/all',
         method: 'get',
         headers: { 'Content-Type': 'application/json',
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -1007,7 +1090,7 @@ admin_app.controller('access_card_controller', function ($scope, $http, $routePa
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             },
             data: $scope.data
         }).
@@ -1025,6 +1108,7 @@ admin_app.controller('access_card_controller', function ($scope, $http, $routePa
             });
     }
 
+    //check for a valid room key card. if the card is exist in the database,then only we can attach the RFID tag to that card.
     $scope.checkCard = function () {
         console.log('check card function is called...');
 
@@ -1033,7 +1117,7 @@ admin_app.controller('access_card_controller', function ($scope, $http, $routePa
             url: 'http://localhost:8080/api/guestcards/' + $scope.access_card_detail.magStripeNo + '/detail',
             method: 'get',
             headers: { 'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             }
         }).
             success(function (data, status) {
@@ -1064,27 +1148,116 @@ admin_app.controller('access_card_controller', function ($scope, $http, $routePa
         $scope.message = null;
     }
 
+    $scope.clear = function () {
+          $scope.message = null;
+    }
+
     $scope.save = function (magstripeno, rfidtagno) {
         $scope.card_detail.magStripeNo = magstripeno;
         $scope.card_detail.rfidTagNo = rfidtagno;
-        console.log('test method is called...' + $scope.card_detail.magStripeNo + '::' + $scope.card_detail.rfidTagNo);
+        console.log('save method is called...' + $scope.card_detail.magStripeNo + '::' + $scope.card_detail.rfidTagNo);
 
         $http({
             url: 'http://localhost:8080/api/guestcards/' + $scope.card_detail.magStripeNo,
             method: 'put',
             headers: { 'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             },
             data: $scope.card_detail
         }).
             success(function (data, status) {
                 console.log('saved' + status);
                 $scope.editable = true;
+                $route.reload();
             })
             .error(function (error) {
-                console.log(error);
+                console.log('error occurred during saving');
+                //open popup , saying  error occurred
+                $scope.open_RFID_popup();
+
             });
     }
+
+
+    $scope.filterCardList=function()
+    {
+        console.log('filterring by'+$scope.cardAssociationType);
+
+        if($scope.cardAssociationType==1)
+        {
+            $http({
+                url: 'http://localhost:8080/api/guestcards/withRFID',
+                method: 'get',
+                headers: { 'Content-Type': 'application/json',
+                    'Authorization': localStorageService.get("auth")
+                }
+            }).
+                success(function (data, status) {
+                    if (status == 200) {
+                        console.log('all guest cards returned successfully');
+
+                        $scope.guest_cards = data;
+
+                    } else {
+                        console.log('status:' + status);
+                    }
+                })
+                .error(function (error) {
+                    console.log(error);
+                });
+        }
+
+        if($scope.cardAssociationType==2)
+        {
+            $http({
+                url: 'http://localhost:8080/api/guestcards/withoutRFID',
+                method: 'get',
+                headers: { 'Content-Type': 'application/json',
+                    'Authorization': localStorageService.get("auth")
+                }
+            }).
+                success(function (data, status) {
+                    if (status == 200) {
+                        console.log('all guest cards returned successfully');
+
+                        $scope.guest_cards = data;
+
+                    } else {
+                        console.log('status:' + status);
+                    }
+                })
+                .error(function (error) {
+                    console.log(error);
+                });
+        }
+
+        if($scope.cardAssociationType==0)
+        {
+
+            $http({
+                url: 'http://localhost:8080/api/guestcards/all',
+                method: 'get',
+                headers: { 'Content-Type': 'application/json',
+                    'Authorization': localStorageService.get("auth")
+                }
+            }).
+                success(function (data, status) {
+                    if (status == 200) {
+                        console.log('all guest cards returned successfully');
+
+                        $scope.guest_cards = data;
+
+                    } else {
+                        console.log('status:' + status);
+                    }
+                })
+                .error(function (error) {
+                    console.log(error);
+                });
+        }
+    }
+
+
 
     $scope.saveCard = function () {
         console.log('save card is called......');
@@ -1096,7 +1269,7 @@ admin_app.controller('access_card_controller', function ($scope, $http, $routePa
             url: 'http://localhost:8080/api/guestcards/' + $scope.access_card_detail.magStripeNo,
             method: 'put',
             headers: { 'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             },
             data: $scope.access_card_detail
 
@@ -1110,11 +1283,30 @@ admin_app.controller('access_card_controller', function ($scope, $http, $routePa
                     $scope.message = 'saved successfully';
                 } else {
                     console.log('status:' + status);
+                    $scope.message = 'This RFID Tag is in use';
+
                 }
             })
             .error(function (error) {
                 console.log(error);
+                $scope.message = 'This RFID Tag is in use';
+
             });
+    }
+
+
+    $scope.open_RFID_popup = function(){
+        console.log('pop function is calling');
+        ngDialog.open({
+            template: '<body style="text-align:center;color: RED;"><h4>' +
+                'RFID Tag Is In Use!!</h4>' +
+                '</body>',
+            plain:true,
+            className:'ngdialog-theme-default'
+
+        });
+        $route.reload();
+
     }
 })
     .directive('onReadFile', function ($parse) {
@@ -1140,9 +1332,9 @@ admin_app.controller('access_card_controller', function ($scope, $http, $routePa
     });
 
 
-admin_app.controller('touch_point_controller', function ($scope, $http, $routeParams, $location, $cookieStore) {
+admin_app.controller('touch_point_controller', function ($scope, $http, $routeParams, $location, localStorageService) {
     console.log('touch point controller of admin is loaded');
-    $scope.current_user_id = $cookieStore.get("user").id;
+    $scope.current_user_id = localStorageService.get("user").id;
     $scope.touch_point_list = [];
     console.log('current user id::' + $scope.current_user_id);
 
@@ -1151,7 +1343,7 @@ admin_app.controller('touch_point_controller', function ($scope, $http, $routePa
         url: 'http://localhost:8080/api/login/touchpoints',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -1169,9 +1361,9 @@ admin_app.controller('touch_point_controller', function ($scope, $http, $routePa
 });
 
 
-admin_app.controller('touch_point_setup_controller', function ($scope, $http, $routeParams, $location, $cookieStore) {
+admin_app.controller('touch_point_setup_controller', function ($scope, $http, $routeParams, $location, localStorageService) {
     console.log('touch point setup controller of admin application is loaded');
-    $scope.current_user_id = $cookieStore.get("user").id;
+    $scope.current_user_id = localStorageService.get("user").id;
     $scope.current_touch_point_list = [];
     $scope.tpsetup = {};
     $scope.selectedtouchpoint = {};
@@ -1183,16 +1375,21 @@ admin_app.controller('touch_point_setup_controller', function ($scope, $http, $r
 
 
     $http({
-        url: 'http://localhost:8080/api/login/touchpoints',
+        url: 'http://localhost:8080/api/touchpoint/'+$scope.current_touch_point_id,
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
             console.log('get success code::' + status);
             if (status == 200) {
-                $scope.current_touch_point_list = data;
+                $scope.current_touch_point_list.push(data);
+
+
+                $scope.selectedtouchpoint=$scope.current_touch_point_list[0];
+
+
                 console.log('All Touch Points::' + $scope.current_touch_point_list);
             } else {
                 console.log('status:' + status);
@@ -1206,19 +1403,23 @@ admin_app.controller('touch_point_setup_controller', function ($scope, $http, $r
 
         console.log('setup is clicked');
         console.log('selected tp::' + $scope.selectedtouchpoint);
-        //console.log('touch point setup object::' + $scope.setup);
 
-        //console.log('create setup for TouchPoint::'+$scope.setup.touchPoint.id);
+        //form validation
+        if(!setup_form.$valid)
+        {
+            return;
+        }
+
+
 
         <!-- setup the touch point -->
-
         $scope.tpsetup.touchPoint = $scope.selectedtouchpoint;
         $http({
             url: 'http://localhost:8080/api/tp/setup',
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             },
             data: $scope.tpsetup
         }).
@@ -1239,7 +1440,7 @@ admin_app.controller('touch_point_setup_controller', function ($scope, $http, $r
 });
 
 
-admin_app.controller('setup_list_controller', function ($scope, $http, $routeParams, $location, $cookieStore) {
+admin_app.controller('setup_list_controller', function ($scope, $http, $routeParams, $location, localStorageService) {
     console.log(' setup list  controller is loaded.....');
     $scope.touch_point_setups;
     $scope.current_touch_point_id = $routeParams.tpid;
@@ -1250,7 +1451,7 @@ admin_app.controller('setup_list_controller', function ($scope, $http, $routePar
         url: 'http://localhost:8080/api/tp/' + $routeParams.tpid + '/setups',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -1268,7 +1469,7 @@ admin_app.controller('setup_list_controller', function ($scope, $http, $routePar
 });
 
 
-admin_app.controller('setup_view_controller', function ($scope, $http, $routeParams, $location, $cookieStore) {
+admin_app.controller('setup_view_controller', function ($scope, $http, $routeParams, $location, localStorageService) {
     console.log(' setup view  controller is loaded.....');
     $scope.setup_detail;
     $scope.current_touch_point_id = $routeParams.tpId;
@@ -1279,7 +1480,7 @@ admin_app.controller('setup_view_controller', function ($scope, $http, $routePar
         url: 'http://localhost:8080/api/tpsetup/' + $routeParams.setupId,
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -1297,7 +1498,7 @@ admin_app.controller('setup_view_controller', function ($scope, $http, $routePar
 });
 
 
-admin_app.controller('edit_setup_controller', function ($scope, $http, $routeParams, $location, $cookieStore) {
+admin_app.controller('edit_setup_controller', function ($scope, $http, $routeParams, $location, localStorageService) {
     console.log('edit setup controller is loaded');
     $scope.setup_detail = {};
     $scope.current_touch_point_id = $routeParams.tpId;
@@ -1308,7 +1509,7 @@ admin_app.controller('edit_setup_controller', function ($scope, $http, $routePar
         url: 'http://localhost:8080/api/tpsetup/' + $routeParams.setupId,
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -1329,7 +1530,7 @@ admin_app.controller('edit_setup_controller', function ($scope, $http, $routePar
             url: 'http://localhost:8080/api/tpsetup/' + $routeParams.setupId,
             method: 'put',
             headers: { 'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             },
             data: $scope.setup_detail
 
@@ -1352,7 +1553,7 @@ admin_app.controller('edit_setup_controller', function ($scope, $http, $routePar
 });
 
 
-admin_app.controller('delete_setup_controller', function ($scope, $http, $routeParams, $location, $cookieStore) {
+admin_app.controller('delete_setup_controller', function ($scope, $http, $routeParams, $location, localStorageService) {
     console.log('delete setup controller is loaded');
     $scope.setup_detail;
     $scope.current_touch_point_id = $routeParams.tpId;
@@ -1363,7 +1564,7 @@ admin_app.controller('delete_setup_controller', function ($scope, $http, $routeP
         url: 'http://localhost:8080/api/tpsetup/' + $routeParams.setupId,
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -1384,7 +1585,7 @@ admin_app.controller('delete_setup_controller', function ($scope, $http, $routeP
             url: 'http://localhost:8080/api/tpsetup/' + $routeParams.setupId + '/delete',
             method: 'delete',
             headers: { 'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             }
         }).
             success(function (data, status) {
@@ -1404,7 +1605,7 @@ admin_app.controller('delete_setup_controller', function ($scope, $http, $routeP
 });
 
 
-admin_app.controller('reset_users_controller', function ($scope, $http, $routeParams, $location, $cookieStore) {
+admin_app.controller('reset_users_controller', function ($scope, $http, $routeParams, $location, localStorageService) {
     console.log('reset user controller is loaded');
     $scope.user_detail = {};
     $scope.uId = $routeParams.userId;
@@ -1412,7 +1613,7 @@ admin_app.controller('reset_users_controller', function ($scope, $http, $routePa
         url: 'http://localhost:8080/api/users/' + $scope.uId,
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
 
         }
     }).
@@ -1433,7 +1634,7 @@ admin_app.controller('reset_users_controller', function ($scope, $http, $routePa
             url: 'http://localhost:8080/api/users/' + $scope.uId + '/reset/password',
             method: 'get',
             headers: { 'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             }
         }).
             success(function (data, status) {
@@ -1451,7 +1652,7 @@ admin_app.controller('reset_users_controller', function ($scope, $http, $routePa
 });
 
 
-admin_app.controller('add_touch_points_controller', function ($scope, $http, $routeParams, $location, $cookieStore) {
+admin_app.controller('add_touch_points_controller', function ($scope, $http, $routeParams, $location, localStorageService) {
 
     $scope.touchpoint_list_assigned = [];
     $scope.touchpoint_list_not_assigned = [];
@@ -1462,7 +1663,7 @@ admin_app.controller('add_touch_points_controller', function ($scope, $http, $ro
         url: 'http://localhost:8080/api/users/' + $routeParams.uId + '/tp/notHaving',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -1482,7 +1683,7 @@ admin_app.controller('add_touch_points_controller', function ($scope, $http, $ro
         url: 'http://localhost:8080/api/users/' + $routeParams.uId + '/tp/having',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -1522,7 +1723,7 @@ admin_app.controller('add_touch_points_controller', function ($scope, $http, $ro
             url: 'http://localhost:8080/api/users/assignTP/' + $routeParams.uId,
             method: 'put',
             headers: {'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             },
             data: $scope.touchpoint_list_assigned
         }).
@@ -1540,7 +1741,7 @@ admin_app.controller('add_touch_points_controller', function ($scope, $http, $ro
 
 });
 
-admin_app.controller('import_key_card_controller', function ($scope, $http, $location, $cookieStore, $window) {
+admin_app.controller('import_key_card_controller', function ($scope, $http, $location, localStorageService, $window) {
     console.log('import room key card controller is loaded');
     $scope.reset_mode = false;
     $scope.content;
@@ -1562,7 +1763,7 @@ admin_app.controller('import_key_card_controller', function ($scope, $http, $loc
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             },
             data: $scope.data
         }).
@@ -1580,6 +1781,6 @@ admin_app.controller('import_key_card_controller', function ($scope, $http, $loc
 
 });
 
-admin_app.controller('register_cards_controller', function ($scope, $http, $location, $cookieStore, $window) {
+admin_app.controller('register_cards_controller', function ($scope, $http, $location, localStorageService, $window) {
     console.log('register room key card controller is loaded');
 });

@@ -60,26 +60,29 @@
 
                 <tr>
                     <td>Identity No</td>
-                    <td><input type="text"
+                    <td><input type="text" id="text1"
                                name="identityno"
                                ng-blur="OnIdBlur()"
+                               ng-change="onIdChange()"
                                ng-model="guest.idNumber"
                                placeholder="Identity No"
                                style="width: 100%"
-                               required
-                               ></td>
+                               ng-required="!(guest.idNumber.length || guest.passportNumber.length )"
+                             ></td>
                 </tr>
 
                 <tr>
                     <td>Passport No</td>
-                    <td><input type="text"
+                    <td><input type="text" id="text2"
                                name="passportno"
                                ng-blur="OnPassportBlur()"
                                ng-model="guest.passportNumber"
+                               ng-change="onPassportChange()"
                                placeholder="Passport No"
                                style="width: 100%"
-                               required
-                               ></td>
+                               ng-required="!(guest.idNumber.length || guest.passportNumber.length )"
+
+                            ></td>
                 </tr>
 
                 <tr>

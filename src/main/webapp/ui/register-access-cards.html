@@ -24,7 +24,7 @@
             </tr>
             <tr ng-if="magStripeNo">
                 <td><label>RFID Tag No</label></td>
-                <td><input type="text" class="form-control" placeholder="RFID Tag No"
+                <td><input type="text" class="form-control" ng-change="clear()" placeholder="RFID Tag No"
                            ng-model="access_card_detail.rfidTagNo"
                            required>
                 <td><input type="button" class="btn btn-primary" value="Save" ng-if="magStripeNo"

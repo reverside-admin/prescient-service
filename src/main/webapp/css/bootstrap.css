@@ -1439,6 +1439,7 @@ th {
 }
 .table .table {
   background-color: #fff;
+
 }
 .table-condensed > thead > tr > th,
 .table-condensed > tbody > tr > th,
@@ -1450,6 +1451,7 @@ th {
 }
 .table-bordered {
   border: 1px solid #ddd;
+
 }
 .table-bordered > thead > tr > th,
 .table-bordered > tbody > tr > th,

@@ -1,9 +1,9 @@
 /**
  * Created by Bibhuti on 2014/03/29.
  */
-var login_app = angular.module('login_app', ['ngRoute', 'ngCookies']);
+var login_app = angular.module('login_app', ['ngRoute', 'LocalStorageModule']);
 
-login_app.controller("login_app_controller", function ($scope, $http, $cookieStore, $window) {
+login_app.controller("login_app_controller", function ($scope, $http, localStorageService, $window) {
 
     $scope.error;
 
@@ -48,8 +48,8 @@ login_app.controller("login_app_controller", function ($scope, $http, $cookieSto
                     }
 
                     var token = 'Basic ' + $scope.decode($scope.user_name + ':' + $scope.password);
-                    $cookieStore.put("user", data);
-                    $cookieStore.put("auth", token);
+                    localStorageService.set("user", data);
+                    localStorageService.set("auth", token);
 
                     if (data.userType.value == 'ROLE_ADMIN') {
                         redirect_url = "admin-app.html";
@@ -117,8 +117,8 @@ login_app.controller("login_app_controller", function ($scope, $http, $cookieSto
                     <!-- update auth in cookie-->
 
                     var token = 'Basic ' + $scope.decode($scope.user_name + ':' + new_password);
-                    $cookieStore.put("user", $scope.user);
-                    $cookieStore.put("auth", token);
+                    localStorageService.set("user", $scope.user);
+                    localStorageService.set("auth", token);
 
                     if ($scope.user.userType.value == 'ROLE_ADMIN')
                         $window.location.replace("admin-app.html");

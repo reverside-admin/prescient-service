@@ -120,11 +120,14 @@ public class Services {
 //        ItcsTagRead itc=itcsTagReadRepository.findGuestCardHistory(guestCardAllocation.getCard().getId().intValue());
         List<ItcsTagRead> itcsTagReads = new ArrayList<ItcsTagRead>();
         for (int i = 0; i < guestCardAllocation.size(); i++) {
+
+            log.info("start of for loop   >>>>>>>>>>>>>>>>>>>>>>>>>>>");
             String guestCardRFIDTagNo = guestCardAllocation.get(i).getCard().getRfidTagNo();
             log.info("String value of guestCardRFIDTagNo : " + guestCardRFIDTagNo);
 
             String responseStr = "";
             try {
+                log.info("calling ITCS service*****************************");
                 URL url = new URL("http://localhost:9090/tags/" + guestCardRFIDTagNo + "/now");
                 log.info("guestCardRFIDTagNo : " + guestCardRFIDTagNo);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -133,29 +136,44 @@ public class Services {
 
                 BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
 
-                log.info("Output from Server .... \n");
+                log.info("Reading Response from ITCS************************ \n");
                 String res;
+
                 while ((res = br.readLine()) != null) {
-                    log.info(res);
+                    log.info("res------------>"+res);
                     responseStr = responseStr + res;
                 }
+                log.info("Response length from ITCS::"+responseStr);
+
+
 
                 JSONObject obj = new JSONObject(responseStr);
                 log.info("xcoordRead"+obj.getDouble("xcoordRead"));
 
                 itcsTagRead = new ItcsTagRead();
                 itcsTagRead.setId(obj.getLong("id"));
+                log.info("set id");
                 itcsTagRead.setGuestCard(obj.getString("guestCard"));
-                itcsTagRead.setZoneId(obj.getString("zoneId"));
+                log.info("set guestcard");
+
+
+
+                itcsTagRead.setZoneId(obj.getString("zoneId").toString());
+                log.info("set zoneid");
+
                 itcsTagRead.setXCoordRead(obj.getDouble("xcoordRead"));
+                log.info("set xcord");
                 itcsTagRead.setYCoordRead(obj.getDouble("ycoordRead"));
+                log.info("set ycord");
                 itcsTagRead.setTagReadDatetime(new Date(obj.getLong("tagReadDatetime")));
+                log.info("set date and time");
             } catch (Exception e) {
                 itcsTagRead = new ItcsTagRead();
                 log.info("guestCardRFIDTagNo Exp : " + guestCardRFIDTagNo);
                 e.getMessage();
             }
             itcsTagReads.add(itcsTagRead);
+            log.info("End of for loop >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         }
         return itcsTagReads;
     }
@@ -743,6 +761,8 @@ public class Services {
     @RequestMapping(value = "guest/{guestId}/returncards")
     public void returnAllKeyCards(@PathVariable("guestId") Long guestId) {
 
+        LOGGER.info("return all key card service1");
+
 
         List<GuestCard> guestCards = guestCardRepository.findAllCardsOfAGuest(guestId);
         for (GuestCard guestCard : guestCards) {
@@ -751,12 +771,20 @@ public class Services {
 
         }
         guestCardRepository.save(guestCards);
+        LOGGER.info("return all key card service2");
+
 
         //change the guest current stay indicator to false bcoz guest is leaving the the hotel
         GuestStayHistory guestStayHistory = guestStayHistoryRepository.getGuestLastStay(guestId);
+        LOGGER.info("return all key card service3");
+
         Date departureDate = guestStayHistory.getDepartureTime();
+        LOGGER.info("return all key card service4");
+
 
         Calendar calendar1 = Calendar.getInstance();
+        LOGGER.info("return all key card service5");
+
         calendar1.setTime(departureDate);
         Calendar calendar2 = Calendar.getInstance();
         calendar2.setTime(new Date());

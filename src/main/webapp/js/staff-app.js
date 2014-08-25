@@ -1,7 +1,7 @@
 /**
  * Created by Bibhuti on 2014/04/03.
  */
-var staff_app = angular.module('staff_app', ['ngRoute', 'ngCookies', 'ngDialog']);
+var staff_app = angular.module('staff_app', ['ngRoute', 'LocalStorageModule', 'ngDialog']);
 
 staff_app.service('sharedProperties', function () {
     var guest_property;
@@ -130,14 +130,14 @@ staff_app.config(['$routeProvider',
                 'templateUrl': '/ui/welcome-page.html'
             })
             .otherwise({
-                redirectTo: '/welcome'
+                redirectTo: '/maintain/guest/guestlist'
             });
     }]);
 
 
 <!--Guest Management -->
 <!--display the guest list-->
-staff_app.controller('guest_list_controller', function ($scope, $http, $routeParams, $cookieStore) {
+staff_app.controller('guest_list_controller', function ($scope, $http, $routeParams, localStorageService) {
 
     $scope.guests = {};
 
@@ -145,7 +145,7 @@ staff_app.controller('guest_list_controller', function ($scope, $http, $routePar
         url: 'http://localhost:8080/api/guest/all',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -164,7 +164,7 @@ staff_app.controller('guest_list_controller', function ($scope, $http, $routePar
 
 <!--view a particular guest detail-->
 
-staff_app.controller('guest_details_controller', function ($scope, $http, $routeParams, $cookieStore) {
+staff_app.controller('guest_details_controller', function ($scope, $http, $routeParams, localStorageService) {
 
     $scope.guest_detail = {};
 
@@ -173,7 +173,7 @@ staff_app.controller('guest_details_controller', function ($scope, $http, $route
         url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/details',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -194,12 +194,12 @@ staff_app.controller('guest_details_controller', function ($scope, $http, $route
 
 
 <!--Create A Guest-->
-staff_app.controller('create_guest_controller', function ($scope, $http, $routeParams, $cookieStore, $location, ngDialog, sharedProperties) {
+staff_app.controller('create_guest_controller', function ($scope, $http, $routeParams, localStorageService, $location, ngDialog, sharedProperties) {
 
     $scope.guest = {};
     $scope.dob;
     $scope.hotel = {};
-    $scope.hotel.id = $cookieStore.get("user").hotel.id;
+    $scope.hotel.id = localStorageService.get("user").hotel.id;
     $scope.passport_validator_flag;
     $scope.id_validator_flag;
 
@@ -229,63 +229,97 @@ staff_app.controller('create_guest_controller', function ($scope, $http, $routeP
 
     $scope.OnPassportBlur=function()
     {
-        console.log('unfocusing  with value::'+$scope.guest.passportNumber);
+        if($scope.guest.passportNumber!=undefined)
+        {
+            if($scope.guest.passportNumber.length!=0)
+            {
+                console.log('unfocusing  with value::'+$scope.guest.passportNumber);
 
-        $http({
-            url: 'http://localhost:8080/api/guest/passport/' + $scope.guest.passportNumber + '/details',
-            method: 'get',
-            headers: {
-                'Authorization': $cookieStore.get("auth")
+                $http({
+                    url: 'http://localhost:8080/api/guest/passport/' + $scope.guest.passportNumber + '/details',
+                    method: 'get',
+                    headers: {
+                        'Authorization': localStorageService.get("auth")
+                    }
+                }).
+                    success(function (data, status) {
+                        if (data.firstName == undefined) {
+                            console.log('passport is not available in the database')
+                            $scope.passport_validator_flag = true;
+                        }
+                        else {
+                            console.log('Data returned from server' + data.firstName);
+                            $scope.passport_validator_flag = false;
+                            //scope.guest_detail=data;
+
+                            //if the guest is found with that passport no then set the guest in the shared data.
+                            sharedProperties.setProperty(data);
+
+                            $scope.open_passport_popup();
+                        }
+                    })
+                    .error(function (error) {
+                        console.log(error);
+                    });
             }
-        }).
-            success(function (data, status) {
-                if (data.firstName == undefined) {
-                    console.log('passport is not available in the database')
-                    $scope.passport_validator_flag = true;
-                }
-                else {
-                    console.log('Data returned from server' + data.firstName);
-                    $scope.passport_validator_flag = false;
-                    //scope.guest_detail=data;
 
-                    //if the guest is found with that passport no then set the guest in the shared data.
-                    sharedProperties.setProperty(data);
+        }
 
-                    $scope.open_passport_popup();
-                }
-            })
-            .error(function (error) {
-                console.log(error);
-            });
     }
 
     $scope.OnIdBlur=function()
     {
-        $http({
-            url: 'http://localhost:8080/api/guest/uniqueid/' + $scope.guest.idNumber + '/details',
-            method: 'get',
-            headers: {
-                'Authorization': $cookieStore.get("auth")
+        if( $scope.guest.idNumber!=undefined)
+        {
+            if($scope.guest.idNumber.length!=0)
+            {
+                $http({
+                    url: 'http://localhost:8080/api/guest/uniqueid/' + $scope.guest.idNumber + '/details',
+                    method: 'get',
+                    headers: {
+                        'Authorization': localStorageService.get("auth")
+                    }
+                }).
+                    success(function (data, status) {
+                        if (data.firstName == undefined) {
+                            console.log('id is not available in the database')
+                            $scope.id_validator_flag = true;
+                        }
+                        else {
+                            console.log('Data returned from server' + data.firstName);
+                            $scope.id_validator_flag = false;
+
+                            sharedProperties.setProperty(data);
+
+                            $scope.open_id_popup();
+                        }
+                    })
+                    .error(function (error) {
+                        console.log(error);
+                    });
             }
-        }).
-            success(function (data, status) {
-                if (data.firstName == undefined) {
-                    console.log('id is not available in the database')
-                    $scope.id_validator_flag = true;
-                }
-                else {
-                    console.log('Data returned from server' + data.firstName);
-                    $scope.id_validator_flag = false;
 
-                    sharedProperties.setProperty(data);
+        }
 
-                    $scope.open_id_popup();
-                }
-            })
-            .error(function (error) {
-                console.log(error);
-            });
 
+    }
+
+    $scope.onIdChange=function()
+    {
+        console.log('on id change method');
+        if($scope.guest.idNumber.length==0)
+        {
+            $scope.id_validator_flag = true;
+        }
+    }
+
+    $scope.onPassportChange=function()
+    {
+        console.log('on passport change method');
+        if($scope.guest.passportNumber.length==0)
+        {
+            $scope.passport_validator_flag = true;
+        }
     }
 
 
@@ -323,7 +357,7 @@ staff_app.controller('create_guest_controller', function ($scope, $http, $routeP
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             },
             data: $scope.guest
         }).
@@ -387,7 +421,7 @@ staff_app.controller('create_guest_controller', function ($scope, $http, $routeP
 });
 
 
-staff_app.controller('passport_popup_controller', function ($scope, $http, $routeParams, $cookieStore, sharedProperties) {
+staff_app.controller('passport_popup_controller', function ($scope, $http, $routeParams, localStorageService, sharedProperties) {
 
     $scope.guest_profile_data;
     $scope.flag=true;
@@ -399,7 +433,7 @@ staff_app.controller('passport_popup_controller', function ($scope, $http, $rout
 });
 
 
-staff_app.controller('id_popup_controller', function ($scope, $http, $routeParams, $cookieStore, sharedProperties) {
+staff_app.controller('id_popup_controller', function ($scope, $http, $routeParams, localStorageService, sharedProperties) {
 
     $scope.guest_profile_data;
     $scope.flag=true;
@@ -410,7 +444,7 @@ staff_app.controller('id_popup_controller', function ($scope, $http, $routeParam
 
 });
 
-staff_app.controller('update_details_controller', function ($scope, $cookieStore, $routeParams, $http, $location, ngDialog,sharedProperties) {
+staff_app.controller('update_details_controller', function ($scope, localStorageService, $routeParams, $http, $location, ngDialog,sharedProperties) {
     console.log('update guest controller is loaded');
 
     $scope.guest_id = $routeParams.guestId;
@@ -445,7 +479,7 @@ staff_app.controller('update_details_controller', function ($scope, $cookieStore
         url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/details',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -509,7 +543,7 @@ staff_app.controller('update_details_controller', function ($scope, $cookieStore
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             },
             data: $scope.guest_detail
         }).
@@ -578,81 +612,114 @@ staff_app.controller('update_details_controller', function ($scope, $cookieStore
         console.log('invalid form popup');
         ngDialog.open({
             template: '<body style="text-align:center;color: RED;"><h4 style="align-content: stretch">' +
-                "Form Can't Be Empty!!</h4>" +
+                "Please Fill All Required Fields !!</h4>" +
                 '</body>', plain: true,
             className: 'ngdialog-theme-default'
         });
     }
 
 
-    $scope.checkPassport = function () {
-        console.log('ckecking the passport');
-        $http({
-            url: 'http://localhost:8080/api/guest/passport/' + $scope.guest_detail.passportNumber + '/details',
-            method: 'get',
-            headers: {
-                'Authorization': $cookieStore.get("auth")
-            }
-        }).
-            success(function (data, status) {
-                if (data.firstName == undefined) {
-                    console.log('passport is not available in the database')
-                    $scope.passport_validator_flag = true;
-                    return;
-                }
-                if (data.id == $scope.guest_id) {
-                    console.log('this passport no belongs to the same guest');
-                    $scope.passport_validator_flag = true;
-                    return;
-                }
-                if (data.id != $scope.guest_id) {
-                    console.log('Data returned from server' + data.firstName);
-                    $scope.passport_validator_flag = false;
-                    //scope.guest_detail=data;
-                    //store guest data to the shared resource
-                    sharedProperties.setProperty(data);
+    $scope.onPassportChange=function()
+    {
+        if($scope.guest_detail.passportNumber.length==0)
+        {
+            $scope.passport_validator_flag=true;
+        }
+    }
 
-                    $scope.open_passport_popup();
-                }
-            })
-            .error(function (error) {
-                console.log(error);
-            });
+    $scope.onIdChange=function()
+    {
+        if($scope.guest_detail.idNumber.length==0)
+        {
+            $scope.id_validator_flag=true;
+        }
+    }
+
+
+    $scope.checkPassport = function () {
+
+        if($scope.guest_detail.passportNumber!=undefined)
+        {
+            if($scope.guest_detail.passportNumber.length!=0)
+            {
+                console.log('ckecking the passport');
+                $http({
+                    url: 'http://localhost:8080/api/guest/passport/' + $scope.guest_detail.passportNumber + '/details',
+                    method: 'get',
+                    headers: {
+                        'Authorization': localStorageService.get("auth")
+                    }
+                }).
+                    success(function (data, status) {
+                        if (data.firstName == undefined) {
+                            console.log('passport is not available in the database')
+                            $scope.passport_validator_flag = true;
+                            return;
+                        }
+                        if (data.id == $scope.guest_id) {
+                            console.log('this passport no belongs to the same guest');
+                            $scope.passport_validator_flag = true;
+                            return;
+                        }
+                        if (data.id != $scope.guest_id) {
+                            console.log('Data returned from server' + data.firstName);
+                            $scope.passport_validator_flag = false;
+                            //scope.guest_detail=data;
+                            //store guest data to the shared resource
+                            sharedProperties.setProperty(data);
+
+                            $scope.open_passport_popup();
+                        }
+                    })
+                    .error(function (error) {
+                        console.log(error);
+                    });
+            }
+        }
+
     }
 
 
     $scope.checkUniqueId = function () {
-        console.log('ckecking the id');
-        $http({
-            url: 'http://localhost:8080/api/guest/uniqueid/' + $scope.guest_detail.idNumber + '/details',
-            method: 'get',
-            headers: {
-                'Authorization': $cookieStore.get("auth")
+        if($scope.guest_detail.idNumber!=undefined)
+        {
+            if($scope.guest_detail.idNumber.length!=0)
+            {
+                console.log('ckecking the id');
+                $http({
+                    url: 'http://localhost:8080/api/guest/uniqueid/' + $scope.guest_detail.idNumber + '/details',
+                    method: 'get',
+                    headers: {
+                        'Authorization': localStorageService.get("auth")
+                    }
+                }).
+                    success(function (data, status) {
+                        if (data.firstName == undefined) {
+                            console.log('Id is not available in the database')
+                            $scope.id_validator_flag = true;
+                            return;
+                        }
+                        if (data.id == $scope.guest_id) {
+                            console.log('this id no belongs to the same guest');
+                            $scope.id_validator_flag = true;
+                            return;
+                        }
+                        if (data.id != $scope.guest_id) {
+                            console.log('Data returned from server' + data.firstName);
+                            $scope.id_validator_flag = false;
+                            //scope.guest_detail=data;
+                            //store the data in the shared property
+                            sharedProperties.setProperty(data);
+                            $scope.open_id_popup();
+                        }
+                    })
+                    .error(function (error) {
+                        console.log(error);
+                    });
             }
-        }).
-            success(function (data, status) {
-                if (data.firstName == undefined) {
-                    console.log('Id is not available in the database')
-                    $scope.id_validator_flag = true;
-                    return;
-                }
-                if (data.id == $scope.guest_id) {
-                    console.log('this id no belongs to the same guest');
-                    $scope.id_validator_flag = true;
-                    return;
-                }
-                if (data.id != $scope.guest_id) {
-                    console.log('Data returned from server' + data.firstName);
-                    $scope.id_validator_flag = false;
-                    //scope.guest_detail=data;
-                    //store the data in the shared property
-                    sharedProperties.setProperty(data);
-                    $scope.open_id_popup();
-                }
-            })
-            .error(function (error) {
-                console.log(error);
-            });
+        }
+
+
     }
 
 
@@ -663,7 +730,7 @@ staff_app.controller('update_details_controller', function ($scope, $cookieStore
 <!--Guest Preference Management-->
 
 <!--View guest Preference data-->
-staff_app.controller('view_guest_preference_data_controller', function ($scope, $http, $routeParams, $cookieStore) {
+staff_app.controller('view_guest_preference_data_controller', function ($scope, $http, $routeParams, localStorageService) {
 
     $scope.guest_data = {};
 
@@ -671,7 +738,7 @@ staff_app.controller('view_guest_preference_data_controller', function ($scope, 
         url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/details',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -689,7 +756,7 @@ staff_app.controller('view_guest_preference_data_controller', function ($scope, 
 });
 
 <!-- add guest preference -->
-staff_app.controller('add_guest_preference_controller', function ($scope, $http,ngDialog, $routeParams, $cookieStore, $location,sharedPreferenceProperties) {
+staff_app.controller('add_guest_preference_controller', function ($scope, $http,ngDialog, $routeParams, localStorageService, $location,sharedPreferenceProperties) {
 
     $scope.guest_id = $routeParams.guestId;
     $scope.guest_preference_types;
@@ -707,7 +774,7 @@ staff_app.controller('add_guest_preference_controller', function ($scope, $http,
         url: 'http://localhost:8080/api/guest/preference/types',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -738,7 +805,7 @@ staff_app.controller('add_guest_preference_controller', function ($scope, $http,
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             },
             data: $scope.guest_preference
         }).
@@ -774,7 +841,7 @@ staff_app.controller('add_guest_preference_controller', function ($scope, $http,
             url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/preference/' + $scope.guest_preference_type.id,
             method: 'get',
             headers: {
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             }
         }).
             success(function (data, status) {
@@ -807,7 +874,7 @@ staff_app.controller('add_guest_preference_controller', function ($scope, $http,
             url: 'http://localhost:8080/api/guest/preference/delete' ,
             method: 'post',
             headers: {
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             },
             data: $scope.selected_preference
 
@@ -861,7 +928,7 @@ staff_app.controller('add_guest_preference_controller', function ($scope, $http,
     }
 });
 
-staff_app.controller('update_preference_popup_controller', function ($scope, $http,ngDialog, $routeParams, $cookieStore, $location,sharedPreferenceProperties) {
+staff_app.controller('update_preference_popup_controller', function ($scope, $http,ngDialog, $routeParams, localStorageService, $location,sharedPreferenceProperties) {
     $scope.preferenceType=sharedPreferenceProperties.getTypeProperty();//getting type
     $scope.preferenceDescription=sharedPreferenceProperties.getDescProperty();//getting description
 
@@ -887,7 +954,7 @@ staff_app.controller('update_preference_popup_controller', function ($scope, $ht
             url: 'http://localhost:8080/api/guest/preference/update',
             method: 'post',
             headers: {
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             },
             data:$scope.preference
 
@@ -927,7 +994,7 @@ staff_app.controller('update_preference_popup_controller', function ($scope, $ht
 <!--Guest Stay Management-->
 
 <!--View guest stay details-->
-staff_app.controller('view_guest_stay_details_controller', function ($scope, $http, $routeParams, $cookieStore) {
+staff_app.controller('view_guest_stay_details_controller', function ($scope, $http, $routeParams, localStorageService) {
 
     $scope.guest_stay_detail = {};
 
@@ -938,7 +1005,7 @@ staff_app.controller('view_guest_stay_details_controller', function ($scope, $ht
         url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/details',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -959,7 +1026,7 @@ staff_app.controller('view_guest_stay_details_controller', function ($scope, $ht
         url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/gueststaydetails',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -977,11 +1044,11 @@ staff_app.controller('view_guest_stay_details_controller', function ($scope, $ht
 });
 
 <!--Add Stay Details-->
-staff_app.controller('add_stay_details_controller', function ($scope, $http, $routeParams, $cookieStore, $location) {
+staff_app.controller('add_stay_details_controller', function ($scope, $http, $routeParams, localStorageService, $location) {
 
     console.log('add stay detail controller is loaded');
-    $scope.current_user_hotel_id = $cookieStore.get("user").hotel.id;
-    $scope.current_hotel = $cookieStore.get("user").hotel;
+    $scope.current_user_hotel_id = localStorageService.get("user").hotel.id;
+    $scope.current_hotel = localStorageService.get("user").hotel;
     $scope.current_guest_id=$routeParams.guestId;
 
 
@@ -1025,7 +1092,7 @@ staff_app.controller('add_stay_details_controller', function ($scope, $http, $ro
         url: 'http://localhost:8080/api/guest/'+ $routeParams.guestId + '/lateststay ',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -1089,7 +1156,7 @@ staff_app.controller('add_stay_details_controller', function ($scope, $http, $ro
             url: 'http://localhost:8080/api/guest/'+ $routeParams.guestId + '/lateststay ',
             method: 'get',
             headers: {
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             }
         }).
             success(function (data, status) {
@@ -1121,7 +1188,7 @@ staff_app.controller('add_stay_details_controller', function ($scope, $http, $ro
             url: 'http://localhost:8080/api/hotel/' + $scope.current_user_hotel_id + '/rooms',
             method: 'post',
             headers: {
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             },
             data:$scope.guest_history
         }).
@@ -1338,7 +1405,7 @@ staff_app.controller('add_stay_details_controller', function ($scope, $http, $ro
                 url: 'http://localhost:8080/api/hotel/' + $scope.current_user_hotel_id + '/rooms',
                 method: 'post',
                 headers: {
-                    'Authorization': $cookieStore.get("auth")
+                    'Authorization': localStorageService.get("auth")
                 },
                 data:$scope.gsh
             }).
@@ -1428,7 +1495,7 @@ staff_app.controller('add_stay_details_controller', function ($scope, $http, $ro
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             },
             data: $scope.stay_detail
         }).
@@ -1538,7 +1605,7 @@ staff_app.controller('add_stay_details_controller', function ($scope, $http, $ro
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             },
             data: $scope.stay_detail
         }).
@@ -1569,7 +1636,7 @@ staff_app.controller('add_stay_details_controller', function ($scope, $http, $ro
 <!--Guest Room Card Management-->
 
 <!--View guest Room Card  data-->
-staff_app.controller('view_guest_room_card_controller', function ($scope, $http, $routeParams, $cookieStore) {
+staff_app.controller('view_guest_room_card_controller', function ($scope, $http, $routeParams, localStorageService) {
 
     $scope.guest_cards;
     $scope.guest_detail = {};
@@ -1580,7 +1647,7 @@ staff_app.controller('view_guest_room_card_controller', function ($scope, $http,
         url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/details',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -1602,7 +1669,7 @@ staff_app.controller('view_guest_room_card_controller', function ($scope, $http,
         url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/roomcarddetails',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -1620,7 +1687,7 @@ staff_app.controller('view_guest_room_card_controller', function ($scope, $http,
 });
 
 <!-- maintain guest Room Key Card -->
-staff_app.controller('maintain_room_key_cards_controller', function ($scope, $http, $routeParams, $cookieStore, $location) {
+staff_app.controller('maintain_room_key_cards_controller', function ($scope, $http, $routeParams, localStorageService, $location) {
 
     $scope.guest_id = $routeParams.guestId;
     $scope.guest_detail;
@@ -1651,7 +1718,7 @@ staff_app.controller('maintain_room_key_cards_controller', function ($scope, $ht
         url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/details',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -1672,7 +1739,7 @@ staff_app.controller('maintain_room_key_cards_controller', function ($scope, $ht
         url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/roomcarddetails',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -1702,7 +1769,7 @@ staff_app.controller('maintain_room_key_cards_controller', function ($scope, $ht
         url: 'http://localhost:8080/api/guest/roomkeycards',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -1750,7 +1817,7 @@ staff_app.controller('maintain_room_key_cards_controller', function ($scope, $ht
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             },
             //data:$scope.guest_cards
             data: $scope.guest_cards
@@ -1774,7 +1841,7 @@ staff_app.controller('maintain_room_key_cards_controller', function ($scope, $ht
             method: 'get',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             }
         }).
             success(function (data, status) {
@@ -1800,7 +1867,7 @@ staff_app.controller('maintain_room_key_cards_controller', function ($scope, $ht
             method: 'get',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             }
         }).
             success(function (data, status) {
@@ -1821,16 +1888,16 @@ staff_app.controller('maintain_room_key_cards_controller', function ($scope, $ht
 
 <!--End Of Guest Room Card Management-->
 
-staff_app.controller('staff_app_controller', function ($scope, $http, $location, $cookieStore, $window) {
+staff_app.controller('staff_app_controller', function ($scope, $http, $location, localStorageService, $window) {
     console.log('staff app controller is loaded');
     $scope.user;
 
-    if ($cookieStore.get("user") == null) {
+    if (localStorageService.get("user") == null) {
         console.log("User is not authenticated");
         $window.location.replace("login-app.html?staff-app.html" + $window.location.hash);
     } else {
         console.log("User is authenticated");
-        $scope.user = $cookieStore.get("user");
+        $scope.user = localStorageService.get("user");
         if ($scope.user.userType.value != "ROLE_STAFF") {
             $window.location.replace("index.html");
         }
@@ -1839,26 +1906,26 @@ staff_app.controller('staff_app_controller', function ($scope, $http, $location,
 
     $scope.logout = function () {
         console.log('logout method is called');
-        $cookieStore.remove("user");
-        $cookieStore.remove("auth");
+        localStorageService.remove("user");
+        localStorageService.remove("auth");
         $window.location.replace("login-app.html");
 
 
     };
 });
 
-staff_app.controller('touch_point_controller', function ($scope,$cookieStore,$http) {
+staff_app.controller('touch_point_controller', function ($scope,localStorageService,$http) {
 console.log('touch point controller of staff app module is loaded');
     $scope.assigned_touch_point_list=[];
     $scope.selected_touch_point;
-    $scope.user_detail=$cookieStore.get("user");
+    $scope.user_detail=localStorageService.get("user");
     console.log('current user id::'+$scope.user_detail.id);
 
     $http({
         url: 'http://localhost:8080/api/login/touchpoints',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -1875,7 +1942,7 @@ console.log('touch point controller of staff app module is loaded');
         });
 });
 
-staff_app.controller('find_guest_controller', function ($scope, $http, $routeParams, $location, $cookieStore) {
+staff_app.controller('find_guest_controller', function ($scope, $http, $routeParams, $location, localStorageService) {
     console.log(' staff guest find controller is loaded');
     $scope.guest_list=[];
 
@@ -1883,7 +1950,7 @@ staff_app.controller('find_guest_controller', function ($scope, $http, $routePar
         url: 'http://localhost:8080/api/touchpoints/'+ $routeParams.TPId + '/guestCards',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -1900,7 +1967,7 @@ staff_app.controller('find_guest_controller', function ($scope, $http, $routePar
         });
 });
 
-staff_app.controller('guest_detail_controller', function ($scope, $http, $routeParams, $location, $cookieStore) {
+staff_app.controller('guest_detail_controller', function ($scope, $http, $routeParams, $location, localStorageService) {
 
     $scope.guest_detail;
     $scope.guest_id=$routeParams.guestId;
@@ -1909,7 +1976,7 @@ staff_app.controller('guest_detail_controller', function ($scope, $http, $routeP
         url: 'http://localhost:8080/api/guest/'+$scope.guest_id,
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -1930,18 +1997,18 @@ staff_app.controller('guest_detail_controller', function ($scope, $http, $routeP
         });
 });
 
-staff_app.controller('checkedin_guest_controller', function ($scope, $http, $location, $cookieStore, $routeParams, $window) {
+staff_app.controller('checkedin_guest_controller', function ($scope, $http, $location, localStorageService, $routeParams, $window) {
     console.log('staff checkedin guest controller is loaded');
 
     $scope.checkedin_guest_list;
-    $scope.hotel_id = $cookieStore.get("user").hotel.id;
+    $scope.hotel_id = localStorageService.get("user").hotel.id;
 
     <!--  get all checkedin guest list -->
     $http({
         url: 'http://localhost:8080/api/hotels/'+ $scope.hotel_id +'/guests/checkedIn',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -1958,7 +2025,7 @@ staff_app.controller('checkedin_guest_controller', function ($scope, $http, $loc
 
 });
 
-staff_app.controller('current_guest_location_controller', function ($scope, $http, $location, $cookieStore, $routeParams, $window) {
+staff_app.controller('current_guest_location_controller', function ($scope, $http, $location, localStorageService, $routeParams, $window) {
     console.log('current guest location  controller is loaded');
     $scope.guest_id = $routeParams.guestId;
     $scope.guest_current_position;
@@ -1974,7 +2041,7 @@ staff_app.controller('current_guest_location_controller', function ($scope, $htt
         url: 'http://localhost:8080/api/guest/' + $scope.guest_id,
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -2006,7 +2073,7 @@ staff_app.controller('current_guest_location_controller', function ($scope, $htt
         url: 'http://localhost:8080/api/guests/' + $scope.guest_id + '/locations',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -2033,7 +2100,7 @@ staff_app.controller('current_guest_location_controller', function ($scope, $htt
             url: 'http://localhost:8080/api/guests/' + $scope.guest_id + '/location/history',
             method: 'get',
             headers: {
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             }
         }).
             success(function (data, status) {
@@ -2051,7 +2118,7 @@ staff_app.controller('current_guest_location_controller', function ($scope, $htt
 
 });
 
-staff_app.controller('current_guest_location_history_controller', function ($scope, $cookieStore,$routeParams, $http) {
+staff_app.controller('current_guest_location_history_controller', function ($scope, localStorageService,$routeParams, $http) {
     console.log('current_guest_location_history_controller of staff app module is loaded');
     $scope.guest_id=$routeParams.guestId;
     $scope.current_guest_location_history;
@@ -2060,7 +2127,7 @@ staff_app.controller('current_guest_location_history_controller', function ($sco
         url: 'http://localhost:8080/api/guests/'+$scope.guest_id+'/location/history',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -2078,20 +2145,20 @@ staff_app.controller('current_guest_location_history_controller', function ($sco
 
 });
 
-staff_app.controller('checked_in_guest_list_controller', function ($scope, $http, $routeParams, $location, $cookieStore) {
+staff_app.controller('checked_in_guest_list_controller', function ($scope, $http, $routeParams, $location, localStorageService) {
 
     console.log('checked in guest list controller is loaded');
 
 
     $scope.checkedin_guest_list;
-    $scope.hotel_id = $cookieStore.get("user").hotel.id;
+    $scope.hotel_id = localStorageService.get("user").hotel.id;
 
     <!--  get all checkedin guest list -->
     $http({
         url: 'http://localhost:8080/api/hotels/' + $scope.hotel_id + '/guests/checkedIn',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -2108,7 +2175,7 @@ staff_app.controller('checked_in_guest_list_controller', function ($scope, $http
 
 });
 
-staff_app.controller('checked-in-guest-detail', function ($scope, $http, $routeParams, $location, $cookieStore) {
+staff_app.controller('checked-in-guest-detail', function ($scope, $http, $routeParams, $location, localStorageService) {
     $scope.checked_in_guest_detail;
     $scope.guest_image_list;
     $scope.selected_guest_image;
@@ -2126,7 +2193,7 @@ staff_app.controller('checked-in-guest-detail', function ($scope, $http, $routeP
         url: 'http://localhost:8080/api/guest/' + $scope.guest_id,
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -2162,7 +2229,7 @@ staff_app.controller('checked-in-guest-detail', function ($scope, $http, $routeP
             url: 'http://localhost:8080/api/guest/image/' + filename + '/' + ext,
             method: 'get',
             headers: {
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             }
         }).
             success(function (data, status) {
@@ -2189,7 +2256,7 @@ staff_app.controller('checked-in-guest-detail', function ($scope, $http, $routeP
         url: 'http://localhost:8080/api/guest/photos',
         method: 'get',
         headers: {
-            'Authorization': $cookieStore.get("auth")
+            'Authorization': localStorageService.get("auth")
         }
     }).
         success(function (data, status) {
@@ -2219,7 +2286,7 @@ staff_app.controller('checked-in-guest-detail', function ($scope, $http, $routeP
             url: url,
             method: 'get',
             headers: {
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             }
         }).
             success(function (data, status) {
@@ -2241,7 +2308,7 @@ staff_app.controller('checked-in-guest-detail', function ($scope, $http, $routeP
             url: 'http://localhost:8080/api/guest/' + $scope.guest_id + '/image/' + $scope.filename + '/' + $scope.ext + '/update',
             method: 'get',
             headers: {
-                'Authorization': $cookieStore.get("auth")
+                'Authorization': localStorageService.get("auth")
             }
         }).
             success(function (data, status) {

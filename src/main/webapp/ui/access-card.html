@@ -9,25 +9,30 @@
     </div>
 
     <div class="col-md-12 text-left">
-        <h4 class="text-primary"><b>AccessCard List </b></h4>
+        <h4 class="text-primary"><b>Guest Card List</b></h4>
     </div>
 
     <div class="col-md-12 text-right">
-        <h5>  <input type="text" ng-model="search" placeholder="Search"/></h5>
+        <h5>
+        <select ng-model="cardAssociationType" ng-change="filterCardList()" ng-options="obj.id as obj.status for obj in cardAssociationTypes" style="margin-right: 2%">
+            <option value="">select</option>
+        </select>
+          <input type="text" ng-model="search" placeholder="Search" size="40"/>
+        </h5>
     </div>
 
     <div class="col-md-12">
         <table class="table table-hover table-condensed table-striped table-responsive">
             <tr>
-                <th>AccessCardNo</th>
-                <th>RFIDTagNO</th>
+                <th>Guest Card Number</th>
+                <th>RFID Tag Number</th>
 
                 <th></th>
             </tr>
 
             <tr ng-repeat="guestcard in guest_card_list1=( guest_cards | filter:search)">
                 <td> {{guestcard.magStripeNo}}</td>
-                <td ng-click="editable=false"><input type="text" value="{{guestcard.rfidTagNo}}" ng-model="guestcard.rfidTagNo" ng-disabled="editable"></td>
+                <td ng-click="editable=false"><input type="text" value="{{guestcard.rfidTagNo}}" ng-model="guestcard.rfidTagNo" ng-blur="editable=true" ng-disabled="editable" size="50"></td>
                 <td><input type="button" class="btn btn-primary" value="save" ng-click="save(guestcard.magStripeNo,guestcard.rfidTagNo)"></td>
             </tr>
         </table>

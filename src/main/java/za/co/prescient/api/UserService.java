@@ -126,4 +126,19 @@ public class UserService {
 
     }
 
+    @RequestMapping(value = "api/users/enabled", method = RequestMethod.GET)
+    public List<User> getAllEnabledUsers() {
+       List<User> users=userRepository.getAllEnabledUsers();
+         return  users;
+
+    }
+
+    @RequestMapping(value = "api/users/disabled", method = RequestMethod.GET)
+    public List<User> getAllDisabledUsers() {
+       List<User> users= userRepository.getAllDisabledUsers();
+        return  users;
+    }
+
+
+
 }
