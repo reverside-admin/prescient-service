@@ -37,6 +37,17 @@
                     </td>
                 </tr>
 
+
+                <tr>
+                    <td></td>
+                    <td><b>Title</b></td>
+                    <td><b>First Name</b></td>
+                    <td><b>Surname</b></td>
+                    <td><b>Id Number</b></td>
+                    <td><b>Passport Number</b></td>
+                </tr>
+
+
                 <tr ng-repeat="guest in guest_list">
                     <td><input type="checkbox" ng-click="onSelectGuest(guest.id)"/></td>
                     <td>{{guest.title}}</td>

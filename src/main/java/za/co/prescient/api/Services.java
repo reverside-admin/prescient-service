@@ -140,39 +140,46 @@ public class Services {
                 String res;
 
                 while ((res = br.readLine()) != null) {
-                    log.info("res------------>"+res);
+                    log.info("res------------>" + res);
                     responseStr = responseStr + res;
                 }
-                log.info("Response length from ITCS::"+responseStr);
+                log.info("Response length from ITCS::" + responseStr.length());
+
+                //added now 3:19 25-8-2014
+                //if response come from the itcs then continue with following otherwise not
+
+                if (responseStr.length() != 0) {
+                    JSONObject obj = new JSONObject(responseStr);
+                    log.info("xcoordRead" + obj.getDouble("xcoordRead"));
+
+                    itcsTagRead = new ItcsTagRead();
+                    itcsTagRead.setId(obj.getLong("id"));
+                    log.info("set id");
+                    itcsTagRead.setGuestCard(obj.getString("guestCard"));
+                    log.info("set guestcard");
 
 
+                    itcsTagRead.setZoneId(obj.getString("zoneId").toString());
+                    log.info("set zoneid");
 
-                JSONObject obj = new JSONObject(responseStr);
-                log.info("xcoordRead"+obj.getDouble("xcoordRead"));
+                    itcsTagRead.setXCoordRead(obj.getDouble("xcoordRead"));
+                    log.info("set xcord");
+                    itcsTagRead.setYCoordRead(obj.getDouble("ycoordRead"));
+                    log.info("set ycord");
+                    itcsTagRead.setTagReadDatetime(new Date(obj.getLong("tagReadDatetime")));
+                    log.info("set date and time");
 
-                itcsTagRead = new ItcsTagRead();
-                itcsTagRead.setId(obj.getLong("id"));
-                log.info("set id");
-                itcsTagRead.setGuestCard(obj.getString("guestCard"));
-                log.info("set guestcard");
+                    //moved from bottom added 26-8-2014
+                    itcsTagReads.add(itcsTagRead);
+                }
 
 
-
-                itcsTagRead.setZoneId(obj.getString("zoneId").toString());
-                log.info("set zoneid");
-
-                itcsTagRead.setXCoordRead(obj.getDouble("xcoordRead"));
-                log.info("set xcord");
-                itcsTagRead.setYCoordRead(obj.getDouble("ycoordRead"));
-                log.info("set ycord");
-                itcsTagRead.setTagReadDatetime(new Date(obj.getLong("tagReadDatetime")));
-                log.info("set date and time");
             } catch (Exception e) {
                 itcsTagRead = new ItcsTagRead();
                 log.info("guestCardRFIDTagNo Exp : " + guestCardRFIDTagNo);
                 e.getMessage();
             }
-            itcsTagReads.add(itcsTagRead);
+            //itcsTagReads.add(itcsTagRead);
             log.info("End of for loop >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         }
         return itcsTagReads;
@@ -189,16 +196,17 @@ public class Services {
         log.info("guestcard history service is called");
         List<GuestCard> guestCardAllocation;
         guestCardAllocation = guestCardRepository.findGuestCardByGuestId(guestId);
-        log.info("guest card allocated to guest id:"+guestId+"  "+guestCardAllocation.size());
+        log.info("guest card allocated to guest id:" + guestId + "  " + guestCardAllocation.size());
 
 //        List<ItcsTagReadHistory> itc= itcsTagReadHistoryRepository.findGuestHistory(guestCardAllocation.getCard().getId().intValue());
 
 
+        log.info("get guests arrival time.......");
         //get the arrival date of this guest (of the guest's latest stay) Added 1:50 PM 12-8-2014
-        GuestStayHistory guestLatestStay=guestStayHistoryRepository.getGuestLastStay(guestId);
-        Date arrivalDateinDate=guestLatestStay.getArrivalTime();
-        Long arrivalDate=arrivalDateinDate.getTime();
-        LOGGER.info("arrival time of the guest in prescient service is::"+arrivalDate);
+        GuestStayHistory guestLatestStay = guestStayHistoryRepository.getGuestLastStay(guestId);
+        Date arrivalDateinDate = guestLatestStay.getArrivalTime();
+        Long arrivalDate = arrivalDateinDate.getTime();
+        LOGGER.info("arrival time of the guest in prescient service is::" + arrivalDate);
         //
 
         itc = new ArrayList<ItcsTagReadHistory>();
@@ -211,7 +219,7 @@ public class Services {
 //        List<ItcsTagReadHistory> itc = new ArrayList<ItcsTagReadHistory>();
 
             try {
-                URL url = new URL("http://localhost:9090/tags/" + guestCardId + "/history/"+arrivalDate);
+                URL url = new URL("http://localhost:9090/tags/" + guestCardId + "/history/" + arrivalDate);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
                 conn.setRequestProperty("Accept", "application/json");
@@ -227,9 +235,9 @@ public class Services {
                 JSONObject jObj;
                 for (int i = 0; i < obj.length(); i++) {
                     jObj = (JSONObject) obj.get(i);
-                    log.info("jobj outer : "+i);
+                    log.info("jobj outer : " + i);
                     if (!(jObj.isNull("zoneId"))) {
-                        log.info("jobj inner :"+i);
+                        log.info("jobj inner :" + i);
                         itcsTagReadHistory = new ItcsTagReadHistory();
                         itcsTagReadHistory.setId(jObj.getLong("id"));
                         itcsTagReadHistory.setGuestCard(jObj.getString("guestCard"));
@@ -315,7 +323,7 @@ public class Services {
         File imageFileDir = new File("C:\\Prescient\\Images\\Guest Photographs\\");
         String listOfFiles[] = imageFileDir.list();
         for (int i = 0; i < listOfFiles.length; i++) {
-            log.info("List of Files : "+listOfFiles[i]);
+            log.info("List of Files : " + listOfFiles[i]);
         }
         //imageList = (ArrayList) Arrays.asList(listOfFiles);
         return listOfFiles;
@@ -359,9 +367,14 @@ public class Services {
                                    @PathVariable("imageExt") String imageExt) {
         String imagePath = imageName + "." + imageExt;
 
-        GuestStayHistory guestStayHistory = guestStayHistoryRepository.findByGuest(guestId);
+        /*GuestStayHistory guestStayHistory = guestStayHistoryRepository.findByGuest(guestId);
         guestStayHistory.getGuest().setGuestImagePath(imagePath);
-        guestStayHistoryRepository.save(guestStayHistory);
+        guestStayHistoryRepository.save(guestStayHistory);*/
+
+         Guest guest=guestRepository.findOne(guestId);
+         guest.setGuestImagePath(imagePath);
+         guestRepository.save(guest);
+
 
     }
 
@@ -561,31 +574,27 @@ public class Services {
     }*/
 
 
-
-
-
-    @RequestMapping(value = "hotel/{hotelId}/rooms",method=RequestMethod.POST)
-    public List<Room> getRooms(@RequestBody GuestStayHistory guestStayHistory,@PathVariable("hotelId") Long hotelId) {
+    @RequestMapping(value = "hotel/{hotelId}/rooms", method = RequestMethod.POST)
+    public List<Room> getRooms(@RequestBody GuestStayHistory guestStayHistory, @PathVariable("hotelId") Long hotelId) {
         log.info("get all room service method is called");
-        Date arrivalDate=guestStayHistory.getArrivalTime();
-        Date departureDate=guestStayHistory.getDepartureTime();
-        Long guestId=guestStayHistory.getGuest().getId();
+        Date arrivalDate = guestStayHistory.getArrivalTime();
+        Date departureDate = guestStayHistory.getDepartureTime();
+        Long guestId = guestStayHistory.getGuest().getId();
         log.info("arrival date::" + arrivalDate);
-        log.info("departure date::"+departureDate);
-        List<GuestStayHistory> guestStayHistories=guestStayHistoryRepository.getGuestHistoryBasedOnDate(hotelId,arrivalDate,departureDate,guestId);
-        log.info("no of records::"+guestStayHistories.size());
-        List<Room> allottedRooms=new ArrayList<Room>();
-        List<Room> allRooms=new ArrayList<Room>();
-        List<Room> availableRooms=new ArrayList<Room>();
-        for(GuestStayHistory gsh:guestStayHistories)
-        {
-            List<Room> rooms=gsh.getRooms();
+        log.info("departure date::" + departureDate);
+        List<GuestStayHistory> guestStayHistories = guestStayHistoryRepository.getGuestHistoryBasedOnDate(hotelId, arrivalDate, departureDate, guestId);
+        log.info("no of records::" + guestStayHistories.size());
+        List<Room> allottedRooms = new ArrayList<Room>();
+        List<Room> allRooms = new ArrayList<Room>();
+        List<Room> availableRooms = new ArrayList<Room>();
+        for (GuestStayHistory gsh : guestStayHistories) {
+            List<Room> rooms = gsh.getRooms();
             allottedRooms.addAll(rooms);
         }
 
-        allRooms=roomRepository.findAll();
+        allRooms = roomRepository.findAll();
         allRooms.removeAll(allottedRooms);
-        availableRooms=allRooms;
+        availableRooms = allRooms;
         return availableRooms;
     }
 
@@ -629,7 +638,7 @@ public class Services {
         gsh.setHotel(hotel);
         gsh.setCurrentStayIndicator(false);
         //set no of previous stays
-        Long previousStays=guestStayHistoryRepository.getGuestPreviousStays(guestId);
+        Long previousStays = guestStayHistoryRepository.getGuestPreviousStays(guestId);
         gsh.setNoOfPreviousStays(previousStays);
 
         guestStayHistoryRepository.save(gsh);
@@ -673,7 +682,8 @@ public class Services {
     @RequestMapping(value = "guest/roomkeycards", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     public List<Card> getRoomKeyCards() {
-        List<Card> allCards = cardRepository.findAll();
+        // List<Card> allCards = cardRepository.findAll();
+        List<Card> allCards = cardRepository.findWithRFIDTagNo();
         List<GuestCard> guestCards = guestCardRepository.findAllAllocatedCards();
         LOGGER.info("card id::" + guestCards.get(0).getCard().getId() + "is given to::" + guestCards.get(0).getGuest().getFirstName());
         List<Card> allocatedCards = new ArrayList<Card>();
@@ -699,20 +709,27 @@ public class Services {
     public void saveCards(@RequestBody List<GuestCard> guestCards, @PathVariable("guestId") Long guestId) {
         LOGGER.info("service to assign multiple cards is called");
         LOGGER.info("get cards of length::" + guestCards.size());
-        for (GuestCard guestCard : guestCards) {
-            guestCard.setGuest(guestRepository.findOne(guestId));
-            guestCard.setCard(guestCard.getCard());
-            guestCard.setIssueDate(new Date());
-            guestCard.setStatus(true);
-            guestCard.setReturnDate(null);
-            guestCardRepository.save(guestCard);
 
+        //if guest is staying in the hotel then we can give him the card.
+        GuestStayHistory guestStayHistory = guestStayHistoryRepository.getGuestLastStay(guestId);
+        if (guestStayHistory != null) {
+            for (GuestCard guestCard : guestCards) {
+                guestCard.setGuest(guestRepository.findOne(guestId));
+                guestCard.setCard(guestCard.getCard());
+                guestCard.setIssueDate(new Date());
+                guestCard.setStatus(true);
+                guestCard.setReturnDate(null);
+                guestCardRepository.save(guestCard);
+
+            }
+            guestStayHistory.setCurrentStayIndicator(true);
+            guestStayHistoryRepository.save(guestStayHistory);
         }
 
         //set current stay indicator of a guest to true;
-        GuestStayHistory guestStayHistory = guestStayHistoryRepository.getGuestLastStay(guestId);
+        /*GuestStayHistory guestStayHistory = guestStayHistoryRepository.getGuestLastStay(guestId);
         guestStayHistory.setCurrentStayIndicator(true);
-        guestStayHistoryRepository.save(guestStayHistory);
+        guestStayHistoryRepository.save(guestStayHistory);*/
     }
 
     @RequestMapping(value = "guest/{cardId}/returncard")
@@ -807,55 +824,51 @@ public class Services {
     }
 
 
-
     //get list of guests whose birth day is today(to be consumed by mobile)
     @RequestMapping(value = "hotel/{hotelId}/guest/birthday/list", method = RequestMethod.GET, produces = "application/json")
     public List<Guest> getGuestList(@PathVariable("hotelId") Long hotelId) {
         log.info("view guest room card detail  service");
         //find all checked in Guest(1)
 
-        List<Guest> allBirthDayGuests=new ArrayList<Guest>();
-        List<GuestStayHistory> guestStayHistories=guestStayHistoryRepository.findCheckedInByHotelId(hotelId);
-        List<Long> guestIds=new ArrayList<Long>();
-        for(GuestStayHistory guestStayHistory:guestStayHistories)
-        {
+        List<Guest> allBirthDayGuests = new ArrayList<Guest>();
+        List<GuestStayHistory> guestStayHistories = guestStayHistoryRepository.findCheckedInByHotelId(hotelId);
+        List<Long> guestIds = new ArrayList<Long>();
+        for (GuestStayHistory guestStayHistory : guestStayHistories) {
             guestIds.add(guestStayHistory.getGuest().getId());
         }
 
         //get all guest whose guest whose bday is today
-        List<Guest> allGuests=guestRepository.getAllGuestBornToday(guestIds);
+        List<Guest> allGuests = guestRepository.getAllGuestBornToday(guestIds);
 
-        for(Guest guest:allGuests)
-        {
-            Date guestDOB=guest.getDob();
-            Calendar cal=Calendar.getInstance();
+        for (Guest guest : allGuests) {
+            Date guestDOB = guest.getDob();
+            Calendar cal = Calendar.getInstance();
             cal.setTime(guestDOB);
 
-            Date currentDate=new Date();
-            Calendar calendar=Calendar.getInstance();
+            Date currentDate = new Date();
+            Calendar calendar = Calendar.getInstance();
             calendar.setTime(currentDate);
 
-            int guestDOBDay=cal.get(Calendar.DAY_OF_MONTH);
-            int currentDay=calendar.get(Calendar.DAY_OF_MONTH);
+            int guestDOBDay = cal.get(Calendar.DAY_OF_MONTH);
+            int currentDay = calendar.get(Calendar.DAY_OF_MONTH);
 
 
-            int guestDOBMonth=cal.get(Calendar.MONTH);
-            int currentMonth=calendar.get(Calendar.MONTH);
+            int guestDOBMonth = cal.get(Calendar.MONTH);
+            int currentMonth = calendar.get(Calendar.MONTH);
 
-            LOGGER.info("....................."+guest.getFirstName());
+            LOGGER.info("....................." + guest.getFirstName());
 
-            LOGGER.info("guestDOBDay::"+guestDOBDay);
-            LOGGER.info("currentDay::"+currentDay);
+            LOGGER.info("guestDOBDay::" + guestDOBDay);
+            LOGGER.info("currentDay::" + currentDay);
 
-            LOGGER.info("guestDOBMonth::"+guestDOBMonth);
+            LOGGER.info("guestDOBMonth::" + guestDOBMonth);
 
-            LOGGER.info("currentMonth::"+currentMonth);
+            LOGGER.info("currentMonth::" + currentMonth);
 
             LOGGER.info("..................................");
 
 
-            if((guestDOBDay==currentDay) && (guestDOBMonth==currentMonth))
-            {
+            if ((guestDOBDay == currentDay) && (guestDOBMonth == currentMonth)) {
                 allBirthDayGuests.add(guest);
             }
         }
@@ -863,7 +876,6 @@ public class Services {
         return allBirthDayGuests;
 
     }
-
 
 
 }

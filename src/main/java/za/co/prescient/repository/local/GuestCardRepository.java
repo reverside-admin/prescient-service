@@ -14,8 +14,9 @@ public interface GuestCardRepository extends JpaRepository<GuestCard, Long> {
     @Query("select gc.guest from GuestCard gc where gc.card.id in (?1)")
     public List<Guest> findGuestsWithTags(List<Long> tags);
 
+    //list parameter changed to Guest earlier it was GuestCard.26-8-2014
     @Query("select gca.guest from GuestCard gca where gca.card.rfidTagNo in (?1) and gca.status = true")
-    public List<GuestCard> findByCardIdListWithStatusActive(List<String> cardIdList);
+    public List<Guest> findByCardIdListWithStatusActive(List<String> cardIdList);
 
 
     //return type changed to list

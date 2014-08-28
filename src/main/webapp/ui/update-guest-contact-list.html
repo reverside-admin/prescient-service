@@ -65,7 +65,7 @@
             <div style="float: left;margin-left: 30px;">
                 <select ng-select size="8" style="width: 200px; "
                         ng-model="selected_Guest"
-                        ng-options="obj as obj.firstName for obj in guestNotInContact"
+                        ng-options="obj as obj.title+' '+obj.preferredName+' '+obj.surname for obj in guestNotInContact"
                         ng-change="select()">
                     <option value=""><b>Not Selected Guest List</b></option>
 
@@ -83,7 +83,7 @@
                 <div style="float: left;margin-left: 30px;">
                     <select size="8" style="width: 200px; "
                             ng-model="selected_Guest"
-                            ng-options="obj as obj.firstName for obj in  guestsInContact">
+                            ng-options="obj as obj.title+' '+obj.preferredName+' '+obj.surname for obj in  guestsInContact">
                         <option value=""><b>Selected Guest List</b></option>
                     </select>
                 </div>

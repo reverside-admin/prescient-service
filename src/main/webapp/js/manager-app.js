@@ -66,10 +66,7 @@ manager_app.config(['$routeProvider',
                 'templateUrl': 'ui/current-guest-location.html',
                 'controller': 'current_guest_location_controller'
             })
-            .when('/hotels/guests/:guestId/location/history', {
-                'templateUrl': 'ui/guest-location-history.html',
-                'controller': 'current_guest_location_history_controller'
-            })
+
             .when('/manager/guest/contacts', {
                 'templateUrl': 'ui/guest-contact-list.html',
                 'controller': 'guest_contact_list_controller'
@@ -94,14 +91,7 @@ manager_app.config(['$routeProvider',
                 'templateUrl': 'ui/guest-detail.html',
                 'controller': 'guest_detail_controller'
             })
-            .when('/checked-in-guest/list', {
-                'templateUrl': 'ui/checked-in-guest-list.html',
-                'controller': 'checked_in_guest_list_controller'
-            })
-            .when('/checked-in-guest/:guestId', {
-                'templateUrl': 'ui/checked-in-guest-detail.html',
-                'controller': 'checked-in-guest-detail'
-            })
+
             .when('/manager/guest/contact/:contactId/update', {
                 'templateUrl': 'ui/update-guest-contact-list.html',
                 'controller': 'update_guest_contact_list_controller'
@@ -158,7 +148,7 @@ manager_app.config(['$routeProvider',
                 'templateUrl': '/ui/welcome-page.html'
             })
             .otherwise({
-                redirectTo: '/checked-in-guest/list'
+                redirectTo: '/welcome'
             });
     }]);
 
@@ -191,9 +181,39 @@ manager_app.controller('guest_list_controller', function ($scope, $http, $routeP
 
 <!--view a particular guest detail-->
 
-manager_app.controller('guest_details_controller', function ($scope, $http, $routeParams, localStorageService) {
+manager_app.controller('guest_details_controller', function ($scope, $http, $routeParams, localStorageService,$timeout) {
 
     $scope.guest_detail = {};
+    $scope.assign_card_flag=true;
+    $scope.guest_image_list;
+    $scope.selected_guest_image;
+    $scope.selected_guest_image_data;
+    $scope.filename;
+    $scope.ext;
+    $scope.attach_image_flag = false;
+
+
+    //check is guest is currently staying in the hotel or not.
+    //if he/she stays then we can give assign him the card otherwise we can't assign the card.
+    $http({
+        url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/lateststay',
+        method: 'get',
+        headers: {
+            'Authorization': localStorageService.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            if (status == 200 && (data.length!=0)) {
+                 $scope.assign_card_flag=false;
+            } else {
+                console.log('status:' + status);
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+
+
 
 
     $http({
@@ -209,6 +229,23 @@ manager_app.controller('guest_details_controller', function ($scope, $http, $rou
                 console.log('guest details ::' + $scope.guest_detail);
                 console.log('guest date of birth::' + new Date($scope.guest_detail.dob));
 
+                //added 27-8-2014
+                if($scope.guest_detail.guestImagePath!=null)
+                {
+                    $scope.ext = $scope.guest_detail.guestImagePath.substr($scope.guest_detail.guestImagePath.lastIndexOf('.') + 1);
+                    $scope.filename = $scope.guest_detail.guestImagePath.substr(0, $scope.guest_detail.guestImagePath.lastIndexOf('.'));
+
+                    //$scope.selected_guest_image is assigned to the saved file name so that we can view in the ui
+                    $scope.selected_guest_image = $scope.guest_detail.guestImagePath;
+                    console.log('file name from DataBase::' + $scope.filename);
+                    console.log('file extension from DataBase::' + $scope.ext)
+
+                    //call a method to get the guests saved image
+                    $scope.viewImage($scope.filename, $scope.ext);
+                    //end of added 27-8-2014
+                }
+
+
             } else {
                 console.log('status:' + status);
             }
@@ -216,6 +253,120 @@ manager_app.controller('guest_details_controller', function ($scope, $http, $rou
         .error(function (error) {
             console.log(error);
         });
+
+    //added following method 27-8-2014
+    //take the guest image file name from database and read that file from local system
+    $scope.viewImage = function (filename, ext) {
+        $http({
+            url: 'http://localhost:8080/api/guest/image/' + filename + '/' + ext,
+            method: 'get',
+            headers: {
+                'Authorization': localStorageService.get("auth")
+            }
+        }).
+            success(function (data, status) {
+                console.log('get success code::' + status);
+                if (status == 200) {
+                    $scope.selected_guest_image_data = data;
+                    //console.log('image data' + $scope.selected_guest_image_data);
+                    console.log('file name from DataBase2::' + $scope.filename);
+                    console.log('file extension from DataBase2::' + $scope.ext);
+                    //console.log('image data is retrieved successfully');
+                } else {
+                    console.log('status:' + status);
+                }
+            })
+            .error(function (error) {
+                console.log(error);
+            });
+
+    }
+//added below  27-8-2014
+    //Find all images from the guest image directory
+    $http({
+        url: 'http://localhost:8080/api/guest/photos',
+        method: 'get',
+        headers: {
+            'Authorization': localStorageService.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            console.log('get success code in guest image service invoker::' + status);
+            if (status == 200) {
+                $scope.guest_image_list = data;
+                console.log('guest image list' + $scope.guest_image_list);
+            } else {
+                console.log('status:' + status);
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+    //end of added 27-8-2014
+
+
+
+    $scope.getGuestImage = function () {
+        console.log('selected image' + $scope.selected_guest_image);
+
+        //call a service which will return a image
+        $scope.filename = $scope.selected_guest_image.substr(0, $scope.selected_guest_image.lastIndexOf('.'));
+        $scope.ext = $scope.selected_guest_image.substr($scope.selected_guest_image.lastIndexOf('.') + 1);
+
+        var url = 'http://localhost:8080/api/guest/image/' + $scope.filename + '/' + $scope.ext;
+        console.log('URL::::' + url);
+
+        $http({
+            url: url,
+            method: 'get',
+            headers: {
+                'Authorization': localStorageService.get("auth")
+            }
+        }).
+            success(function (data, status) {
+                console.log('get success code::' + status);
+                if (status == 200) {
+                    $scope.selected_guest_image_data = data;
+                    //console.log('image data' + $scope.selected_guest_image_data);
+                } else {
+                    console.log('status:' + status);
+                }
+            })
+            .error(function (error) {
+                console.log(error);
+            });
+
+        $scope.save_status_message;
+    }
+
+    $scope.attachGuestImage = function () {
+        $http({
+            url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/image/' + $scope.filename + '/' + $scope.ext + '/update',
+            method: 'get',
+            headers: {
+                'Authorization': localStorageService.get("auth")
+            }
+        }).
+            success(function (data, status) {
+                console.log('get success code::' + status);
+                if (status == 200) {
+                    console.log('image path is saved');
+                   // $location.url('/checked-in-guest/list');
+                    $scope.save_status_message='Image saved successfully';
+                    console.log($scope.save_status_message);
+                    $timeout(function () { $scope.save_status_message ='';console.log('after 1.2 seconds message is::'+$scope.save_status_message); }, 1200);
+                } else {
+                    console.log('status:' + status);
+                }
+            })
+            .error(function (error) {
+                console.log(error);
+            });
+    }
+
+
+
+
 
 });
 
@@ -1908,34 +2059,6 @@ manager_app.controller('maintain_room_key_cards_controller', function ($scope, $
     }
 });
 
-manager_app.controller('current_guest_location_history_controller', function ($scope, localStorageService, $routeParams, $http) {
-    console.log('current_guest_location_history_controller of manager app module is loaded');
-    $scope.guest_id = $routeParams.guestId;
-    $scope.current_guest_location_history;
-
-    $http({
-        url: 'http://localhost:8080/api/guests/' + $scope.guest_id + '/location/history',
-        method: 'get',
-        headers: {
-            'Authorization': localStorageService.get("auth")
-        }
-    }).
-        success(function (data, status) {
-            if (status == 200) {
-                $scope.current_guest_location_history = data;
-                console.log('current guest location history ::' + $scope.current_guest_location_history);
-            } else {
-                console.log('status:' + status);
-            }
-        })
-        .error(function (error) {
-            console.log(error);
-        });
-
-
-});
-
-
 manager_app.controller('guest_contact_list_controller', function ($scope, localStorageService, $routeParams, $http) {
     console.log('guest_contact_list_controller of manager app module is loaded');
 
@@ -2248,6 +2371,7 @@ manager_app.controller('current_guest_location_controller', function ($scope, $h
     $scope.guest_current_position;
     $scope.current_guest_location_history;
     $scope.guest_detail;
+    $scope.flag=false;
 
     <!-- get guest detail by guests id  -->
     $scope.room_message='';
@@ -2295,12 +2419,15 @@ manager_app.controller('current_guest_location_controller', function ($scope, $h
         }
     }).
         success(function (data, status) {
-            if (status == 200 && data != null) {
+            console.log('current guest location is returned from the server');
 
+            if (status == 200 && data.length !=0) {
+                console.log('data coming length::'+data.length);
                 $scope.guest_current_position = data;
                 console.log('current guest position detail ::' + $scope.guest_current_position);
                 for(var i=0;i<$scope.guest_current_position.length;i++)
                 {
+                    console.log('current location@@@@'+$scope.guest_current_position[i]);
                     $scope.location_message=$scope.location_message+' , '+$scope.guest_current_position[i].zoneId;
                 }
                 $scope.location_message=$scope.location_message.trim();
@@ -2308,7 +2435,8 @@ manager_app.controller('current_guest_location_controller', function ($scope, $h
                 console.log('currently found locations::'+$scope.location_message);
 
             } else {
-                console.log('status:' + status);
+                console.log('status on success:' + status);
+               // $scope.location_message='No where';
             }
         })
         .error(function (error) {
@@ -2327,6 +2455,11 @@ manager_app.controller('current_guest_location_controller', function ($scope, $h
                 if (status == 200) {
                     $scope.current_guest_location_history = data;
                     console.log('current guest location history ::' + $scope.current_guest_location_history);
+                    console.log('current guest location history length'+$scope.current_guest_location_history.length);
+                    if($scope.current_guest_location_history.length==0)
+                    {
+                      $scope.flag=true;
+                    }
                 } else {
                     console.log('status:' + status);
                 }
@@ -2558,189 +2691,12 @@ manager_app.controller('guest_detail_controller', function ($scope, $http, $rout
         .error(function (error) {
             console.log(error);
         });
-});
 
-
-manager_app.controller('checked_in_guest_list_controller', function ($scope, $http, $routeParams, $location, localStorageService) {
-
-    console.log('checked in guest list controller is loaded');
-
-
-    $scope.checkedin_guest_list;
-    $scope.hotel_id = localStorageService.get("user").hotel.id;
-
-    <!--  get all checkedin guest list -->
-    $http({
-        url: 'http://localhost:8080/api/hotels/' + $scope.hotel_id + '/guests/checkedIn',
-        method: 'get',
-        headers: {
-            'Authorization': localStorageService.get("auth")
-        }
-    }).
-        success(function (data, status) {
-            if (status == 200) {
-                $scope.checkedin_guest_list = data;
-                console.log('checkedin guest list::' + $scope.checkedin_guest_list);
-            } else {
-                console.log('status:' + status);
-            }
-        })
-        .error(function (error) {
-            console.log(error);
-        });
-
-});
-
-
-manager_app.controller('checked-in-guest-detail', function ($scope, $http, $routeParams, $location, localStorageService) {
-    $scope.checked_in_guest_detail;
-    $scope.guest_image_list;
-    $scope.selected_guest_image;
-    $scope.selected_guest_image_data;
-    $scope.filename;
-    $scope.file_path;
-    $scope.ext;
-    $scope.attach_image_flag = false;
-    $scope.guest_id = $routeParams.guestId;
-
-    console.log('checked in guest list detail controller is loaded');
-
-    //Find guest detail
-    $http({
-        url: 'http://localhost:8080/api/guest/' + $scope.guest_id,
-        method: 'get',
-        headers: {
-            'Authorization': localStorageService.get("auth")
-        }
-    }).
-        success(function (data, status) {
-            console.log('get success code::' + status);
-            if (status == 200) {
-                $scope.checked_in_guest_detail = data;
-                console.log('Guest Detail::' + $scope.checked_in_guest_detail);
-
-
-                $scope.ext = $scope.checked_in_guest_detail.guest.guestImagePath.substr($scope.checked_in_guest_detail.guest.guestImagePath.lastIndexOf('.') + 1);
-                $scope.filename = $scope.checked_in_guest_detail.guest.guestImagePath.substr(0, $scope.checked_in_guest_detail.guest.guestImagePath.lastIndexOf('.'));
-
-                //$scope.selected_guest_image is assigned to the saved file name so that we can view in the ui
-                $scope.selected_guest_image = $scope.checked_in_guest_detail.guest.guestImagePath;
-                console.log('file name from DataBase::' + $scope.filename);
-                console.log('file extension from DataBase::' + $scope.ext)
-
-                //call a method to get the guests saved image
-                $scope.viewImage($scope.filename, $scope.ext);
-
-
-            } else {
-                console.log('status:' + status);
-            }
-        })
-        .error(function (error) {
-            console.log(error);
-        });
-
-    //take the guest image file name from database and read that file from local system
-    $scope.viewImage = function (filename, ext) {
-        $http({
-            url: 'http://localhost:8080/api/guest/image/' + filename + '/' + ext,
-            method: 'get',
-            headers: {
-                'Authorization': localStorageService.get("auth")
-            }
-        }).
-            success(function (data, status) {
-                console.log('get success code::' + status);
-                if (status == 200) {
-                    $scope.selected_guest_image_data = data;
-                    //console.log('image data' + $scope.selected_guest_image_data);
-                    console.log('file name from DataBase2::' + $scope.filename);
-                    console.log('file extension from DataBase2::' + $scope.ext);
-                    //console.log('image data is retrieved successfully');
-                } else {
-                    console.log('status:' + status);
-                }
-            })
-            .error(function (error) {
-                console.log(error);
-            });
-
+    $scope.back=function()
+    {
+        window.history.back();
     }
 
-
-    //Find all images from the guest image directory
-    $http({
-        url: 'http://localhost:8080/api/guest/photos',
-        method: 'get',
-        headers: {
-            'Authorization': localStorageService.get("auth")
-        }
-    }).
-        success(function (data, status) {
-            console.log('get success code in guest image service invoker::' + status);
-            if (status == 200) {
-                $scope.guest_image_list = data;
-                console.log('guest image list' + $scope.guest_image_list);
-            } else {
-                console.log('status:' + status);
-            }
-        })
-        .error(function (error) {
-            console.log(error);
-        });
-
-    $scope.getGuestImage = function () {
-        console.log('selected image' + $scope.selected_guest_image);
-
-        //call a service which will return a image
-        $scope.filename = $scope.selected_guest_image.substr(0, $scope.selected_guest_image.lastIndexOf('.'));
-        $scope.ext = $scope.selected_guest_image.substr($scope.selected_guest_image.lastIndexOf('.') + 1);
-
-        var url = 'http://localhost:8080/api/guest/image/' + $scope.filename + '/' + $scope.ext;
-        console.log('URL::::' + url);
-
-        $http({
-            url: url,
-            method: 'get',
-            headers: {
-                'Authorization': localStorageService.get("auth")
-            }
-        }).
-            success(function (data, status) {
-                console.log('get success code::' + status);
-                if (status == 200) {
-                    $scope.selected_guest_image_data = data;
-                    //console.log('image data' + $scope.selected_guest_image_data);
-                } else {
-                    console.log('status:' + status);
-                }
-            })
-            .error(function (error) {
-                console.log(error);
-            });
-    }
-
-    $scope.attachGuestImage = function () {
-        $http({
-            url: 'http://localhost:8080/api/guest/' + $scope.guest_id + '/image/' + $scope.filename + '/' + $scope.ext + '/update',
-            method: 'get',
-            headers: {
-                'Authorization': localStorageService.get("auth")
-            }
-        }).
-            success(function (data, status) {
-                console.log('get success code::' + status);
-                if (status == 200) {
-                    console.log('image path is saved');
-                    $location.url('/checked-in-guest/list');
-                } else {
-                    console.log('status:' + status);
-                }
-            })
-            .error(function (error) {
-                console.log(error);
-            });
-    }
 });
 
 

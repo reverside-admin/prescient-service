@@ -6,13 +6,24 @@
             <a ng-href="#maintain/guest/{{guest_detail.id}}/update"  class="btn btn-primary">Edit</a>
             <a ng-href="#maintain/guest/{{guest_detail.id}}/gueststaydetails"  class="btn btn-primary">HotelStayDetails</a>
             <a ng-href="#maintain/guest/{{guest_detail.id}}/guestpreference"  class="btn btn-primary">GuestPreference</a>
-            <a ng-href="#maintain/guest/{{guest_detail.id}}/roomcarddetails"  class="btn btn-primary">GuestRoomCard</a>
+            <a ng-href="#maintain/guest/{{guest_detail.id}}/roomcarddetails"  ng-disabled="assign_card_flag" class="btn btn-primary">GuestRoomCard</a>
+           <!-- added 27-8-2014-->
+            <a ng-click="attach_image_flag=true" class="btn btn-primary">Attach Image</a>
+
             <a ng-href="#maintain/guest/guestlist"  class="btn btn-primary">Back</a>
         </div>
     </div>
 
     <div class="col-md-12 text-left">
         <h4 class="text-primary"><b>Guest Details</b></h4>
+    </div>
+
+<!-- added 27-8-2014 -->
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <img alt="{{guest_detail.firstName}}" ng-src="data:image/png;base64,{{selected_guest_image_data}}"
+                 style="width: 100px;height: 100px">
+        </div>
     </div>
 
 
@@ -58,8 +69,30 @@
                 <td style="text-align: right"><b>Nationality</b></td>
                 <td>{{guest_detail.nationalityId}}</td>
             </tr>
+         <!-- added 27-8-2014 -->
+            <tr ng-show="attach_image_flag">
+                <td style="text-align: right"><b>Image File</b></td>
+                <td>
+                    <select ng-model="selected_guest_image"
+                            ng-options="obj as obj for obj in guest_image_list" ng-change="getGuestImage()">
+                        <option value="">select Image</option>
+                    </select>
+                </td>
+            </tr>
 
         </table>
+    </div>
+
+
+    <div class="btn-group btn-group-sm" style="width: 100%;text-align: center">
+        <b style="color: red;font-size: medium">{{save_status_message}}</b>
+    </div>
+
+    <!-- added 27-8-2014 -->
+    <div class="col-md-12 text-right" ng-show="attach_image_flag">
+        <div class="btn-group btn-group-sm">
+            <a ng-click="attachGuestImage()" class="btn btn-primary">save</a>
+        </div>
     </div>
 
 </div>

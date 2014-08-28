@@ -24,6 +24,4 @@ public interface CardRepository extends JpaRepository<Card, Long> {
     @Query("select c from Card c where c.rfidTagNo is null ")
     List<Card> findWithoutRFIDTagNo();
 
-
-
 }

@@ -1,4 +1,11 @@
 <div class="col-md-12">
+
+    <div class="col-md-12 text-right">
+        <div class="btn-group btn-group-sm">
+            <a ng-href="#manager/touchpoints" class="btn btn-primary">Back</a>
+        </div>
+    </div>
+
     <div class="col-md-12 text-left">
         <h4 class="text-primary"><b>Guest List </b> </h4>
     </div>
@@ -21,7 +28,7 @@
                 <th></th>
             </tr>
 
-            <tr ng-repeat="guest in guest_list | filter:search">
+            <tr ng-repeat="guest in new_guests=(guest_list | filter:search)">
                 <td style="text-align: center">{{guest.title}}</td>
                 <td style="text-align: center">{{guest.firstName}}</td>
                 <td style="text-align: center">{{guest.surname}}</td>
@@ -31,6 +38,11 @@
                 </td>
             </tr>
         </table>
+
+        <div class="col-md-12 text-center" ng-show="!new_guests.length">
+            <h4 class="text-primary"><b>No Guest Record Found </b></h4>
+        </div>
+
     </div>
 
 

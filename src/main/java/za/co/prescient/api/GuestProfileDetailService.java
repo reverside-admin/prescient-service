@@ -44,9 +44,10 @@ public class GuestProfileDetailService {
     }
 
     @RequestMapping(value = "api/touchpoints/{touchpointId}/guestCards")
-    public List<GuestCard> findCurrentlyPresentGuestCardsInTouchPoint(@PathVariable("touchpointId") String touchPointId) {
+    //list parameter is changed to Guest.earlier it was GuestCard.26-8-2014
+    public List<Guest> findCurrentlyPresentGuestCardsInTouchPoint(@PathVariable("touchpointId") String touchPointId) {
         String responseStr="";
-        List<String> cardIdListInteger = null;
+        //List<String> cardIdListInteger = null;
         List<String> cardIdListLong = null;
         try{
         URL url = new URL("http://localhost:9090/touchpoints/"+touchPointId+"/tags");
@@ -57,26 +58,58 @@ public class GuestProfileDetailService {
             BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
 
             System.out.println("Output from Server .... \n");
+            log.info("Output from Server  logger.... \n");
             String res;
             while ((res = br.readLine()) != null) {
-                System.out.println(res);
+                System.out.println("res::"+res);
                 responseStr = responseStr + res;
             }
             log.info("O/P : "+responseStr);
             log.info("len : " + responseStr.length());
             String trimmedStr = responseStr.substring(1, responseStr.length()-1);
-            String[] strArray = trimmedStr.split(",");
+            log.info("trimmed str::"+trimmedStr);
+            log.info("trimmed str length::"+trimmedStr.length());
 
-            log.info("array len: " + strArray.length);
+            //if trimmedStr length is zero then we need not split it by comma.
+            //added if block 27-8-2014
+            String[] strArray=trimmedStr.split(",");
+
+            log.info("array element[0]::"+strArray[0]);
+            log.info("array element[0] length::"+strArray[0].length());
+            log.info("array len:: " + strArray.length);
+
+            //log.info("array len after if block: " + strArray.length);
+
 
             cardIdListLong  = new ArrayList<String>();
-            for(String cardIdInteger : strArray){
-                cardIdListLong.add(cardIdInteger.substring(1, cardIdInteger.length()-1 ));
-            }
+            //Below loop variable changed the card.earlier it was cardIdInteger as local String variable.
+            log.info("before each for loop.......");
 
-        }catch (Exception e){}
-        List<GuestCard> guestCardList = guestCardRepository.findByCardIdListWithStatusActive(cardIdListLong);
-        return guestCardList;
+            //below if block is added. 27-8-2014
+            if(strArray[0].length()!=0)
+            {
+                for(String card : strArray){
+                      log.info("cards::"+card+"\n");
+                      cardIdListLong.add(card.substring(1, card.length() - 1));
+                   }
+            }
+            log.info("cardIdListLong length after all::"+cardIdListLong.size());
+            log.info("end of try block");
+
+        }catch (Exception e){
+            log.info("exception in display guest list");
+        }
+        //list paremeter is changed to Guest earlier it was GuestCard.26-8-2014
+        //below variable changed to huestList.earlier it was guestCardList.26-8-2014
+        List<Guest> guestList=new ArrayList<Guest>();
+        if(cardIdListLong.size()!=0)
+        {
+            guestList = guestCardRepository.findByCardIdListWithStatusActive(cardIdListLong);
+            log.info("guest card list return size::"+guestList.size());
+            log.info("guest card list return toString::"+guestList.toString());
+        }
+
+        return guestList;
     }
 
     @RequestMapping(value="api/guests")

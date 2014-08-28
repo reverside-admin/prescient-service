@@ -48,11 +48,11 @@
         </table>
     </div>
 
+    <!-- ng-if="guest_current_position" -->
 
-    <div style="width: 100%; margin-left: auto;margin-right: auto;text-align: center;margin-top: 5%" ng-if="guest_current_position" >
+    <div style="width: 100%; margin-left: auto;margin-right: auto;text-align: center;margin-top: 5%"  ng-if="guest_current_position">
         <h4><b style="color: red">{{guest_detail.guest.title}} {{guest_detail.guest.preferredName}} {{guest_detail.guest.surname}} residing in room number {{room_message}}
             is currently in {{location_message}} . </b></h4>
-
     </div>
 
     <div style="width: 100%; margin-left: auto;margin-right: auto;margin-top: 5%;text-align: center" ng-if="!guest_current_position">
@@ -63,25 +63,26 @@
     </div>
 
     <div class="col-md-12 text-right" ng-if="current_guest_location_history">
-
-
         <div style="width: 50%; margin-left: auto;margin-right: auto;margin-top: 5%">
             <table class="table table-hover table-condensed table-bordered table-responsive">
                 <tr>
                     <th style="text-align: center">Card</th>
                     <th style="text-align: center">Zone</th>
                     <th style="text-align: center">Date & Time</th>
-
                 </tr>
                 <tr ng-repeat="location in current_guest_location_history | filter:search">
-
                     <td style="text-align: center">{{location.guestCard}}</td>
                     <td style="text-align: center">{{location.zoneId}}</td>
                     <td style="text-align: center">{{location.tagReadDatetime | date:'yyyy-MM-dd HH:mm:ss'}}</td>
-
                 </tr>
             </table>
         </div>
-
     </div>
+
+
+    <div style="width: 100%; margin-left: auto;margin-right: auto;text-align: center;margin-top: 5%"  ng-if="flag">
+        <h4><b style="color: red">{{guest_detail.guest.title}} {{guest_detail.guest.preferredName}} {{guest_detail.guest.surname}} Has Never Been Detected In The Hotel. </b></h4>
+    </div>
+
+
 </div>
