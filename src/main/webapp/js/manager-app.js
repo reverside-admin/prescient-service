@@ -1,7 +1,7 @@
 /**
  * Created by Bibhuti on 2014/04/03.
  */
-var manager_app = angular.module('manager_app', ['ngRoute', 'LocalStorageModule', 'ngDialog']);
+var manager_app = angular.module('manager_app', ['ngRoute', 'LocalStorageModule', 'ngDialog','ngTable','Prescient.config']);
 
 manager_app.service('sharedProperties', function () {
     var guest_property;
@@ -154,12 +154,12 @@ manager_app.config(['$routeProvider',
 
 
 <!--display the guest list-->
-manager_app.controller('guest_list_controller', function ($scope, $http, $routeParams, localStorageService) {
+manager_app.controller('guest_list_controller', function ($scope, $http, $routeParams, localStorageService,SERVER_URL) {
 
     $scope.guests = {};
 
     $http({
-        url: 'http://localhost:8080/api/guest/all',
+        url: 'http://'+SERVER_URL+':8080/api/guest/all',
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -181,7 +181,7 @@ manager_app.controller('guest_list_controller', function ($scope, $http, $routeP
 
 <!--view a particular guest detail-->
 
-manager_app.controller('guest_details_controller', function ($scope, $http, $routeParams, localStorageService,$timeout) {
+manager_app.controller('guest_details_controller', function ($scope, $http, $routeParams, localStorageService,$timeout,$route,SERVER_URL) {
 
     $scope.guest_detail = {};
     $scope.assign_card_flag=true;
@@ -191,12 +191,13 @@ manager_app.controller('guest_details_controller', function ($scope, $http, $rou
     $scope.filename;
     $scope.ext;
     $scope.attach_image_flag = false;
+    $scope.remove_image_flag=false;
 
 
     //check is guest is currently staying in the hotel or not.
     //if he/she stays then we can give assign him the card otherwise we can't assign the card.
     $http({
-        url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/lateststay',
+        url: 'http://'+SERVER_URL+':8080/api/guest/' + $routeParams.guestId + '/lateststay',
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -217,7 +218,7 @@ manager_app.controller('guest_details_controller', function ($scope, $http, $rou
 
 
     $http({
-        url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/details',
+        url: 'http://'+SERVER_URL+':8080/api/guest/' + $routeParams.guestId + '/details',
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -258,7 +259,7 @@ manager_app.controller('guest_details_controller', function ($scope, $http, $rou
     //take the guest image file name from database and read that file from local system
     $scope.viewImage = function (filename, ext) {
         $http({
-            url: 'http://localhost:8080/api/guest/image/' + filename + '/' + ext,
+            url: 'http://'+SERVER_URL+':8080/api/guest/image/' + filename + '/' + ext,
             method: 'get',
             headers: {
                 'Authorization': localStorageService.get("auth")
@@ -268,6 +269,13 @@ manager_app.controller('guest_details_controller', function ($scope, $http, $rou
                 console.log('get success code::' + status);
                 if (status == 200) {
                     $scope.selected_guest_image_data = data;
+
+                    if($scope.selected_guest_image_data.length!=0)
+                    {
+                        $scope.remove_image_flag=true;
+
+
+                    }
                     //console.log('image data' + $scope.selected_guest_image_data);
                     console.log('file name from DataBase2::' + $scope.filename);
                     console.log('file extension from DataBase2::' + $scope.ext);
@@ -284,7 +292,7 @@ manager_app.controller('guest_details_controller', function ($scope, $http, $rou
 //added below  27-8-2014
     //Find all images from the guest image directory
     $http({
-        url: 'http://localhost:8080/api/guest/photos',
+        url: 'http://'+SERVER_URL+':8080/api/guest/photos',
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -313,7 +321,7 @@ manager_app.controller('guest_details_controller', function ($scope, $http, $rou
         $scope.filename = $scope.selected_guest_image.substr(0, $scope.selected_guest_image.lastIndexOf('.'));
         $scope.ext = $scope.selected_guest_image.substr($scope.selected_guest_image.lastIndexOf('.') + 1);
 
-        var url = 'http://localhost:8080/api/guest/image/' + $scope.filename + '/' + $scope.ext;
+        var url = 'http://'+SERVER_URL+':8080/api/guest/image/' + $scope.filename + '/' + $scope.ext;
         console.log('URL::::' + url);
 
         $http({
@@ -339,9 +347,20 @@ manager_app.controller('guest_details_controller', function ($scope, $http, $rou
         $scope.save_status_message;
     }
 
-    $scope.attachGuestImage = function () {
+    $scope.attachGuestImage = function (app_form) {
+
+        if(!app_form.$valid)
+        {
+            $scope.save_status_message='Please select a image';
+            $timeout(function () { $scope.save_status_message ='';console.log('after 1.2 seconds message is::'+$scope.save_status_message); }, 1500);
+
+
+            return;
+        }
+
+
         $http({
-            url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/image/' + $scope.filename + '/' + $scope.ext + '/update',
+            url: 'http://'+SERVER_URL+':8080/api/guest/' + $routeParams.guestId + '/image/' + $scope.filename + '/' + $scope.ext + '/update',
             method: 'get',
             headers: {
                 'Authorization': localStorageService.get("auth")
@@ -354,7 +373,54 @@ manager_app.controller('guest_details_controller', function ($scope, $http, $rou
                    // $location.url('/checked-in-guest/list');
                     $scope.save_status_message='Image saved successfully';
                     console.log($scope.save_status_message);
-                    $timeout(function () { $scope.save_status_message ='';console.log('after 1.2 seconds message is::'+$scope.save_status_message); }, 1200);
+                    $scope.attach_image_flag=false;
+                    $scope.remove_image_flag=true;
+                    $timeout(function () { $scope.save_status_message ='';console.log('after 1.2 seconds message is::'+$scope.save_status_message); }, 2000);
+                } else {
+                    console.log('status:' + status);
+                }
+            })
+            .error(function (error) {
+                console.log(error);
+            });
+    }
+
+    $scope.cancelGuestImage=function()
+    {
+        console.log('cancel guest image');
+        $route.reload();
+    }
+
+
+    $scope.onAttachImageButtonClick=function()
+    {
+        $scope.attach_image_flag=true;
+        $scope.remove_image_flag=false;
+        //console.log('attach image button is clicked');
+        //console.log('attach image flag status::'+$scope.attach_image_flag);
+    }
+
+    $scope.removeGuestImage=function()
+    {
+        console.log('remove guest image');
+        $http({
+            url: 'http://'+SERVER_URL+':8080/api/guest/' + $routeParams.guestId + '/image/remove',
+            method: 'get',
+            headers: {
+                'Authorization': localStorageService.get("auth")
+            }
+        }).
+            success(function (data, status) {
+                console.log('get success code::' + status);
+                if (status == 200) {
+                    console.log('image path is saved');
+                    $scope.save_status_message='Image removed successfully';
+                    console.log($scope.save_status_message);
+                    $scope.selected_guest_image_data=null;
+                    $scope.attach_image_flag=true;
+                    $scope.remove_image_flag=false;
+                    $scope.selected_guest_image=null;
+                      $timeout(function () { $scope.save_status_message =''; }, 2000);
                 } else {
                     console.log('status:' + status);
                 }
@@ -372,7 +438,7 @@ manager_app.controller('guest_details_controller', function ($scope, $http, $rou
 
 
 <!--Create A Guest-->
-manager_app.controller('create_guest_controller', function ($scope, $http, $routeParams, localStorageService, $location, ngDialog, sharedProperties) {
+manager_app.controller('create_guest_controller', function ($scope, $http, $routeParams, localStorageService, $location, ngDialog, sharedProperties,SERVER_URL) {
 
     $scope.guest = {};
     $scope.dob;
@@ -405,16 +471,16 @@ manager_app.controller('create_guest_controller', function ($scope, $http, $rout
 
 
 
-    $scope.OnPassportBlur=function()
+    $scope.OnPassportChange=function()
     {
+        console.log('passport change');
         if($scope.guest.passportNumber!=undefined)
         {
-            if($scope.guest.passportNumber.length!=0)
+            if($scope.guest.passportNumber.trim().length!=0)
             {
-                console.log('unfocusing  with value::'+$scope.guest.passportNumber);
-
+                console.log('on passport change service call');
                 $http({
-                    url: 'http://localhost:8080/api/guest/passport/' + $scope.guest.passportNumber + '/details',
+                    url: 'http://'+SERVER_URL+':8080/api/guest/passport/' + $scope.guest.passportNumber + '/details',
                     method: 'get',
                     headers: {
                         'Authorization': localStorageService.get("auth")
@@ -433,7 +499,7 @@ manager_app.controller('create_guest_controller', function ($scope, $http, $rout
                             //if the guest is found with that passport no then set the guest in the shared data.
                             sharedProperties.setProperty(data);
 
-                            $scope.open_passport_popup();
+                           // $scope.open_passport_popup();
                         }
                     })
                     .error(function (error) {
@@ -445,14 +511,16 @@ manager_app.controller('create_guest_controller', function ($scope, $http, $rout
 
     }
 
-    $scope.OnIdBlur=function()
+    $scope.OnIdChange=function()
     {
+        console.log('id changed...');
         if( $scope.guest.idNumber!=undefined)
         {
-            if($scope.guest.idNumber.length!=0)
+            if($scope.guest.idNumber.trim().length!=0)
             {
+                console.log('on id change service call');
                 $http({
-                    url: 'http://localhost:8080/api/guest/uniqueid/' + $scope.guest.idNumber + '/details',
+                    url: 'http://'+SERVER_URL+':8080/api/guest/uniqueid/' + $scope.guest.idNumber + '/details',
                     method: 'get',
                     headers: {
                         'Authorization': localStorageService.get("auth")
@@ -469,7 +537,7 @@ manager_app.controller('create_guest_controller', function ($scope, $http, $rout
 
                             sharedProperties.setProperty(data);
 
-                            $scope.open_id_popup();
+                            //$scope.open_id_popup();
                         }
                     })
                     .error(function (error) {
@@ -480,24 +548,6 @@ manager_app.controller('create_guest_controller', function ($scope, $http, $rout
         }
 
 
-    }
-
-    $scope.onIdChange=function()
-    {
-        console.log('on id change method');
-        if($scope.guest.idNumber.length==0)
-        {
-            $scope.id_validator_flag = true;
-        }
-    }
-
-    $scope.onPassportChange=function()
-    {
-        console.log('on passport change method');
-        if($scope.guest.passportNumber.length==0)
-        {
-            $scope.passport_validator_flag = true;
-        }
     }
 
 
@@ -528,10 +578,30 @@ manager_app.controller('create_guest_controller', function ($scope, $http, $rout
         console.log('create the guest contact list');
         $scope.guest.dob = new Date(9999, $scope.month, $scope.day);
         $scope.guest.hotel = $scope.hotel;
+        if($scope.guest.idNumber!=undefined)
+        {
+            $scope.guest.idNumber=$scope.guest.idNumber.trim();
+            console.log('id len::'+$scope.guest.idNumber.length);
+
+        }
+
+        if($scope.guest.passportNumber!=undefined)
+        {
+            $scope.guest.passportNumber=$scope.guest.passportNumber.trim();
+            console.log('passport len::'+$scope.guest.passportNumber.length);
+        }
+
+
+        //print the details of the guest
+
+        console.log('id no::'+$scope.guest.idNumber);
+        console.log('passport no::'+$scope.guest.passportNumber);
+
+        //
 
 
         $http({
-            url: 'http://localhost:8080/api/guest/create',
+            url: 'http://'+SERVER_URL+':8080/api/guest/create',
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
@@ -600,7 +670,7 @@ manager_app.controller('create_guest_controller', function ($scope, $http, $rout
 
 
 
-manager_app.controller('passport_popup_controller', function ($scope, $http, $routeParams, localStorageService, sharedProperties) {
+manager_app.controller('passport_popup_controller', function ($scope, $http, $routeParams, localStorageService, sharedProperties,SERVER_URL) {
 
     $scope.guest_profile_data;
     $scope.flag=true;
@@ -612,7 +682,7 @@ manager_app.controller('passport_popup_controller', function ($scope, $http, $ro
 });
 
 
-manager_app.controller('id_popup_controller', function ($scope, $http, $routeParams, localStorageService, sharedProperties) {
+manager_app.controller('id_popup_controller', function ($scope, $http, $routeParams, localStorageService, sharedProperties,SERVER_URL) {
 
     $scope.guest_profile_data;
     $scope.flag=true;
@@ -624,7 +694,7 @@ manager_app.controller('id_popup_controller', function ($scope, $http, $routePar
 });
 
 
-manager_app.controller('update_details_controller', function ($scope, localStorageService, $routeParams, $http, $location, ngDialog,sharedProperties) {
+manager_app.controller('update_details_controller', function ($scope, localStorageService, $routeParams, $http, $location, ngDialog,sharedProperties,SERVER_URL) {
     console.log('update guest controller is loaded');
 
     $scope.guest_id = $routeParams.guestId;
@@ -656,7 +726,7 @@ manager_app.controller('update_details_controller', function ($scope, localStora
 
 
     $http({
-        url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/details',
+        url: 'http://'+SERVER_URL+':8080/api/guest/' + $routeParams.guestId + '/details',
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -693,7 +763,7 @@ manager_app.controller('update_details_controller', function ($scope, localStora
 
         //validate the form
         if (!guest_update_form.$valid) {
-            $scope.open_invalid_form_popup();
+            //$scope.open_invalid_form_popup();
             return;
         }
 
@@ -710,16 +780,23 @@ manager_app.controller('update_details_controller', function ($scope, localStora
         //End Of Validation
 
 
+        if($scope.guest_detail.passportNumber!=undefined)
+        {
+            $scope.guest_detail.passportNumber=$scope.guest_detail.passportNumber.trim();
+        }
+
+        if($scope.guest_detail.idNumber!=undefined)
+        {
+            $scope.guest_detail.idNumber=$scope.guest_detail.idNumber.trim();
+        }
+
+
+        console.log('update service call');
         $scope.birth_date = new Date(9999, $scope.guest_birthday_month, $scope.guest_birthday_day);
         $scope.guest_detail.dob = $scope.birth_date;
-
-        //console.log('date before update::' + $scope.guest_birthday_day);
-        //console.log($scope.guest_birthday_day);
-
-
         $http({
 
-            url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/update',
+            url: 'http://'+SERVER_URL+':8080/api/guest/' + $routeParams.guestId + '/update',
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
@@ -799,7 +876,7 @@ manager_app.controller('update_details_controller', function ($scope, localStora
     }
 
 
-    $scope.onPassportChange=function()
+    /*$scope.onPassportChange=function()
     {
         if($scope.guest_detail.passportNumber.length==0)
         {
@@ -813,18 +890,18 @@ manager_app.controller('update_details_controller', function ($scope, localStora
         {
             $scope.id_validator_flag=true;
         }
-    }
+    }*/
 
-
-    $scope.checkPassport = function () {
-
-        if($scope.guest_detail.passportNumber!=undefined)
-        {
-            if($scope.guest_detail.passportNumber.length!=0)
+    $scope.checkPassport = function ()
+    {
+        console.log('check passport');
+           if($scope.guest_detail.passportNumber!=undefined)
+          {
+            if($scope.guest_detail.passportNumber.trim().length!=0)
             {
                 console.log('ckecking the passport');
                 $http({
-                    url: 'http://localhost:8080/api/guest/passport/' + $scope.guest_detail.passportNumber + '/details',
+                    url: 'http://'+SERVER_URL+':8080/api/guest/passport/' + $scope.guest_detail.passportNumber + '/details',
                     method: 'get',
                     headers: {
                         'Authorization': localStorageService.get("auth")
@@ -848,7 +925,7 @@ manager_app.controller('update_details_controller', function ($scope, localStora
                             //store guest data to the shared resource
                             sharedProperties.setProperty(data);
 
-                            $scope.open_passport_popup();
+                           // $scope.open_passport_popup();
                         }
                     })
                     .error(function (error) {
@@ -856,18 +933,19 @@ manager_app.controller('update_details_controller', function ($scope, localStora
                     });
             }
         }
-
     }
 
 
-    $scope.checkUniqueId = function () {
-        if($scope.guest_detail.idNumber!=undefined)
-        {
-            if($scope.guest_detail.idNumber.length!=0)
+    $scope.checkUniqueId = function ()
+    {
+         console.log('check id');
+         if($scope.guest_detail.idNumber!=undefined)
+         {
+            if($scope.guest_detail.idNumber.trim().length!=0)
             {
                 console.log('ckecking the id');
                 $http({
-                    url: 'http://localhost:8080/api/guest/uniqueid/' + $scope.guest_detail.idNumber + '/details',
+                    url: 'http://'+SERVER_URL+':8080/api/guest/uniqueid/' + $scope.guest_detail.idNumber + '/details',
                     method: 'get',
                     headers: {
                         'Authorization': localStorageService.get("auth")
@@ -890,7 +968,8 @@ manager_app.controller('update_details_controller', function ($scope, localStora
                             //scope.guest_detail=data;
                             //store the data in the shared property
                             sharedProperties.setProperty(data);
-                            $scope.open_id_popup();
+                            //$scope.open_id_popup();
+                            return;
                         }
                     })
                     .error(function (error) {
@@ -899,21 +978,19 @@ manager_app.controller('update_details_controller', function ($scope, localStora
             }
         }
 
-
-    }
-
+  }
 
 });
 
 
 <!--View guest Preference data-->
 
-manager_app.controller('view_guest_preference_data_controller', function ($scope, $http, $routeParams, localStorageService) {
+manager_app.controller('view_guest_preference_data_controller', function ($scope, $http, $routeParams, localStorageService,SERVER_URL) {
 
     $scope.guest_data = {};
 
     $http({
-        url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/details',
+        url: 'http://'+SERVER_URL+':8080/api/guest/' + $routeParams.guestId + '/details',
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -936,7 +1013,7 @@ manager_app.controller('view_guest_preference_data_controller', function ($scope
 
 <!-- add guest preference -->
 
-manager_app.controller('add_guest_preference_controller', function ($scope, $http,ngDialog, $routeParams, localStorageService, $location,sharedPreferenceProperties) {
+manager_app.controller('add_guest_preference_controller', function ($scope, $http,ngDialog, $routeParams, localStorageService, $location,sharedPreferenceProperties,SERVER_URL) {
 
     $scope.guest_id = $routeParams.guestId;
     $scope.guest_preference_types;
@@ -951,7 +1028,7 @@ manager_app.controller('add_guest_preference_controller', function ($scope, $htt
 
 
     $http({
-        url: 'http://localhost:8080/api/guest/preference/types',
+        url: 'http://'+SERVER_URL+':8080/api/guest/preference/types',
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -981,7 +1058,7 @@ manager_app.controller('add_guest_preference_controller', function ($scope, $htt
 
         $http({
 
-            url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/preference/add',
+            url: 'http://'+SERVER_URL+':8080/api/guest/' + $routeParams.guestId + '/preference/add',
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
@@ -1018,7 +1095,7 @@ manager_app.controller('add_guest_preference_controller', function ($scope, $htt
         $scope.message = '';
         //get the guest preferences if this guest have any preferences of the selected type.
         $http({
-            url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/preference/' + $scope.guest_preference_type.id,
+            url: 'http://'+SERVER_URL+':8080/api/guest/' + $routeParams.guestId + '/preference/' + $scope.guest_preference_type.id,
             method: 'get',
             headers: {
                 'Authorization': localStorageService.get("auth")
@@ -1051,7 +1128,7 @@ manager_app.controller('add_guest_preference_controller', function ($scope, $htt
     {
         console.log('deleting the preference');
         $http({
-            url: 'http://localhost:8080/api/guest/preference/delete' ,
+            url: 'http://'+SERVER_URL+':8080/api/guest/preference/delete' ,
             method: 'post',
             headers: {
                 'Authorization': localStorageService.get("auth")
@@ -1109,7 +1186,7 @@ manager_app.controller('add_guest_preference_controller', function ($scope, $htt
 });
 
 
-manager_app.controller('update_preference_popup_controller', function ($scope, $http,ngDialog, $routeParams, localStorageService, $location,sharedPreferenceProperties) {
+manager_app.controller('update_preference_popup_controller', function ($scope, $http,ngDialog, $routeParams, localStorageService, $location,sharedPreferenceProperties,SERVER_URL) {
     $scope.preferenceType=sharedPreferenceProperties.getTypeProperty();//getting type
     $scope.preferenceDescription=sharedPreferenceProperties.getDescProperty();//getting description
 
@@ -1132,7 +1209,7 @@ manager_app.controller('update_preference_popup_controller', function ($scope, $
     $scope.updatePreference=function()
     {
         $http({
-            url: 'http://localhost:8080/api/guest/preference/update',
+            url: 'http://'+SERVER_URL+':8080/api/guest/preference/update',
             method: 'post',
             headers: {
                 'Authorization': localStorageService.get("auth")
@@ -1171,7 +1248,7 @@ manager_app.controller('update_preference_popup_controller', function ($scope, $
 
 <!--View guest stay details-->
 
-manager_app.controller('view_guest_stay_details_controller', function ($scope, $http, $routeParams, localStorageService) {
+manager_app.controller('view_guest_stay_details_controller', function ($scope, $http, $routeParams, localStorageService,SERVER_URL) {
 
     $scope.guest_stay_detail = {};
 
@@ -1179,7 +1256,7 @@ manager_app.controller('view_guest_stay_details_controller', function ($scope, $
 
 
     $http({
-        url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/details',
+        url: 'http://'+SERVER_URL+':8080/api/guest/' + $routeParams.guestId + '/details',
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -1200,7 +1277,7 @@ manager_app.controller('view_guest_stay_details_controller', function ($scope, $
 
 
     $http({
-        url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/gueststaydetails',
+        url: 'http://'+SERVER_URL+':8080/api/guest/' + $routeParams.guestId + '/gueststaydetails',
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -1222,7 +1299,7 @@ manager_app.controller('view_guest_stay_details_controller', function ($scope, $
 
 
 <!--Add Stay Details-->
-manager_app.controller('add_stay_details_controller', function ($scope, $http, $routeParams, localStorageService, $location) {
+manager_app.controller('add_stay_details_controller', function ($scope, $http, $routeParams, localStorageService, $location,SERVER_URL) {
 
     console.log('add stay detail controller is loaded');
     $scope.current_user_hotel_id = localStorageService.get("user").hotel.id;
@@ -1267,7 +1344,7 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
     $scope.update_page_flag=false;
 
     $http({
-        url: 'http://localhost:8080/api/guest/'+ $routeParams.guestId + '/lateststay ',
+        url: 'http://'+SERVER_URL+':8080/api/guest/'+ $routeParams.guestId + '/lateststay ',
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -1286,7 +1363,8 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
                     $scope.arrival_year=new Date(data.arrivalTime).getFullYear().toString();
                     $scope.arrival_month=new Date(data.arrivalTime).getMonth().toString();
 
-                    $scope.arrival_time=$scope.arrival_year+'-'+("0"+(new Date(data.arrivalTime).getMonth() +1)).slice(-2)+'-'+$scope.arrival_date;
+                    //$scope.arrival_time=$scope.arrival_year+'-'+("0"+(new Date(data.arrivalTime).getMonth() +1)).slice(-2)+'-'+$scope.arrival_date;
+                    $scope.arrival_time=$scope.arrival_year+'-'+("0"+(new Date(data.arrivalTime).getMonth() +1)).slice(-2)+'-'+("0"+(new Date(data.arrivalTime).getDate() )).slice(-2);
 
 
                     $scope.arrival_hour=new Date(data.arrivalTime).getHours().toString();
@@ -1300,7 +1378,9 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
                     $scope.departure_date=new Date(data.departureTime).getDate().toString();
                     $scope.departure_year=new Date(data.departureTime).getFullYear().toString();
                     $scope.departure_month=new Date(data.departureTime).getMonth().toString();
-                    $scope.departure_time=$scope.departure_year+'-'+("0"+(new Date(data.departureTime).getMonth() +1)).slice(-2)+'-'+$scope.departure_date;
+                    //$scope.departure_time=$scope.departure_year+'-'+("0"+(new Date(data.departureTime).getMonth() +1)).slice(-2)+'-'+$scope.departure_date;
+                    $scope.departure_time=$scope.departure_year+'-'+("0"+(new Date(data.departureTime).getMonth() +1)).slice(-2)+'-'+("0"+(new Date(data.departureTime).getDate() )).slice(-2);
+
 
                     $scope.departure_hour=new Date(data.departureTime).getHours().toString();
                     $scope.departure_min=new Date(data.departureTime).getMinutes().toString();
@@ -1331,7 +1411,7 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
     $scope.getLatestStay=function()
     {
         $http({
-            url: 'http://localhost:8080/api/guest/'+ $routeParams.guestId + '/lateststay ',
+            url: 'http://'+SERVER_URL+':8080/api/guest/'+ $routeParams.guestId + '/lateststay ',
             method: 'get',
             headers: {
                 'Authorization': localStorageService.get("auth")
@@ -1363,7 +1443,7 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
     {
         console.log('get free rooms');
         $http({
-            url: 'http://localhost:8080/api/hotel/' + $scope.current_user_hotel_id + '/rooms',
+            url: 'http://'+SERVER_URL+':8080/api/hotel/' + $scope.current_user_hotel_id + '/rooms',
             method: 'post',
             headers: {
                 'Authorization': localStorageService.get("auth")
@@ -1580,7 +1660,7 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
             console.log('get all available rooms');
 
             $http({
-                url: 'http://localhost:8080/api/hotel/' + $scope.current_user_hotel_id + '/rooms',
+                url: 'http://'+SERVER_URL+':8080/api/hotel/' + $scope.current_user_hotel_id + '/rooms',
                 method: 'post',
                 headers: {
                     'Authorization': localStorageService.get("auth")
@@ -1669,7 +1749,7 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
 
 
         $http({
-            url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/addstaydetails',
+            url: 'http://'+SERVER_URL+':8080/api/guest/' + $routeParams.guestId + '/addstaydetails',
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
@@ -1779,7 +1859,7 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
         $scope.stay_detail.rooms = $scope.assigned_rooms;
 
         $http({
-            url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/updatestaydetails',
+            url: 'http://'+SERVER_URL+':8080/api/guest/' + $routeParams.guestId + '/updatestaydetails',
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
@@ -1809,7 +1889,7 @@ manager_app.controller('add_stay_details_controller', function ($scope, $http, $
 
 <!--View guest Room Card  data-->
 
-manager_app.controller('view_guest_room_card_controller', function ($scope, $http, $routeParams, localStorageService) {
+manager_app.controller('view_guest_room_card_controller', function ($scope, $http, $routeParams, localStorageService,SERVER_URL) {
 
     $scope.guest_cards;
     $scope.guest_detail = {};
@@ -1817,7 +1897,7 @@ manager_app.controller('view_guest_room_card_controller', function ($scope, $htt
 
     //get a guest detail
     $http({
-        url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/details',
+        url: 'http://'+SERVER_URL+':8080/api/guest/' + $routeParams.guestId + '/details',
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -1839,7 +1919,7 @@ manager_app.controller('view_guest_room_card_controller', function ($scope, $htt
 
 
     $http({
-        url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/roomcarddetails',
+        url: 'http://'+SERVER_URL+':8080/api/guest/' + $routeParams.guestId + '/roomcarddetails',
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -1860,7 +1940,7 @@ manager_app.controller('view_guest_room_card_controller', function ($scope, $htt
 });
 
 <!-- maintain guest Room Key Card -->
-manager_app.controller('maintain_room_key_cards_controller', function ($scope, $http, $routeParams, localStorageService, $location) {
+manager_app.controller('maintain_room_key_cards_controller', function ($scope, $http, $routeParams, localStorageService, $location,SERVER_URL) {
 
     $scope.guest_id = $routeParams.guestId;
     $scope.guest_detail;
@@ -1888,7 +1968,7 @@ manager_app.controller('maintain_room_key_cards_controller', function ($scope, $
     //get the guest profile detail.
 
     $http({
-        url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/details',
+        url: 'http://'+SERVER_URL+':8080/api/guest/' + $routeParams.guestId + '/details',
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -1909,7 +1989,7 @@ manager_app.controller('maintain_room_key_cards_controller', function ($scope, $
 
     //get all cards given to a guest.
     $http({
-        url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/roomcarddetails',
+        url: 'http://'+SERVER_URL+':8080/api/guest/' + $routeParams.guestId + '/roomcarddetails',
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -1939,7 +2019,7 @@ manager_app.controller('maintain_room_key_cards_controller', function ($scope, $
 
     //get all guest room key cards data that are available.
     $http({
-        url: 'http://localhost:8080/api/guest/roomkeycards',
+        url: 'http://'+SERVER_URL+':8080/api/guest/roomkeycards',
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -1986,7 +2066,7 @@ manager_app.controller('maintain_room_key_cards_controller', function ($scope, $
         }
 
         $http({
-            url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/cards/assign',
+            url: 'http://'+SERVER_URL+':8080/api/guest/' + $routeParams.guestId + '/cards/assign',
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
@@ -2010,7 +2090,7 @@ manager_app.controller('maintain_room_key_cards_controller', function ($scope, $
         console.log('returning the guest room key card');
 
         $http({
-            url: 'http://localhost:8080/api/guest/' + $scope.current_card.id + '/returncard',
+            url: 'http://'+SERVER_URL+':8080/api/guest/' + $scope.current_card.id + '/returncard',
             method: 'get',
             headers: {
                 'Content-Type': 'application/json',
@@ -2036,7 +2116,7 @@ manager_app.controller('maintain_room_key_cards_controller', function ($scope, $
     {
         console.log('return all cards from the guest');
         $http({
-            url: 'http://localhost:8080/api/guest/' + $routeParams.guestId + '/returncards',
+            url: 'http://'+SERVER_URL+':8080/api/guest/' + $routeParams.guestId + '/returncards',
             method: 'get',
             headers: {
                 'Content-Type': 'application/json',
@@ -2059,7 +2139,7 @@ manager_app.controller('maintain_room_key_cards_controller', function ($scope, $
     }
 });
 
-manager_app.controller('guest_contact_list_controller', function ($scope, localStorageService, $routeParams, $http) {
+manager_app.controller('guest_contact_list_controller', function ($scope, localStorageService, $routeParams, $http,SERVER_URL) {
     console.log('guest_contact_list_controller of manager app module is loaded');
 
     $scope.contact_list;
@@ -2068,7 +2148,7 @@ manager_app.controller('guest_contact_list_controller', function ($scope, localS
 
     <!-- get all contacts -->
     $http({
-        url: 'http://localhost:8080/api/users/' + $scope.current_user_id + '/guest/contacts',
+        url: 'http://'+SERVER_URL+':8080/api/users/' + $scope.current_user_id + '/guest/contacts',
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -2089,68 +2169,336 @@ manager_app.controller('guest_contact_list_controller', function ($scope, localS
 
 });
 
-manager_app.controller('create_guest_contact_controller', function ($scope, localStorageService, $routeParams, $http, $location, ngDialog) {
-    console.log('create_guest_contact_controller of manager app module is loaded');
-    $scope.guest_contact = {};
-    $scope.assigned_touch_point_list;
-    $scope.guest_list;
-    $scope.selected_touch_points = [];
-    $scope.selected_guests = [];
-    $scope.touch_point = {};
-    $scope.guest = {};
 
-    $scope.contactlist={};
-    $scope.contactlist_validation_flag=true;
+manager_app.controller('view_manager_guest_contactlist_controller', function ($scope, localStorageService, $routeParams, $http,SERVER_URL) {
+
+    $scope.contactlist;
+
+    $http({
+        url: 'http://'+SERVER_URL+':8080/api/guest/contacts/' + $routeParams.contactId,
+        method: 'get',
+        headers: {
+            'Authorization': localStorageService.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            if (status == 200) {
+                $scope.contactlist = data;
+                console.log('contact details ::' + $scope.contactlist);
+            } else {
+                console.log('status:' + status);
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+
+});
 
 
-//    $scope.contact={};
+manager_app.controller('delete_guest_contact_list_controller', function ($scope, localStorageService, $routeParams, $http, $location,SERVER_URL) {
+    console.log('delete guest contact list controller is loaded');
 
+    $scope.contactlist;
 
-    $scope.OnContactListNameBlur=function()
-    {
-//        $scope.contact.id=$scope.contactlist.owner.id;
-//        $scope.contact.name=$scope.guest_contact.name;
-        console.log('inside OnContactListNameBlur contact name:'+$scope.guest_contact.name);
+    <!--view contact details-->
+    $http({
+        url: 'http://'+SERVER_URL+':8080/api/guest/contacts/' + $routeParams.contactId,
+        method: 'get',
+        headers: {
+            'Authorization': localStorageService.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            if (status == 200) {
+                $scope.contactlist = data;
+                console.log('contact details ::' + $scope.contactlist);
+            } else {
+                console.log('status:' + status);
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+
+    $scope.delete = function () {
+
         $http({
-            url: 'http://localhost:8080/api/manager/' +localStorageService.get("user").id + '/contactlistname',
+            url: 'http://'+SERVER_URL+':8080/api/guest/contacts/' + $routeParams.contactId + '/delete',
+            method: 'put',
+            headers: {
+                'Authorization': localStorageService.get("auth")
+            }
+        }).
+            success(function (data, status) {
+                if (status == 200) {
+                    console.log('contact is deleted');
+                    $location.url('manager/guest/contacts');
+                } else {
+                    console.log('status:' + status);
+                }
+            })
+            .error(function (error) {
+                console.log(error);
+            });
+        console.log('deleted......');
+
+    }
+
+});
+
+
+manager_app.controller('current_guest_location_controller', function ($scope, $http, $location, localStorageService, $routeParams, $window,SERVER_URL) {
+    console.log('current guest location  controller is loaded');
+    $scope.guest_id = $routeParams.guestId;
+    $scope.guest_current_position;
+    $scope.current_guest_location_history;
+    $scope.guest_detail;
+    $scope.flag=false;
+
+    <!-- get guest detail by guests id  -->
+    $scope.room_message='';
+    $scope.rooms={};
+
+    $http({
+        url: 'http://'+SERVER_URL+':8080/api/guest/' + $scope.guest_id,
+        method: 'get',
+        headers: {
+            'Authorization': localStorageService.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            console.log('get success code::' + status);
+            if (status == 200) {
+                $scope.guest_detail = data;
+                $scope.rooms=data.rooms;
+                for(var i=0;i<$scope.rooms.length;i++)
+                {
+                    $scope.room_message=$scope.room_message+','+$scope.rooms[i].roomNumber;
+                }
+
+                $scope.room_message=$scope.room_message.trim();
+                $scope.room_message=$scope.room_message.substr(1,$scope.room_message.length-1);
+                console.log('Guest Detail::' + $scope.guest_detail);
+                console.log('room details::'+$scope.room_message);
+
+
+
+            } else {
+                console.log('status:' + status);
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+
+    $scope.location_message='';
+
+    $http({
+        url: 'http://'+SERVER_URL+':8080/api/guests/' + $scope.guest_id + '/locations',
+        method: 'get',
+        headers: {
+            'Authorization': localStorageService.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            console.log('current guest location is returned from the server');
+
+            if (status == 200 && data.length !=0) {
+                console.log('data coming length::'+data.length);
+                $scope.guest_current_position = data;
+                console.log('current guest position detail ::' + $scope.guest_current_position);
+                for(var i=0;i<$scope.guest_current_position.length;i++)
+                {
+                    console.log('current location@@@@'+$scope.guest_current_position[i]);
+                    $scope.location_message=$scope.location_message+' , '+$scope.guest_current_position[i].zoneId;
+                }
+                $scope.location_message=$scope.location_message.trim();
+                $scope.location_message=$scope.location_message.substr(1,$scope.location_message.length-1);
+                console.log('currently found locations::'+$scope.location_message);
+
+            } else {
+                console.log('status on success:' + status);
+               // $scope.location_message='No where';
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+
+    $scope.showHistory = function () {
+        $http({
+            url: 'http://'+SERVER_URL+':8080/api/guests/' + $scope.guest_id + '/location/history',
             method: 'get',
             headers: {
                 'Authorization': localStorageService.get("auth")
             }
         }).
             success(function (data, status) {
-
-                $scope.contact_list=data;
-                console.log("success contact list name url::"+$scope.contact_list);
-
-
-                for (var i = 0; i < $scope.contact_list.length; i++) {
-
-                    console.log("contact_list names::"+i + $scope.contact_list[i]);
-
-                    if ($scope.contact_list[i].toLowerCase() == $scope.guest_contact.name.toLowerCase()) {
-                        console.log("ngmodel data and database data are matched");
-                        $scope.contactlist_validation_flag=false;
-                        $scope.open_contactlist_popup();
-                        return;
-
-                    }else{
-                        $scope.contactlist_validation_flag=true;
+                if (status == 200) {
+                    $scope.current_guest_location_history = data;
+                    console.log('current guest location history ::' + $scope.current_guest_location_history);
+                    console.log('current guest location history length'+$scope.current_guest_location_history.length);
+                    if($scope.current_guest_location_history.length==0)
+                    {
+                      $scope.flag=true;
                     }
-
+                } else {
+                    console.log('status:' + status);
                 }
-
             })
             .error(function (error) {
                 console.log(error);
             });
     }
 
+});
 
 
-    <!-- get all assigned touch points -->
+manager_app.controller('checkedin_guest_controller', function ($scope, $http, $location, localStorageService, $routeParams, $window,SERVER_URL) {
+    console.log('manager checkedin guest controller is loaded');
+
+    $scope.checkedin_guest_list;
+    $scope.hotel_id = localStorageService.get("user").hotel.id;
+
+    <!--  get all checkedin guest list -->
     $http({
-        url: 'http://localhost:8080/api/login/touchpoints',
+        url: 'http://'+SERVER_URL+':8080/api/hotels/' + $scope.hotel_id + '/guests/checkedIn',
+        method: 'get',
+        headers: {
+            'Authorization': localStorageService.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            if (status == 200) {
+                $scope.checkedin_guest_list = data;
+                console.log('checkedin guest list::' + $scope.checkedin_guest_list);
+            } else {
+                console.log('status:' + status);
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+
+});
+
+
+manager_app.controller('touch_point_setup_list_controller', function ($scope, $http, $location, localStorageService, $routeParams, $window,SERVER_URL) {
+    console.log('manager touchpoint setup  list controller is loaded');
+
+    $scope.touch_point_setups;
+    $scope.current_touch_point_id = $routeParams.tpId;
+    $scope.current_setup = {};
+
+    $scope.testModel = -1;
+
+    <!-- get current setup detail -->
+    $http({
+        url: 'http://'+SERVER_URL+':8080/api/touchpoint/' + $scope.current_touch_point_id + '/setups/current',
+        method: 'get',
+        headers: {
+            'Authorization': localStorageService.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            if (status == 200) {
+                $scope.current_setup = data;
+                console.log('current setup name::' + $scope.current_setup.setupName);
+                $scope.testModel = $scope.current_setup.id;
+
+            } else {
+                console.log('status:' + status);
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+
+
+    <!-- get all setups by touchpointid -->
+
+    $http({
+        url: 'http://'+SERVER_URL+':8080/api/tp/' + $routeParams.tpId + '/setups',
+        method: 'get',
+        headers: {
+            'Authorization': localStorageService.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            if (status == 200) {
+                $scope.touch_point_setups = data;
+                console.log('touch point setups::' + $scope.touch_point_setups);
+                console.log($scope.touch_point_setups.length);
+            } else {
+                console.log('status:' + status);
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+
+
+    $scope.setCurrentSetup = function () {
+        console.log('set current setup method is called');
+
+        $http({
+            url: 'http://'+SERVER_URL+':8080/api/touchpoint/' + $scope.current_touch_point_id + '/setup/' + $scope.testModel,
+            method: 'get',
+            headers: {
+                'Authorization': localStorageService.get("auth")
+            }
+        }).
+            success(function (data, status) {
+                if (status == 200) {
+                    console.log('setup successfully done');
+                    $location.url('manager/touchpoint/list');
+                } else {
+                    console.log('status:' + status);
+                }
+            })
+            .error(function (error) {
+                console.log(error);
+            });
+
+    };
+});
+
+
+manager_app.controller('manager_app_controller', function ($scope, $http, $location, localStorageService, $window,SERVER_URL) {
+    console.log('manager app controller is loaded');
+    $scope.user;
+
+    if (localStorageService.get("user") == null) {
+        console.log("User is not authenticated");
+        $window.location.replace("login-app.html?manager-app.html" + $window.location.hash);
+    } else {
+        console.log("User is authenticated");
+        $scope.user = localStorageService.get("user");
+        if ($scope.user.userType.value != "ROLE_MANAGER") {
+            $window.location.replace("index.html");
+        }
+    }
+
+
+    $scope.logout = function () {
+        console.log('logout method is called');
+        localStorageService.remove("user");
+        localStorageService.remove("auth");
+        $window.location.replace("login-app.html");
+    };
+});
+
+
+manager_app.controller('touch_point_controller', function ($scope, localStorageService, $http,SERVER_URL) {
+    console.log('touch point controller of manager app module is loaded');
+    $scope.assigned_touch_point_list = [];
+    $scope.selected_touch_point;
+    $scope.user_detail = localStorageService.get("user");
+    console.log('current user id::' + $scope.user_detail.id);
+
+    $http({
+        url: 'http://'+SERVER_URL+':8080/api/login/touchpoints',
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -2168,11 +2516,14 @@ manager_app.controller('create_guest_contact_controller', function ($scope, loca
         .error(function (error) {
             console.log(error);
         });
+});
 
-    <!-- get all guests in the hotel -->
+manager_app.controller('find_guest_controller', function ($scope, $http, $routeParams, $location, localStorageService,$route,$timeout,SERVER_URL) {
+    console.log(' manager guest find controller is loaded');
+    $scope.guest_list = [];
 
     $http({
-        url: 'http://localhost:8080/api/guests',
+        url: 'http://'+SERVER_URL+':8080/api/touchpoints/' + $routeParams.TPId + '/guestCards',
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -2182,7 +2533,12 @@ manager_app.controller('create_guest_contact_controller', function ($scope, loca
             console.log('get success code::' + status);
             if (status == 200) {
                 $scope.guest_list = data;
-                console.log('All Touch Points::' + $scope.guest_list);
+                console.log('All Guest List::' + $scope.guest_list);
+                //added for test
+                //$timeout(function () {$route.reload();},10000);
+
+
+
             } else {
                 console.log('status:' + status);
             }
@@ -2190,6 +2546,167 @@ manager_app.controller('create_guest_contact_controller', function ($scope, loca
         .error(function (error) {
             console.log(error);
         });
+});
+
+
+manager_app.controller('guest_detail_controller', function ($scope, $http, $routeParams, $location, localStorageService,SERVER_URL) {
+
+    $scope.guest_detail;
+    $scope.guest_id = $routeParams.guestId;
+    console.log('guest detail controller is loaded...' + $scope.guest_id);
+
+
+    $http({
+        url: 'http://'+SERVER_URL+':8080/api/guest/' + $scope.guest_id,
+        method: 'get',
+        headers: {
+            'Authorization': localStorageService.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            console.log('get success code::' + status);
+            if (status == 200) {
+                $scope.guest_detail = data;
+                console.log('Guest Detail::' + $scope.guest_detail);
+
+                console.log($scope.guest_detail.arrivalTime);
+                console.log($scope.guest_detail.departureTime);
+
+            } else {
+                console.log('status:' + status);
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+
+    $scope.back=function()
+    {
+        window.history.back();
+    }
+
+});
+
+manager_app.controller('create_guest_contact_controller', function ($scope, localStorageService, $routeParams, $http, $location, ngDialog,$filter, ngTableParams,SERVER_URL) {
+    console.log('create_guest_contact_controller of manager app module is loaded');
+    $scope.guest_contact = {};
+    $scope.assigned_touch_point_list;
+    $scope.guest_list;
+    $scope.selected_touch_points = [];
+    $scope.selected_guests = [];
+    $scope.touch_point = {};
+    $scope.guest = {};
+    $scope.contactlist={};
+    $scope.contactlist_validation_flag;
+    $scope.check_contact_name_flag;
+
+    <!-- get all guests in the hotel -->
+    $http({
+        url: 'http://'+SERVER_URL+':8080/api/guests',
+        method: 'get',
+        headers: {
+            'Authorization': localStorageService.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            console.log('get success code::' + status);
+            if (status == 200) {
+                $scope.guest_list = data;
+                console.log('All guests::' + $scope.guest_list);
+
+                $scope.tableParams = new ngTableParams({
+                    page: 1,            // show first page
+                    count: 5,          // count per page
+                    filter: {
+                        //name: 'M'       // initial filter
+                    },
+                    sorting: {
+                        //name: 'asc'     // initial sorting
+                    }
+                }, {
+                    //total:  $scope.guest_list.length, // length of data
+                    getData: function ($defer, params) {
+                        // use build-in angular filter
+                        var filteredData = params.filter() ?
+                            $filter('filter')( $scope.guest_list, params.filter()) :
+                            $scope.guest_list;
+                        var orderedData = params.sorting() ?
+                            $filter('orderBy')(filteredData, params.orderBy()) :
+                            $scope.guest_list;
+
+                        params.total(orderedData.length); // set total for recalc pagination
+                        $defer.resolve(orderedData.slice((params.page() - 1) * params.count(), params.page() * params.count()));
+                    }
+                });
+
+
+            } else {
+                console.log('status:' + status);
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+
+
+    <!-- get all assigned touch points -->
+    $http({
+        url: 'http://'+SERVER_URL+':8080/api/login/touchpoints',
+        method: 'get',
+        headers: {
+            'Authorization': localStorageService.get("auth")
+        }
+    }).
+        success(function (data, status) {
+            console.log('get success code::' + status);
+            if (status == 200) {
+                $scope.assigned_touch_point_list = data;
+                console.log('All Touch Points::' + $scope.assigned_touch_point_list);
+            } else {
+                console.log('status:' + status);
+            }
+        })
+        .error(function (error) {
+            console.log(error);
+        });
+    console.log('data data');
+
+    $scope.OnContactListNameChange=function()
+    {
+        console.log('checking for contact list name');
+                    $http({
+                        url: 'http://'+SERVER_URL+':8080/api/manager/' +localStorageService.get("user").id + '/contact/'+$scope.guest_contact.name,
+                        method: 'get',
+                        headers: {
+                            'Authorization': localStorageService.get("auth")
+                        }
+                    }).
+                        success(function (data, status) {
+                            $scope.contact_list=data;
+                            console.log("success contact list name url::"+$scope.contact_list);
+
+                            if($scope.contact_list.name==undefined)
+                            {
+                                console.log('contact list is not available in the database');
+                                $scope.contactlist_validation_flag=true;
+                            }
+                            else
+                            {
+                                console.log('contact list is exist in the database');
+                                $scope.contactlist_validation_flag=false;
+                            }
+
+
+                        })
+                        .error(function (error) {
+                            console.log(error);
+                        });
+
+
+    }
+
+
+
 
 
     $scope.onSelectTouchPoint = function (touchpoint_id) {
@@ -2227,7 +2744,13 @@ manager_app.controller('create_guest_contact_controller', function ($scope, loca
     };
 
 
-    $scope.create = function () {
+    $scope.create = function (create_contact_list_form) {
+
+        if(!create_contact_list_form.$valid)
+        {
+            return;
+        }
+
 
         if ($scope.contactlist_validation_flag == false) {
             $scope.open_contactlist_popup();
@@ -2243,7 +2766,7 @@ manager_app.controller('create_guest_contact_controller', function ($scope, loca
         console.log('create the guest contact list');
 
         $http({
-            url: 'http://localhost:8080/api/guest/contact/create',
+            url: 'http://'+SERVER_URL+':8080/api/guest/contact/create',
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
@@ -2272,7 +2795,7 @@ manager_app.controller('create_guest_contact_controller', function ($scope, loca
         console.log('pop function is calling');
         ngDialog.open({
             template: '<body style="text-align:center;color: RED;"><h4>' +
-                'This list name is already exist!!</h4>' +
+                'This contact name is already exist!!</h4>' +
                 '</body>',
             plain:true,
             className:'ngdialog-theme-default'
@@ -2280,427 +2803,19 @@ manager_app.controller('create_guest_contact_controller', function ($scope, loca
         });
     }
 
-
-
-
-
-
-});
-
-manager_app.controller('view_manager_guest_contactlist_controller', function ($scope, localStorageService, $routeParams, $http) {
-
-    $scope.contactlist;
-
-    $http({
-        url: 'http://localhost:8080/api/guest/contacts/' + $routeParams.contactId,
-        method: 'get',
-        headers: {
-            'Authorization': localStorageService.get("auth")
+    $scope.$watch('guest_contact.name', function() {
+        if($scope.guest_contact.name!=undefined)
+        {
+            $scope.guest_contact.name = $scope.guest_contact.name.replace(/\s+/g,'');
         }
-    }).
-        success(function (data, status) {
-            if (status == 200) {
-                $scope.contactlist = data;
-                console.log('contact details ::' + $scope.contactlist);
-            } else {
-                console.log('status:' + status);
-            }
-        })
-        .error(function (error) {
-            console.log(error);
-        });
+    });
 
 });
 
 
-manager_app.controller('delete_guest_contact_list_controller', function ($scope, localStorageService, $routeParams, $http, $location) {
-    console.log('delete guest contact list controller is loaded');
-
-    $scope.contactlist;
-
-    <!--view contact details-->
-    $http({
-        url: 'http://localhost:8080/api/guest/contacts/' + $routeParams.contactId,
-        method: 'get',
-        headers: {
-            'Authorization': localStorageService.get("auth")
-        }
-    }).
-        success(function (data, status) {
-            if (status == 200) {
-                $scope.contactlist = data;
-                console.log('contact details ::' + $scope.contactlist);
-            } else {
-                console.log('status:' + status);
-            }
-        })
-        .error(function (error) {
-            console.log(error);
-        });
-
-    $scope.delete = function () {
-
-        $http({
-            url: 'http://localhost:8080/api/guest/contacts/' + $routeParams.contactId + '/delete',
-            method: 'put',
-            headers: {
-                'Authorization': localStorageService.get("auth")
-            }
-        }).
-            success(function (data, status) {
-                if (status == 200) {
-                    console.log('contact is deleted');
-                    $location.url('manager/guest/contacts');
-                } else {
-                    console.log('status:' + status);
-                }
-            })
-            .error(function (error) {
-                console.log(error);
-            });
-        console.log('deleted......');
-
-    }
-
-});
 
 
-manager_app.controller('current_guest_location_controller', function ($scope, $http, $location, localStorageService, $routeParams, $window) {
-    console.log('current guest location  controller is loaded');
-    $scope.guest_id = $routeParams.guestId;
-    $scope.guest_current_position;
-    $scope.current_guest_location_history;
-    $scope.guest_detail;
-    $scope.flag=false;
-
-    <!-- get guest detail by guests id  -->
-    $scope.room_message='';
-    $scope.rooms={};
-
-    $http({
-        url: 'http://localhost:8080/api/guest/' + $scope.guest_id,
-        method: 'get',
-        headers: {
-            'Authorization': localStorageService.get("auth")
-        }
-    }).
-        success(function (data, status) {
-            console.log('get success code::' + status);
-            if (status == 200) {
-                $scope.guest_detail = data;
-                $scope.rooms=data.rooms;
-                for(var i=0;i<$scope.rooms.length;i++)
-                {
-                    $scope.room_message=$scope.room_message+','+$scope.rooms[i].roomNumber;
-                }
-
-                $scope.room_message=$scope.room_message.trim();
-                $scope.room_message=$scope.room_message.substr(1,$scope.room_message.length-1);
-                console.log('Guest Detail::' + $scope.guest_detail);
-                console.log('room details::'+$scope.room_message);
-
-
-
-            } else {
-                console.log('status:' + status);
-            }
-        })
-        .error(function (error) {
-            console.log(error);
-        });
-
-    $scope.location_message='';
-
-    $http({
-        url: 'http://localhost:8080/api/guests/' + $scope.guest_id + '/locations',
-        method: 'get',
-        headers: {
-            'Authorization': localStorageService.get("auth")
-        }
-    }).
-        success(function (data, status) {
-            console.log('current guest location is returned from the server');
-
-            if (status == 200 && data.length !=0) {
-                console.log('data coming length::'+data.length);
-                $scope.guest_current_position = data;
-                console.log('current guest position detail ::' + $scope.guest_current_position);
-                for(var i=0;i<$scope.guest_current_position.length;i++)
-                {
-                    console.log('current location@@@@'+$scope.guest_current_position[i]);
-                    $scope.location_message=$scope.location_message+' , '+$scope.guest_current_position[i].zoneId;
-                }
-                $scope.location_message=$scope.location_message.trim();
-                $scope.location_message=$scope.location_message.substr(1,$scope.location_message.length-1);
-                console.log('currently found locations::'+$scope.location_message);
-
-            } else {
-                console.log('status on success:' + status);
-               // $scope.location_message='No where';
-            }
-        })
-        .error(function (error) {
-            console.log(error);
-        });
-
-    $scope.showHistory = function () {
-        $http({
-            url: 'http://localhost:8080/api/guests/' + $scope.guest_id + '/location/history',
-            method: 'get',
-            headers: {
-                'Authorization': localStorageService.get("auth")
-            }
-        }).
-            success(function (data, status) {
-                if (status == 200) {
-                    $scope.current_guest_location_history = data;
-                    console.log('current guest location history ::' + $scope.current_guest_location_history);
-                    console.log('current guest location history length'+$scope.current_guest_location_history.length);
-                    if($scope.current_guest_location_history.length==0)
-                    {
-                      $scope.flag=true;
-                    }
-                } else {
-                    console.log('status:' + status);
-                }
-            })
-            .error(function (error) {
-                console.log(error);
-            });
-    }
-
-});
-
-
-manager_app.controller('checkedin_guest_controller', function ($scope, $http, $location, localStorageService, $routeParams, $window) {
-    console.log('manager checkedin guest controller is loaded');
-
-    $scope.checkedin_guest_list;
-    $scope.hotel_id = localStorageService.get("user").hotel.id;
-
-    <!--  get all checkedin guest list -->
-    $http({
-        url: 'http://localhost:8080/api/hotels/' + $scope.hotel_id + '/guests/checkedIn',
-        method: 'get',
-        headers: {
-            'Authorization': localStorageService.get("auth")
-        }
-    }).
-        success(function (data, status) {
-            if (status == 200) {
-                $scope.checkedin_guest_list = data;
-                console.log('checkedin guest list::' + $scope.checkedin_guest_list);
-            } else {
-                console.log('status:' + status);
-            }
-        })
-        .error(function (error) {
-            console.log(error);
-        });
-
-});
-
-
-manager_app.controller('touch_point_setup_list_controller', function ($scope, $http, $location, localStorageService, $routeParams, $window) {
-    console.log('manager touchpoint setup  list controller is loaded');
-
-    $scope.touch_point_setups;
-    $scope.current_touch_point_id = $routeParams.tpId;
-    $scope.current_setup = {};
-
-    $scope.testModel = -1;
-
-    <!-- get current setup detail -->
-    $http({
-        url: 'http://localhost:8080/api/touchpoint/' + $scope.current_touch_point_id + '/setups/current',
-        method: 'get',
-        headers: {
-            'Authorization': localStorageService.get("auth")
-        }
-    }).
-        success(function (data, status) {
-            if (status == 200) {
-                $scope.current_setup = data;
-                console.log('current setup name::' + $scope.current_setup.setupName);
-                $scope.testModel = $scope.current_setup.id;
-
-            } else {
-                console.log('status:' + status);
-            }
-        })
-        .error(function (error) {
-            console.log(error);
-        });
-
-
-    <!-- get all setups by touchpointid -->
-
-    $http({
-        url: 'http://localhost:8080/api/tp/' + $routeParams.tpId + '/setups',
-        method: 'get',
-        headers: {
-            'Authorization': localStorageService.get("auth")
-        }
-    }).
-        success(function (data, status) {
-            if (status == 200) {
-                $scope.touch_point_setups = data;
-                console.log('touch point setups::' + $scope.touch_point_setups);
-                console.log($scope.touch_point_setups.length);
-            } else {
-                console.log('status:' + status);
-            }
-        })
-        .error(function (error) {
-            console.log(error);
-        });
-
-
-    $scope.setCurrentSetup = function () {
-        console.log('set current setup method is called');
-
-        $http({
-            url: 'http://localhost:8080/api/touchpoint/' + $scope.current_touch_point_id + '/setup/' + $scope.testModel,
-            method: 'get',
-            headers: {
-                'Authorization': localStorageService.get("auth")
-            }
-        }).
-            success(function (data, status) {
-                if (status == 200) {
-                    console.log('setup successfully done');
-                    $location.url('manager/touchpoint/list');
-                } else {
-                    console.log('status:' + status);
-                }
-            })
-            .error(function (error) {
-                console.log(error);
-            });
-
-    };
-});
-
-
-manager_app.controller('manager_app_controller', function ($scope, $http, $location, localStorageService, $window) {
-    console.log('manager app controller is loaded');
-    $scope.user;
-
-    if (localStorageService.get("user") == null) {
-        console.log("User is not authenticated");
-        $window.location.replace("login-app.html?manager-app.html" + $window.location.hash);
-    } else {
-        console.log("User is authenticated");
-        $scope.user = localStorageService.get("user");
-        if ($scope.user.userType.value != "ROLE_MANAGER") {
-            $window.location.replace("index.html");
-        }
-    }
-
-
-    $scope.logout = function () {
-        console.log('logout method is called');
-        localStorageService.remove("user");
-        localStorageService.remove("auth");
-        $window.location.replace("login-app.html");
-    };
-});
-
-
-manager_app.controller('touch_point_controller', function ($scope, localStorageService, $http) {
-    console.log('touch point controller of manager app module is loaded');
-    $scope.assigned_touch_point_list = [];
-    $scope.selected_touch_point;
-    $scope.user_detail = localStorageService.get("user");
-    console.log('current user id::' + $scope.user_detail.id);
-
-    $http({
-        url: 'http://localhost:8080/api/login/touchpoints',
-        method: 'get',
-        headers: {
-            'Authorization': localStorageService.get("auth")
-        }
-    }).
-        success(function (data, status) {
-            console.log('get success code::' + status);
-            if (status == 200) {
-                $scope.assigned_touch_point_list = data;
-                console.log('All Touch Points::' + $scope.assigned_touch_point_list);
-            } else {
-                console.log('status:' + status);
-            }
-        })
-        .error(function (error) {
-            console.log(error);
-        });
-});
-
-manager_app.controller('find_guest_controller', function ($scope, $http, $routeParams, $location, localStorageService) {
-    console.log(' manager guest find controller is loaded');
-    $scope.guest_list = [];
-
-    $http({
-        url: 'http://localhost:8080/api/touchpoints/' + $routeParams.TPId + '/guestCards',
-        method: 'get',
-        headers: {
-            'Authorization': localStorageService.get("auth")
-        }
-    }).
-        success(function (data, status) {
-            console.log('get success code::' + status);
-            if (status == 200) {
-                $scope.guest_list = data;
-                console.log('All Guest List::' + $scope.guest_list);
-            } else {
-                console.log('status:' + status);
-            }
-        })
-        .error(function (error) {
-            console.log(error);
-        });
-});
-
-
-manager_app.controller('guest_detail_controller', function ($scope, $http, $routeParams, $location, localStorageService) {
-
-    $scope.guest_detail;
-    $scope.guest_id = $routeParams.guestId;
-    console.log('guest detail controller is loaded...' + $scope.guest_id);
-
-
-    $http({
-        url: 'http://localhost:8080/api/guest/' + $scope.guest_id,
-        method: 'get',
-        headers: {
-            'Authorization': localStorageService.get("auth")
-        }
-    }).
-        success(function (data, status) {
-            console.log('get success code::' + status);
-            if (status == 200) {
-                $scope.guest_detail = data;
-                console.log('Guest Detail::' + $scope.guest_detail);
-
-                console.log($scope.guest_detail.arrivalTime);
-                console.log($scope.guest_detail.departureTime);
-
-            } else {
-                console.log('status:' + status);
-            }
-        })
-        .error(function (error) {
-            console.log(error);
-        });
-
-    $scope.back=function()
-    {
-        window.history.back();
-    }
-
-});
-
-
-manager_app.controller('update_guest_contact_list_controller', function ($scope, localStorageService, $routeParams, $http, $location) {
+manager_app.controller('update_guest_contact_list_controller', function ($scope, localStorageService, $routeParams, $http, $location,ngDialog,SERVER_URL) {
     $scope.selected_TouchPoints;//model
     $scope.selected_Guest;//model
     $scope.name;//model
@@ -2716,10 +2831,13 @@ manager_app.controller('update_guest_contact_list_controller', function ($scope,
     $scope.guest = {};
     $scope.current_guests = [];
 
+    $scope.add_to_contact_flag=false;
+    $scope.remove_from_contact_flag=false;
+
 
     <!--view contact details-->
     $http({
-        url: 'http://localhost:8080/api/guest/contacts/' + $routeParams.contactId,
+        url: 'http://'+SERVER_URL+':8080/api/guest/contacts/' + $routeParams.contactId,
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -2741,7 +2859,7 @@ manager_app.controller('update_guest_contact_list_controller', function ($scope,
 
     <!-- get all aguestlist  in contactlist -->
     $http({
-        url: 'http://localhost:8080/api/guest/contactguests/' + $routeParams.contactId,
+        url: 'http://'+SERVER_URL+':8080/api/guest/contactguests/' + $routeParams.contactId,
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -2761,7 +2879,7 @@ manager_app.controller('update_guest_contact_list_controller', function ($scope,
 
     <!-- get all touchpoints  in contactlist -->
     $http({
-        url: 'http://localhost:8080/api/guest/contacttp/' + $routeParams.contactId,
+        url: 'http://'+SERVER_URL+':8080/api/guest/contacttp/' + $routeParams.contactId,
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -2782,7 +2900,7 @@ manager_app.controller('update_guest_contact_list_controller', function ($scope,
 
     <!-- get all guestlist not in contactlist -->
     $http({
-        url: 'http://localhost:8080/api/guest/notincontacts/' + $routeParams.contactId,
+        url: 'http://'+SERVER_URL+':8080/api/guest/notincontacts/' + $routeParams.contactId,
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -2803,7 +2921,7 @@ manager_app.controller('update_guest_contact_list_controller', function ($scope,
 
     <!-- get all touchpoints not in contactlist -->
     $http({
-        url: 'http://localhost:8080/api/guest/notselecttp/' + $routeParams.contactId,
+        url: 'http://'+SERVER_URL+':8080/api/guest/notselecttp/' + $routeParams.contactId,
         method: 'get',
         headers: {
             'Authorization': localStorageService.get("auth")
@@ -2906,8 +3024,63 @@ manager_app.controller('update_guest_contact_list_controller', function ($scope,
         }
     }
 
+    //checking for duplicate contact list name before update
+    $scope.OnContactListNameChange=function()
+    {
+        console.log('checking for contact list name');
+             if($scope.name!=undefined)
+              {
+                if($scope.name.length!=0)
+                {
+                    $http({
+                        url: 'http://'+SERVER_URL+':8080/api/manager/' +localStorageService.get("user").id + '/contact/'+$scope.name,
+                        method: 'get',
+                        headers: {
+                            'Authorization': localStorageService.get("auth")
+                        }
+                    }).
+                        success(function (data, status) {
+                            $scope.contact_list=data;
+                            console.log("success contact list name url::"+$scope.contact_list.name);
 
-    $scope.update = function () {
+                            if ( $scope.contact_list.name == undefined) {
+                                console.log('contact list name is not available in the database'+ $scope.contact_list.name);
+                                $scope.contactlist_validation_flag = true;
+                                return;
+                            }
+                            if (data.id == $routeParams.contactId) {
+                                console.log('this contact list name belongs to the same contact list');
+                                $scope.contactlist_validation_flag = true;
+                                return;
+                            }
+                            if (data.id != $routeParams.contactId) {
+                                console.log('contact list name is  exist in the database');
+                                 $scope.contactlist_validation_flag = false;
+
+                            }
+                        })
+                        .error(function (error) {
+                            console.log(error);
+                        });
+                }
+            }
+    }
+
+
+    $scope.update = function (update_contact_list_app_form) {
+
+        if(!update_contact_list_app_form.$valid)
+        {
+            return;
+        }
+
+       if ($scope.contactlist_validation_flag == false)
+       {
+                $scope.open_contactlist_popup();
+                return;
+       }
+
+
         //get the formatted data
         $scope.preUpdate();
 
@@ -2918,9 +3091,10 @@ manager_app.controller('update_guest_contact_list_controller', function ($scope,
         $scope.guest_contact.owner = localStorageService.get('user');
 
 
+
         $http({
-            // url: 'http://localhost:8080/api/guest/contact/create',
-            url: 'http://localhost:8080/api/guest/contact/' + $routeParams.contactId + '/update',
+            // url: 'http://'+SERVER_URL+':8080/api/guest/contact/create',
+            url: 'http://'+SERVER_URL+':8080/api/guest/contact/' + $routeParams.contactId + '/update',
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
@@ -2944,6 +3118,44 @@ manager_app.controller('update_guest_contact_list_controller', function ($scope,
             });
 
     }
+
+
+    $scope.addToContact=function()
+    {
+        console.log('add to contact');
+        $scope.add_to_contact_flag=true;
+        $scope.remove_from_contact_flag=false;
+    }
+    $scope.removeFromContact=function()
+    {
+        console.log('remove from flag');
+        $scope.add_to_contact_flag=false;
+        $scope.remove_from_contact_flag=true;
+    }
+
+
+    $scope.open_contactlist_popup = function(){
+        console.log('pop function is calling');
+        ngDialog.open({
+            template: '<body style="text-align:center;color: RED;"><h4>' +
+                'This contact name is already exist!!</h4>' +
+                '</body>',
+            plain:true,
+            className:'ngdialog-theme-default'
+
+        });
+    }
+
+
+
+    $scope.$watch('name', function() {
+        if($scope.name!=undefined)
+        {
+            $scope.name = $scope.name.replace(/\s+/g,'');
+        }
+    });
+
+
 });
 
 

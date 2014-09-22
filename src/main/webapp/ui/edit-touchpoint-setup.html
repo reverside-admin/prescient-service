@@ -1,3 +1,4 @@
+<form name="edit_setup_form">
 <div class="col-md-12">
 
 
@@ -17,37 +18,38 @@
 
             <tr>
                 <td>SetUp Name</td>
-                <td><input type="text" value="{{setup_detail.setupName}}" style="width: 100%" ng-model="setup_detail.setupName"></td>
+                <td><input type="text" value="{{setup_detail.setupName}}" style="width: 100%" ng-model="setup_detail.setupName" required></td>
             </tr>
             <tr>
                 <td>SetUp Description</td>
-                <td><input type="text" value="{{setup_detail.description}}" style="width: 100%" ng-model="setup_detail.description"></td>
+                <td><input type="text" value="{{setup_detail.description}}" style="width: 100%" ng-model="setup_detail.description" required></td>
             </tr>
             <tr>
                 <td>Image Name</td>
-                <td><input type="text" value="{{setup_detail.imageName}}" style="width: 100%" ng-model="setup_detail.imageName"></td>
+                <td><input type="text" value="{{setup_detail.imageName}}" style="width: 100%" ng-model="setup_detail.imageName" required></td>
             </tr>
 
             <tr>
                 <td>File Name</td>
-                <td><input type="text" value="{{setup_detail.fileName}}" style="width: 100%" ng-model="setup_detail.fileName"></td>
+                <td><input type="text" value="{{setup_detail.fileName}}" style="width: 100%" ng-model="setup_detail.fileName" required></td>
             </tr>
 
             <tr>
                 <td>LengthX</td>
-                <td><input type="text" value="{{setup_detail.lengthX}}" style="width: 100%" ng-model="setup_detail.lengthX"></td>
+                <td><input type="text" value="{{setup_detail.lengthX}}" style="width: 100%" ng-model="setup_detail.lengthX" required pattern="[0-9]+"></td>
             </tr>
             <tr>
                 <td>LengthY</td>
-                <td><input type="text" value="{{setup_detail.lengthY}}" style="width: 100%" ng-model="setup_detail.lengthY"></td>
+                <td><input type="text" value="{{setup_detail.lengthY}}" style="width: 100%" ng-model="setup_detail.lengthY" required pattern="[0-9]+"></td>
             </tr>
             <tr>
                 <td>File Path</td>
-                <td><input type="text" value="{{setup_detail.filePath}}" style="width: 100%" ng-model="setup_detail.filePath"></td>
+                <td><input type="text" value="{{setup_detail.filePath}}" style="width: 100%" ng-model="setup_detail.filePath" required></td>
             </tr>
         </table>
     </div>
     <div class="col-md-12 text-right">
-        <button type="button" class="btn btn-primary" ng-click="update()">Update</button>
+        <button type="submit" class="btn btn-primary" ng-click="update(edit_setup_form)">Update</button>
     </div>
 </div>
+    </form>

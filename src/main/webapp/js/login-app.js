@@ -1,9 +1,9 @@
 /**
  * Created by Bibhuti on 2014/03/29.
  */
-var login_app = angular.module('login_app', ['ngRoute', 'LocalStorageModule']);
+var login_app = angular.module('login_app', ['ngRoute', 'LocalStorageModule','Prescient.config']);
 
-login_app.controller("login_app_controller", function ($scope, $http, localStorageService, $window) {
+login_app.controller("login_app_controller", function ($scope, $http, localStorageService, $window,SERVER_URL) {
 
     $scope.error;
 
@@ -21,7 +21,7 @@ login_app.controller("login_app_controller", function ($scope, $http, localStora
 
         if (!loginform.$valid)  return;
 
-        var url = 'http://localhost:8080/login/' + $scope.user_name + '/' + $scope.password;
+        var url = 'http://'+SERVER_URL+':8080/login/' + $scope.user_name + '/' + $scope.password;
 
         console.log(url);
 

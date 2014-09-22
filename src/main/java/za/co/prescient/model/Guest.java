@@ -56,6 +56,7 @@ public class Guest {
     Hotel hotel;
 
 
-      @OneToMany(cascade=CascadeType.ALL, mappedBy = "guest")
+     @OneToMany(cascade=CascadeType.ALL, mappedBy = "guest")
+     @OrderBy("guestPreferenceType ASC ,description")
      List<GuestPreference> guestPreferences;
 }

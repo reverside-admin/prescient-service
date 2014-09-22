@@ -14,9 +14,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     public User findByUserNameAndPassword(String userName, String password);
 
-    @Query("select user.userName from User user")
-    List<String> findAllUserByUserName();
-
     @Query("select user from User user order by user.id desc")
     List<User> findAllUser();
 
@@ -25,6 +22,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("select user from User user where user.userStatus.id=1")
     List<User> getAllDisabledUsers();
+
+    @Query("select user from User user where user.userName=?1")
+    User  findUserByUserName(String name);
 
 
 }

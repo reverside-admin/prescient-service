@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import sun.rmi.runtime.Log;
 import za.co.prescient.model.*;
 import za.co.prescient.model.itcs.ItcsTagRead;
 import za.co.prescient.model.itcs.ItcsTagReadHistory;
@@ -265,6 +266,24 @@ public class Services {
     public Collection<ItcsTagRead> findLocationOfCurrentlyPresentGuestCardsInTouchPoint(@PathVariable("touchpointId") String touchPointId,
                                                                                         @PathVariable("maxX") int maxX,
                                                                                         @PathVariable("maxY") int maxY) {
+        //added on 12-9-2014.
+        //filter the cards because ITCS detect the cards that are currently present in the touch point area.
+        //it does not depends weather the card is given to some one or not.
+        //in android device we need to show the cards that are allotted to the guest only.
+
+        //get all allocated cards
+        List<GuestCard> allAllocatedGuestCards=guestCardRepository.findAllAllocatedCards();
+        List<Card> allAllocatedCards=new ArrayList<Card>();
+        //fetch all cards from guestcard object
+        for(GuestCard guestCard:allAllocatedGuestCards)
+        {
+            allAllocatedCards.add(guestCard.getCard());
+        }
+        LOGGER.info("all allocated card size is::"+allAllocatedCards.size());
+
+        //end of add
+
+
         String responseStr = "";
         itr = new ArrayList<ItcsTagRead>();
         try {
@@ -284,6 +303,10 @@ public class Services {
             JSONArray obj = new JSONArray(responseStr);
             log.info("obj length " + obj.length());
 
+
+            //define a string list so that we can set the rfid tags and fetch the cads with those rfid tags.
+            //List<String> rfids=new ArrayList<String>();
+
             for (int i = 0; i < obj.length(); i++) {
                 JSONObject jObj = obj.getJSONObject(i);
                 itcsTagRead = new ItcsTagRead();
@@ -292,11 +315,25 @@ public class Services {
                 itcsTagRead.setZoneId(jObj.getString("zoneId"));
                 itcsTagRead.setXCoordRead(jObj.getDouble("xcoordRead"));
                 itcsTagRead.setYCoordRead(jObj.getDouble("ycoordRead"));
-//            itcsTagReadHistory.setTagReadDatetime(obj.getDouble());
+//              itcsTagReadHistory.setTagReadDatetime(obj.getDouble());
 
-                itr.add(itcsTagRead);
+                //compare if the rfid tag is found in the allocated card's rfid tag list
+                String rfidNo=jObj.getString("guestCard").trim();
+                for(int count=0;count<allAllocatedCards.size();count++)
+                {
+                    String currentRfid=allAllocatedCards.get(count).getRfidTagNo();
+                     if(rfidNo.equalsIgnoreCase(currentRfid))
+                    {
+                        LOGGER.info("current rfid ang guestcard matched");
+                        itr.add(itcsTagRead);
+                        break;
+                    }
+                }
+                //itr.add(itcsTagRead);
             }
+
         } catch (Exception e) {
+            LOGGER.info("exception in filtering cards");
         }
         return itr;
     }
@@ -378,6 +415,18 @@ public class Services {
 
     }
 
+    //to remove guest image.if some one accidentally save the image of the guest then he can remove the guest image.
+    @RequestMapping(value = "guest/{guestId}/image/remove")
+    public void assignImageToGuest(@PathVariable("guestId") Long guestId)
+    {
+        Guest guest=guestRepository.findOne(guestId);
+        guest.setGuestImagePath(null);
+        guestRepository.save(guest);
+    }
+
+
+
+
 
     //maintain guest starts here
 
@@ -403,11 +452,29 @@ public class Services {
     @ResponseStatus(HttpStatus.CREATED)
     public void create(@RequestBody Guest guest) {
         LOGGER.info("request received to create guest : " + guest);
-        //GuestStayHistory guestStayHistory = new GuestStayHistory();
-        //guestStayHistory.setGuest(guest);
-        //guestStayHistory.setNoOfPreviousStays(0L);
+
+        LOGGER.info("passport number::"+guest.getPassportNumber());
+        LOGGER.info("id number::"+guest.getIdNumber());
+        LOGGER.info("name::"+guest.getFirstName()+" "+guest.getSurname());
+
+
+         if(guest.getPassportNumber()!=null)
+        {
+            if(guest.getPassportNumber().length()==0)
+            {
+                guest.setPassportNumber(null);
+            }
+        }
+
+
+        if(guest.getIdNumber()!=null)
+        {
+            if(guest.getIdNumber().length()==0)
+            {
+                guest.setIdNumber(null);
+            }
+        }
         guestRepository.save(guest);
-        //guestStayHistoryRepository.save(guestStayHistory);
     }
 
     //before creating a new guest,check the passport number of the guest.if it is already there then it
@@ -450,9 +517,35 @@ public class Services {
         currentGuest.setGender(guest.getGender());
         currentGuest.setSurname(guest.getSurname());
         currentGuest.setPreferredName(guest.getPreferredName());
-        currentGuest.setPassportNumber(guest.getPassportNumber());
         currentGuest.setTitle(guest.getTitle());
+
         currentGuest.setIdNumber(guest.getIdNumber());
+        if(guest.getIdNumber()!=null)
+        {
+            if(guest.getIdNumber().length()==0)
+            {
+                currentGuest.setIdNumber(null);
+            }
+            else
+            {
+                currentGuest.setIdNumber(guest.getIdNumber());
+            }
+        }
+
+        currentGuest.setPassportNumber(guest.getPassportNumber());
+        if(guest.getPassportNumber()!=null)
+        {
+            if(guest.getPassportNumber().length()==0)
+            {
+                currentGuest.setPassportNumber(null);
+            }
+            else
+            {
+                currentGuest.setPassportNumber(guest.getPassportNumber());
+            }
+        }
+
+
         currentGuest.setDob(guest.getDob());
         currentGuest.setNationalityId(guest.getNationalityId());
 
@@ -682,10 +775,8 @@ public class Services {
     @RequestMapping(value = "guest/roomkeycards", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     public List<Card> getRoomKeyCards() {
-        // List<Card> allCards = cardRepository.findAll();
         List<Card> allCards = cardRepository.findWithRFIDTagNo();
         List<GuestCard> guestCards = guestCardRepository.findAllAllocatedCards();
-        LOGGER.info("card id::" + guestCards.get(0).getCard().getId() + "is given to::" + guestCards.get(0).getGuest().getFirstName());
         List<Card> allocatedCards = new ArrayList<Card>();
         for (GuestCard c : guestCards) {
             Card card = c.getCard();
@@ -695,7 +786,6 @@ public class Services {
         allCards.removeAll(allocatedCards);
         return allCards;
     }
-
 
     //get all cards issued to a guest
     @RequestMapping(value = "guest/{guestId}/roomcarddetails", method = RequestMethod.GET, produces = "application/json")
@@ -824,7 +914,7 @@ public class Services {
     }
 
 
-    //get list of guests whose birth day is today(to be consumed by mobile)
+    /*//get list of guests whose birth day is today(to be consumed by mobile)
     @RequestMapping(value = "hotel/{hotelId}/guest/birthday/list", method = RequestMethod.GET, produces = "application/json")
     public List<Guest> getGuestList(@PathVariable("hotelId") Long hotelId) {
         log.info("view guest room card detail  service");
@@ -857,17 +947,11 @@ public class Services {
             int currentMonth = calendar.get(Calendar.MONTH);
 
             LOGGER.info("....................." + guest.getFirstName());
-
             LOGGER.info("guestDOBDay::" + guestDOBDay);
             LOGGER.info("currentDay::" + currentDay);
-
             LOGGER.info("guestDOBMonth::" + guestDOBMonth);
-
             LOGGER.info("currentMonth::" + currentMonth);
-
             LOGGER.info("..................................");
-
-
             if ((guestDOBDay == currentDay) && (guestDOBMonth == currentMonth)) {
                 allBirthDayGuests.add(guest);
             }
@@ -875,7 +959,48 @@ public class Services {
 
         return allBirthDayGuests;
 
-    }
+    }*/
 
+
+
+
+    //get list of guests whose birth day is today(to be consumed by mobile)
+    @RequestMapping(value = "hotel/{hotelId}/guest/birthday/list", method = RequestMethod.GET, produces = "application/json")
+    public List<GuestStayHistory> getGuestList(@PathVariable("hotelId") Long hotelId) {
+        log.info("view guest room card detail  service");
+        //find all checked in Guest(1)
+
+        List<GuestStayHistory> allBirthDayGuestStays = new ArrayList<GuestStayHistory>();
+        List<GuestStayHistory> guestStayHistories = guestStayHistoryRepository.findCheckedInByHotelId(hotelId);
+
+
+        for (GuestStayHistory guestHistory : guestStayHistories)
+        {
+            Guest guest=guestHistory.getGuest();
+            //LOGGER.info("currently staying guest::"+guest.getFirstName()+"DOB::"+guest.getDob());
+
+            Date guestDOB = guest.getDob();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(guestDOB);
+            Date currentDate = new Date();
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(currentDate);
+
+            int guestDOBDay = cal.get(Calendar.DAY_OF_MONTH);
+            int currentDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+
+            int guestDOBMonth = cal.get(Calendar.MONTH);
+            int currentMonth = calendar.get(Calendar.MONTH);
+
+            if ((guestDOBDay == currentDay) && (guestDOBMonth == currentMonth)) {
+                allBirthDayGuestStays.add(guestHistory);
+                LOGGER.info("Bday Guest is"+guest.getFirstName());
+            }
+        }
+
+        return allBirthDayGuestStays;
+
+    }
 
 }

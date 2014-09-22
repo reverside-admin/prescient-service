@@ -118,11 +118,10 @@ public class UserService {
         userRepository.save(userDetail);
     }
 
-
-    @RequestMapping(value = "api/usernames", method = RequestMethod.GET)
-     public List<String> getUserNames() {
-         List<String> userNames=userRepository.findAllUserByUserName();
-        return userNames;
+    @RequestMapping(value = "api/username/{name}", method = RequestMethod.GET)
+    public User getUserNames(@PathVariable String name) {
+        User user=userRepository.findUserByUserName(name);
+        return user;
 
     }
 

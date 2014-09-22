@@ -1,4 +1,4 @@
-<form>
+<form name="create_contact_list_form">
 
     <div class="col-md-12">
 
@@ -12,16 +12,14 @@
             <h4 class="text-primary"><b>Create Contact</b></h4>
         </div>
 
-
         <div style="width: 50%; margin-left: auto;margin-right: auto;">
-
-
             <table class=" table table-responsive table-bordered">
-
                 <tr>
                     <td>Guest Contact List Name</td>
-                    <td colspan="5"><input type="text" name="contactlistname" ng-model="guest_contact.name"
-                                           placeholder="Contactlist Name" style="width: 100%" ng-blur="OnContactListNameBlur()"></td>
+                    <td colspan="5"><input type="text" name="contactlistname" ng-model="guest_contact.name" ng-trim='false'
+                                           placeholder="Contactlist Name" style="width: 100%"
+                                           ng-change="OnContactListNameChange()"
+                                           required></td>
 
                 </tr>
 
@@ -36,25 +34,34 @@
                         </ul>
                     </td>
                 </tr>
+            </table>
+        </div>
 
+        <div style="width: 50%; margin-left: auto;margin-right: auto;">
 
-                <tr>
-                    <td></td>
-                    <td><b>Title</b></td>
-                    <td><b>First Name</b></td>
-                    <td><b>Surname</b></td>
-                    <td><b>Id Number</b></td>
-                    <td><b>Passport Number</b></td>
-                </tr>
+            <table ng-table="tableParams" show-filter="true" class="table  table-bordered ng-table-rowselected" style="width:100%;">
 
+                <tr ng-repeat="user in $data" style="text-align:center;"
+                    ng-click="user.$selected = !user.$selected; onSelectGuest(user.id)"
+                    ng-class="{'active': user.$selected}">
+                    <td data-title="'title'" sortable="'title'" filter="{'title':'text'}">
+                        {{user.title}}
+                    </td>
+                    <td data-title="'firstName'" sortable="'firstName'"  filter="{'firstName':'text'}">
+                        {{user.firstName}}
+                    </td>
 
-                <tr ng-repeat="guest in guest_list">
-                    <td><input type="checkbox" ng-click="onSelectGuest(guest.id)"/></td>
-                    <td>{{guest.title}}</td>
-                    <td>{{guest.firstName}}</td>
-                    <td>{{guest.surname}}</td>
-                    <td>{{guest.idNumber}}</td>
-                    <td>{{guest.passportNumber}}</td>
+                    <td data-title="'surname'" sortable="'surname'" filter="{'surname':'text'}">
+                        {{user.surname}}
+                    </td>
+
+                    <td data-title="'idNumber'" sortable="'idNumber'" filter="{'idNumber':'text'}">
+                        {{user.idNumber}}
+                    </td>
+
+                    <td data-title="'passportNumber'" sortable="'passportNumber'" filter="{'passportNumber':'text'}">
+                        {{user.passportNumber}}
+                    </td>
                 </tr>
             </table>
         </div>
@@ -62,11 +69,9 @@
 
         <div class="col-md-12 text-right">
             <div class="btn-group btn-group-sm">
-                <input type="submit" value="Create" ng-click="create()" class="btn btn-primary"/>
+                <input type="submit" value="Create" ng-click="create(create_contact_list_form)" class="btn btn-primary"/>
             </div>
         </div>
-
-
     </div>
 
 </form>

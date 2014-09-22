@@ -201,21 +201,24 @@ public class GuestContactService {
     }
 
 
-    @RequestMapping(value = "api/manager/{userId}/contactlistname")
+   /* @RequestMapping(value = "api/manager/{userId}/contactlistname")
     public List<String> getContactListName(@PathVariable("userId") Long userId){
          log.info("get all contact list names of a manager");
         List<String> contactListNames=contactListRepository.getContactListName(userId);
-        /*List<String> contactListNames=new ArrayList<String>();
-        for(ContactList contact:contactList)
-        {
-            contactListNames.add(contact.getName().trim());
-        }*/
+
         log.info("all contact list names::"+contactListNames.toString());
         return contactListNames;
+    }*/
+
+
+
+    @RequestMapping(value = "api/manager/{id}/contact/{name}")
+    public ContactList getContactListObj(@PathVariable("id") Long id , @PathVariable("name") String name){
+        ContactList allContactLists=contactListRepository.getContactList(id,name);
+        //log.info("contact list size::"+allContactLists.size());
+        return allContactLists;
+
     }
-
-
-
 
     //get all guests present in managers all contact list having specific touch point access
 
@@ -235,9 +238,7 @@ public class GuestContactService {
                     contactList.add(contact);
                 }
             }
-
         }
-
 
         for(ContactList contact:contactList )
         {
@@ -247,13 +248,30 @@ public class GuestContactService {
                 guests.add(contactListGuest.getGuest());
             }
         }
-
-
         log.info("No of guests in this list:"+guests.size());
         return guests;
     }
 
 
+    //get all guest  present in all contact list
+    @RequestMapping(value = "api/manager/{id}/contacts/guests/ids")
+    public List<Long> getContactListGuestIds(@PathVariable("id") Long id)
+    {
+        List<ContactList> allContactLists=contactListRepository.findContactsByOwner(id);
+        List<Long> ids=new ArrayList<Long>();
+        for(ContactList contactList:allContactLists)
+        {
+            List<ContactListGuest> contactListGuests=contactList.getContactListGuests();
+            for(ContactListGuest contactListGuest:contactListGuests)
+            {
+                ids.add(contactListGuest.getGuest().getId());
+            }
+
+        }
+
+        return ids;
+
+    }
 
 
 }

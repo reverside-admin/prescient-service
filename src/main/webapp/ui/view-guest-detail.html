@@ -1,5 +1,5 @@
-<div class="col-md-12">
-
+<form name="app_form">
+    <div class="col-md-12">
 
     <div class="col-md-12 text-right">
         <div class="btn-group btn-group-sm">
@@ -7,8 +7,7 @@
             <a ng-href="#maintain/guest/{{guest_detail.id}}/gueststaydetails"  class="btn btn-primary">HotelStayDetails</a>
             <a ng-href="#maintain/guest/{{guest_detail.id}}/guestpreference"  class="btn btn-primary">GuestPreference</a>
             <a ng-href="#maintain/guest/{{guest_detail.id}}/roomcarddetails"  ng-disabled="assign_card_flag" class="btn btn-primary">GuestRoomCard</a>
-           <!-- added 27-8-2014-->
-            <a ng-click="attach_image_flag=true" class="btn btn-primary">Attach Image</a>
+            <a ng-click="onAttachImageButtonClick()" class="btn btn-primary">Attach Image</a>
 
             <a ng-href="#maintain/guest/guestlist"  class="btn btn-primary">Back</a>
         </div>
@@ -74,7 +73,7 @@
                 <td style="text-align: right"><b>Image File</b></td>
                 <td>
                     <select ng-model="selected_guest_image"
-                            ng-options="obj as obj for obj in guest_image_list" ng-change="getGuestImage()">
+                            ng-options="obj as obj for obj in guest_image_list" ng-change="getGuestImage()" required>
                         <option value="">select Image</option>
                     </select>
                 </td>
@@ -91,8 +90,16 @@
     <!-- added 27-8-2014 -->
     <div class="col-md-12 text-right" ng-show="attach_image_flag">
         <div class="btn-group btn-group-sm">
-            <a ng-click="attachGuestImage()" class="btn btn-primary">save</a>
+            <a ng-click="attachGuestImage(app_form)" class="btn btn-primary">save</a>
+            <a ng-click="cancelGuestImage()" class="btn btn-primary">cancel</a>
         </div>
     </div>
 
+
+    <div class="col-md-12 text-right" ng-show="remove_image_flag">
+        <div class="btn-group btn-group-sm">
+            <a ng-click="removeGuestImage()" class="btn btn-primary">Remove Image</a>
+         </div>
+    </div>
 </div>
+</form>

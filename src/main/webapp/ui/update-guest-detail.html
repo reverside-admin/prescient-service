@@ -25,7 +25,7 @@
                 <tr>
                     <td style="text-align: left"><b>First Name *</b></td>
                     <td><input type="text" style="width: 100%" value="{{guest_detail.firstName}}"
-                               ng-model="guest_detail.firstName" required></td>
+                               ng-model="guest_detail.firstName"  required></td>
                 </tr>
                 <tr>
                     <td style="text-align: left"><b>Surname *</b></td>
@@ -41,18 +41,16 @@
 
                 <tr>
                     <td style="text-align: left"><b>Passport No *</b></td>
-                    <td><input type="text" style="width: 100%" value="{{guest_detail.passportNumber}}" ng-blur="checkPassport()"
+                    <td><input type="text" style="width: 100%" value="{{guest_detail.passportNumber}}" ng-change="checkPassport()"
                                ng-model="guest_detail.passportNumber"
-                               ng-change="onPassportChange()"
                                ng-required="!(guest_detail.idNumber.length || guest_detail.passportNumber.length )">
                     </td>
                 </tr>
 
                 <tr>
                     <td style="text-align: left"><b>Identity No *</b></td>
-                    <td><input type="text" style="width: 100%" value="{{guest_detail.idNumber}}" ng-blur="checkUniqueId()"
+                    <td><input type="text" style="width: 100%" value="{{guest_detail.idNumber}}" ng-change="checkUniqueId()"
                                ng-model="guest_detail.idNumber"
-                               ng-change="onIdChange()"
                                ng-required="!(guest_detail.idNumber.length || guest_detail.passportNumber.length )">
                     </td>
                 </tr>
@@ -94,10 +92,12 @@
 
         <div class="col-md-12 text-right">
             <div class="btn-group btn-group-sm">
-                <a ng-click="update(guest_update_form)" class="btn btn-primary">Update</a>
+                <input type="submit" value="Update" ng-click="update(guest_update_form)" class="btn btn-primary"/>
                 <a ng-click="cancel()" class="btn btn-primary" style="border-left: 10px">Cancel</a>
+
             </div>
 
         </div>
     </div>
 </form>
+

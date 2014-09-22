@@ -1,0 +1,6 @@
+body {
+    padding: 10px !important;   
+}
+.ng-table-rowselected tr {
+    cursor: pointer;
+}

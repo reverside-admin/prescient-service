@@ -18,8 +18,8 @@
             <table class=" table table-responsive">
                 <tr>
                     <td> User Name</td>
-                    <td><input type="text" name="username" ng-model="user.userName" placeholder="username"
-                               style="width: 100%" ng-blur="OnUserNamesBlur()" required></td>
+                    <td><input type="text" name="username" ng-model="user.userName" placeholder="username" ng-trim='false'
+                               style="width: 100%" ng-change="OnUserNameChange()" required></td>
 
                 </tr>
 

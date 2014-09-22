@@ -62,8 +62,7 @@
                     <td>Identity No</td>
                     <td><input type="text" id="text1"
                                name="identityno"
-                               ng-blur="OnIdBlur()"
-                               ng-change="onIdChange()"
+                               ng-change="OnIdChange()"
                                ng-model="guest.idNumber"
                                placeholder="Identity No"
                                style="width: 100%"
@@ -75,9 +74,8 @@
                     <td>Passport No</td>
                     <td><input type="text" id="text2"
                                name="passportno"
-                               ng-blur="OnPassportBlur()"
                                ng-model="guest.passportNumber"
-                               ng-change="onPassportChange()"
+                               ng-change="OnPassportChange()"
                                placeholder="Passport No"
                                style="width: 100%"
                                ng-required="!(guest.idNumber.length || guest.passportNumber.length )"
